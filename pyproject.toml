@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orbs"
+version = "0.1.4"
+description = "orbs - A minimal multiplatform test framework that adapt POM"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+  { name = "Muhamad Badru Salam", email = "badrusalam760@gmail.com" }
+]
+dependencies = [
+  "typer[all]",
+  "flask",
+  "pyyaml",
+  "apscheduler",
+  "jinja2",
+  "requests",
+  "python-dotenv",
+  "Appium-Python-Client",
+  "selenium",
+  "behave",
+  "reportlab",
+  "InquirerPy"
+]
+
+[project.scripts]
+orbs = "orbs.cli:app"
+
+[tool.setuptools]
+packages = { find = {} }
+
+[tool.setuptools.package-data]
+orbs = ["templates/**/*"]

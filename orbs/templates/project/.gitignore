@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+env/
+.env
+reports/*
+screenshots/*
+user.properties
+actmo.properties
