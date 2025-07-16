@@ -554,42 +554,46 @@ class ReportGenerator:
             margin_left = 50
             margin_right = self.width - 50
             x_cursor = margin_left
-            max_row_height = 0
+            max_row_h = 0
             gap = 10
+            # setelah kamu punya full_width, margin_left, margin_right, gap
             for img_file in screenshots:
-                try:
-                    img_reader = ImageReader(img_file)
-                    iw, ih = img_reader.getSize()
+                img_reader = ImageReader(img_file)
+                iw, ih = img_reader.getSize()
+                ratio = iw / ih
+
+                if ratio > 1.5:  # treat as web screenshot
+                    # full‑width layout
+                    self._new_page_if_needed(ih + gap)
+                    max_w = full_width
+                    scale = max_w / iw
+                    w, h = iw * scale, ih * scale
+                    y_pos = self.y - h
+                    self.c.drawImage(img_reader, margin_left, y_pos, width=w, height=h)
+                    self.y = y_pos - gap
+                    # reset grid cursors
+                    x_cursor = margin_left
+                    max_row_h = 0
+                else:
+                    # grid layout (mobile)
+                    self._new_page_if_needed(150 + gap)  # minimal height
                     max_w = (margin_right - margin_left) / 3
                     max_h = 150
                     scale = min(max_w / iw, max_h / ih)
                     w, h = iw * scale, ih * scale
 
-                    # Wrap to next line
                     if x_cursor + w > margin_right:
-                        self.y -= (max_row_height + gap)
+                        self.y -= (max_row_h + gap)
                         x_cursor = margin_left
-                        max_row_height = 0
-
-                    # Page break
-                    self._new_page_if_needed(h + 30)
+                        max_row_h = 0
 
                     y_pos = self.y - h
-                    self.c.drawImage(img_reader, x_cursor, y_pos, width=w, height=h, preserveAspectRatio=True)
-
+                    self.c.drawImage(img_reader, x_cursor, y_pos, width=w, height=h)
                     x_cursor += w + gap
-                    max_row_height = max(max_row_height, h)
-                except Exception as e:
-                    # Placeholder on error
-                    placeholder_h = 80
-                    self._new_page_if_needed(placeholder_h + 30)
-                    self.c.setFillColor(colors.lightgrey)
-                    self.c.rect(margin_left, self.y - placeholder_h, full_width, placeholder_h, stroke=0, fill=1)
-                    self.c.setFillColor(colors.red)
-                    self.c.setFont("Helvetica", 10)
-                    self.c.drawString(margin_left + 5, self.y - placeholder_h / 2, f"Failed to load image: {os.path.basename(img_file)}")
-                    self.c.setFillColor(colors.black)
-                    self.y -= (placeholder_h + gap)
+                    max_row_h = max(max_row_h, h)
+
+            # setelah loop, baris terakhir:
+            self.y -= (max_row_h + gap)
 
         # 8) Add spacing before next scenario
         self.y -= 15
