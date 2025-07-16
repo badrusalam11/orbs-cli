@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "orbs"
-version = "0.1.4"
+version = "0.1.0"
 description = "orbs - A minimal multiplatform test framework that adapt POM"
 readme = "README.md"
 requires-python = ">=3.8"
