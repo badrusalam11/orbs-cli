@@ -10,7 +10,7 @@ from orbs.mobile_factory import MobileFactory
 def step_open_login(context):
     pass
 
-@when('the user fill username "{username}" and password "{password}"')
+@when('the user fill username {username} and password {password}')
 def step_username(context, username, password):
     pass
 

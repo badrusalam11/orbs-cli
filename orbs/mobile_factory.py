@@ -16,7 +16,7 @@ class MobileFactory:
         device_name = cfg.get("deviceName", "")
 
         # Use user-provided or config-based capabilities
-        extra_caps = capabilities or cfg.get_json("capabilities") or {}
+        extra_caps = capabilities or cfg.get_dict("capabilities") or {}
 
         options = AppiumOptions()
         options.platform_name = platform

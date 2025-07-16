@@ -22,7 +22,7 @@ def run(target=None):
     logger = Logger.get_logger()
     
     # precondition
-    if config.get('selected_platform') == PLATFORM_LIST["mobile"]:
+    if config.get('selected_platform') in PLATFORM_LIST["mobile"]:
         check_dependencies()
 
     # grab argument
