@@ -44,4 +44,4 @@ RUN mkdir -p /app/settings /app/reports /app/screenshots \
 EXPOSE 5006
 
 # Start the Flask backend service
-CMD ["afw", "serve"]
+CMD ["orbs", "serve"]

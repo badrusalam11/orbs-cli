@@ -1,1 +1,1 @@
-recursive-include afw/templates *
+recursive-include orbs/templates *

@@ -71,7 +71,7 @@ def run(target=None):
         sys.exit(1)
 
 def check_dependencies():
-    from afw.cli import choose_device, ensure_appium_server, get_connected_devices, write_device_property
+    from orbs.cli import choose_device, ensure_appium_server, get_connected_devices, write_device_property
 
         # Start Appium server if needed
     ensure_appium_server()

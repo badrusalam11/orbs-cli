@@ -4,13 +4,13 @@ Orbs 🚀
 
 A lightweight, POM structured test automation framework for Python + Appium, including:
 
-📦 Project scaffolding with afw init
+📦 Project scaffolding with orbs init
 
 ⟳ Test suite, test case, feature, and step generation using Jinja2 templating
 
 ▶️ Runner for executing feature (.feature), YAML suite, or .py test case files
 
-🌐 REST API server (afw serve) to list and schedule test suites
+🌐 REST API server (orbs serve) to list and schedule test suites
 
 🔗 API client module (orbs.api_client) for programmatic integration
 
@@ -20,25 +20,25 @@ A lightweight, POM structured test automation framework for Python + Appium, inc
 
 🔧 Features
 
-afw setup — setup all mobile dependencies: node js, appium, uiAutomatior2
+orbs setup — setup all mobile dependencies: node js, appium, uiAutomatior2
 
-afw init <project> — bootstrap a complete orbs project scaffold
+orbs init <project> — bootstrap a complete orbs project scaffold
 
-afw create-testsuite <name> — generate boilerplate YAML test suite & .py for its test suite hook
+orbs create-testsuite <name> — generate boilerplate YAML test suite & .py for its test suite hook
 
-afw create-testsuite-collection <name> — generate boilerplate YAML test suite collection
+orbs create-testsuite-collection <name> — generate boilerplate YAML test suite collection
 
-afw create-testcase <name> — generate a .py test case stub
+orbs create-testcase <name> — generate a .py test case stub
 
-afw create-listener <name> — generate a test listener
+orbs create-listener <name> — generate a test listener
 
-afw create-feature <name> — generate a .feature file
+orbs create-feature <name> — generate a .feature file
 
-afw implement-feature <name> — autogenerate step definitions from your .feature
+orbs implement-feature <name> — autogenerate step definitions from your .feature
 
-afw run <target> — run one of .feature, .yml, or .py test scripts
+orbs run <target> — run one of .feature, .yml, or .py test scripts
 
-afw serve [--port <port>] — expose a REST API to list, run, and schedule test suites
+orbs serve [--port <port>] — expose a REST API to list, run, and schedule test suites
 
 ✅ Installation
 
@@ -53,25 +53,25 @@ pip install -e .
 🚀 Quick Start
 
 1. Setup mobile project
-afw setup
+orbs setup
 
 2. Scaffold a new project
 
-afw init myproject
+orbs init myproject
 cd myproject
 
 3. Create testsuite/feature/case
 
-afw create-testsuite login
-afw create-feature login
-afw implement-feature login
+orbs create-testsuite login
+orbs create-feature login
+orbs implement-feature login
 
 4. Add test logic in testcases/, steps/, etc.
 
 5. Run tests
 
-afw run features/login.feature        # via behave
-afw run testsuites/login.yml         # via runner
+orbs run features/login.feature        # via behave
+orbs run testsuites/login.yml         # via runner
 
 after that, choose the mobile device, or set it directly in `deviceName` at settings/appium.properties
 
