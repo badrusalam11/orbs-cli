@@ -146,15 +146,25 @@ def init(project_name: str):
 
 @app.command()
 def create_testsuite(name: str):
-    """Create a new testsuite folder and file"""
-    path_yml = Path.cwd() / "testsuites" / f"{name}.yml"
+    current_folder = Path.cwd()
+    # Find the root project directory (the first parent that does not include 'testsuites')
+    # Or assume project root is where you run the CLI
+    if "testsuites" in current_folder.parts:
+        # If inside testsuites or its subfolder
+        testsuite_folder = current_folder
+    else:
+        # Default to root/testsuites
+        testsuite_folder = current_folder / "testsuites"
+    # Create files relative to current folder (or testsuite folder)
+    path_yml = testsuite_folder / f"{name}.yml"
+    path_py = testsuite_folder / f"{name}.py"
+
     render_template(
         template_name="testsuites/testsuite.yml.j2",
         context={"suite_name": name},
         dest=path_yml,
         base_template_dir=TEMPLATE_JINJA_DIR
     )
-    path_py = Path.cwd() / "testsuites" / f"{name}.py"
     render_template(
         template_name="testsuites/testsuite.py.j2",
         context={"suite_name": name},
@@ -166,8 +176,15 @@ def create_testsuite(name: str):
 
 @app.command()
 def create_testsuite_collection(name: str):
+    current_folder = Path.cwd()
+    if "testsuite_collections" in current_folder.parts:
+        # If inside testsuites or its subfolder
+        testsuite_collection_folder = current_folder
+    else:
+        # Default to root/testsuites
+        testsuite_collection_folder = current_folder / "testsuite_collections"
     """Create a new testsuite folder and file"""
-    path_yml = Path.cwd() / "testsuite_collections" / f"{name}.yml"
+    path_yml = testsuite_collection_folder / f"{name}.yml"
     render_template(
         template_name="testsuite_collections/testsuite_collection.yml.j2",
         context={"suite_collection_name": name},
@@ -179,8 +196,15 @@ def create_testsuite_collection(name: str):
 
 @app.command()
 def create_testcase(name: str):
+    current_folder = Path.cwd()
+    if "testcases" in current_folder.parts:
+        # If inside testsuites or its subfolder
+        testcase_folder = current_folder
+    else:
+        # Default to root/testsuites
+        testcase_folder = current_folder / "testcases"
     """Create a new testcase file"""
-    path = Path.cwd() / "testcases" / f"{name}.py"
+    path = testcase_folder / f"{name}.py"
     render_template(
         template_name="testcases/testcase.py.j2",
         context={"case_name": name},
@@ -191,8 +215,15 @@ def create_testcase(name: str):
 
 @app.command()
 def create_listener(name: str):
+    current_folder = Path.cwd()
+    if "listeners" in current_folder.parts:
+        # If inside testsuites or its subfolder
+        listener_folder = current_folder
+    else:
+        # Default to root/testsuites
+        listener_folder = current_folder / "listeners"
     """Create a new listener file"""
-    path = Path.cwd() / "listeners" / f"{name}.py"
+    path = listener_folder / f"{name}.py"
     render_template(
         template_name="listeners/listener.py.j2",
         context={"listener_name": name},
@@ -201,11 +232,17 @@ def create_listener(name: str):
     )
     typer.secho(f"✅ Created listener: {name}", fg=typer.colors.GREEN)
 
-
 @app.command()
 def create_feature(name: str):
+    current_folder = Path.cwd()
+    if "include" in current_folder.parts and "features" in current_folder.parts:
+        # If inside feature or its subfolder
+        feature_folder = current_folder
+    else:
+        # Default to root/feature
+        feature_folder = current_folder / "include/features"
     """Create a new feature file (.feature)"""
-    path = Path.cwd() / "include" / "features" / f"{name}.feature"
+    path = feature_folder / f"{name}.feature"
     render_template(
         template_name="features/feature.feature.j2",
         context={"feature_name": name},
@@ -213,6 +250,26 @@ def create_feature(name: str):
         base_template_dir=TEMPLATE_JINJA_DIR
     )
     typer.secho(f"✅ Created feature: {name}", fg=typer.colors.GREEN)
+
+
+@app.command()
+def create_step(name: str):
+    current_folder = Path.cwd()
+    if "include" in current_folder.parts and "steps" in current_folder.parts:
+        # If inside step or its subfolder
+        step_folder = current_folder
+    else:
+        # Default to root/step
+        step_folder = current_folder / "include/steps"
+    """Create a new step file (.py)"""
+    path = step_folder / f"{name}.py"
+    render_template(
+        template_name="steps/step.py.j2",
+        context={"step_name": name},
+        dest=path,
+        base_template_dir=TEMPLATE_JINJA_DIR
+    )
+    typer.secho(f"✅ Created step: {name}", fg=typer.colors.GREEN)
 
 
 @app.command()
