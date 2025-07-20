@@ -316,8 +316,21 @@ def implement_feature(name: str):
 @app.command("run")
 def run_command(
     target: str,
-    env_file: Path = typer.Option(None, "--env", "-e", help="Path to .env file to load before running")
+    env_file: Path = typer.Option(None, "--env", "-e", help="Path to .env file to load before running"),
+    platform: str = typer.Option(None, "--platform", "-p", help="Platform to run tests on (android, chrome, firefox)")
 ):
+    # Validate platform if provided
+    if platform:
+        # Remove any spaces around the platform value
+        platform = platform.strip()
+        valid_platforms = PLATFORM_LIST["mobile"] + PLATFORM_LIST["web"]
+        
+        if platform not in valid_platforms:
+            # Show examples in the correct format
+            examples = [f"--platform={p}" for p in valid_platforms]
+            typer.secho(f"❌ Invalid platform: {platform}. Must be one of: {', '.join(examples)}", fg=typer.colors.RED)
+            raise typer.Exit(1)
+    
     """Run a suite/case/feature with optional environment file"""
     # If a custom env file is provided, override defaults
     if env_file:
@@ -326,8 +339,8 @@ def run_command(
             raise typer.Exit(1)
         load_dotenv(dotenv_path=env_file, override=True)
     
-    # Execute the run
-    run(target)
+    # Execute the run with platform parameter
+    run(target, platform)
 
 @app.command()
 def select_device():
@@ -439,14 +452,14 @@ def select_platform():
     updated = False
     new_lines = []
     for line in lines:
-        if line.startswith("selected_platform="):
-            new_lines.append(f"selected_platform={choice}")
+        if line.startswith("default_platform="):
+            new_lines.append(f"default_platform={choice}")
             updated = True
         else:
             new_lines.append(line)
 
     if not updated:
-        new_lines.append(f"selected_platform={choice}")
+        new_lines.append(f"default_platform={choice}")
 
     platform_props.write_text("\n".join(new_lines) + "\n")
 

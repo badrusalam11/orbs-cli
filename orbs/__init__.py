@@ -18,11 +18,17 @@ from .config import Config
 config = Config()  # global singleton instance
 
 
-def run(target=None):
+def run(target=None, platform=None):
     logger = Logger.get_logger()
     
-    # precondition
-    if config.get('selected_platform') in PLATFORM_LIST["mobile"]:
+    # Use platform from CLI if provided, otherwise use default_platform from config
+    if platform:
+        current_platform = platform
+    else:
+        current_platform = config.get('default_platform')
+    
+    # precondition for mobile testing
+    if current_platform in PLATFORM_LIST["mobile"]:
         check_dependencies()
 
     # grab argument
