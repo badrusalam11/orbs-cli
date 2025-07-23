@@ -7,6 +7,8 @@ import typer
 import shutil
 from pathlib import Path
 from orbs._constant import PLATFORM_LIST
+from orbs.spy.mobile import MobileSpyRunner
+from orbs.spy.web import WebSpyRunner
 from orbs.utils import render_template
 from orbs import run
 import subprocess
@@ -464,6 +466,32 @@ def select_platform():
     platform_props.write_text("\n".join(new_lines) + "\n")
 
     typer.secho(f"✅ Selected platform '{choice}' saved to {platform_props}", fg=typer.colors.GREEN)
+
+
+@app.command()
+def spy(web: bool = False, mobile: bool = False, url: str = typer.Option(None, "--url")):
+    """
+    Start element spy session (web or mobile).
+    """
+    if web:
+        runner = WebSpyRunner(url=url)
+    elif mobile:
+        runner = MobileSpyRunner()  # not yet implemented
+    else:
+        typer.echo("Please specify a platform: --web or --mobile")
+        raise typer.Exit(code=1)
+
+    try:
+        runner.start()
+        typer.echo("[Orbs] Spy session started. Use Ctrl+` in the browser to capture. Press Ctrl+C here to stop.")
+        # Block until Ctrl+C
+        typer.echo("")  # just to move to a fresh line
+        typer.pause()   # waits until user hits Enter
+    except KeyboardInterrupt:
+        pass
+    finally:
+        runner.stop()
+        typer.echo("[Orbs] Spy session ended.")
 
 @app.command()
 def serve(port: int = typer.Option(None, help="Port to run the server")):
