@@ -98,9 +98,6 @@ class WebSpyRunner(SpyRunner):
               xpath,
               tag: el.tagName.toLowerCase(),
               name: el.getAttribute('name') || '',
-              id: el.id || '',
-              class: el.className || '',
-              href: el.getAttribute('href') || '',
               text: el.innerText || '',
               attributes: {
                 id: el.id || '',
@@ -169,13 +166,10 @@ class WebSpyRunner(SpyRunner):
             name=name,
             guid=uuid4(),
             xpath=data.get("xpath", ""),
-            selector_type='CSS',
-            selector_value=selector,
+            # selector_type='CSS',
+            # selector_value=selector,
             tag=tag,
             text=text,
-            id=data.get("id", ""),
-            class_name=data.get("class", ""),
-            href=data.get("href", ""),
             attributes=data.get("attributes", {})
         )
         os.makedirs(self.output_dir, exist_ok=True)
