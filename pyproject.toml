@@ -34,4 +34,7 @@ orbs = "orbs.cli:app"
 packages = { find = {} }
 
 [tool.setuptools.package-data]
-orbs = ["templates/**/*"]
+orbs = [
+  "templates/**/*",
+  "spy/js/*.js",
+]
