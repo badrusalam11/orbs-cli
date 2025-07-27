@@ -9,5 +9,8 @@ max_concurrent_instances: 3
 delay_between_instances(s): 5  
 
 testsuites:
-  - testsuites/login.yml
-  - testsuites/appointment.yml
+  - testsuite: testsuites\login_cura.yml
+    platform: chrome
+  - testsuite: testsuites\login_sauce.yml
+    platform: mobile
+    device_id:

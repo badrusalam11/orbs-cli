@@ -6,10 +6,13 @@ import yaml
 import inspect
 from behave.__main__ import main as behave_main
 from orbs.loader import Loader
-from orbs.utils import Logger
+from orbs.thread_context import set_context
+from orbs.utils import Logger, check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
 from orbs.exception import FeatureException
 import sys
+from ._constant import PLATFORM_LIST
+
 
 
 class Runner:
@@ -110,36 +113,58 @@ class Runner:
         return result_code
     
     
-    def run_suite_collection(self, collection_path):
+    def run_suite_collection(self, collection_path: str):
         """
-        Run a collection of test suites defined in a single YAML file.
-        collection_path: path to collection YAML (with testsuites entries and settings)
+        Run a collection of test suites defined in a YAML file.
+
+        Enhanced format supports per-suite metadata:
+
+        testsuites:
+          - testsuite: testsuites/login.yml
+            platform: android
+            device_id: emulator0054
+          - testsuite: testsuites/login_web.yml
+            platform: chrome
         """
         if not os.path.exists(collection_path):
             raise FileNotFoundError(f"Collection file not found: {collection_path}")
 
         project_root = os.getcwd()
-        spec         = yaml.safe_load(open(collection_path))
-        method       = spec.get("execution_method", "sequential")
-        max_inst     = spec.get("max_concurrent_instances", 1)
-        delay        = spec.get("delay_between_instances(s)", 0)
-        suites       = spec.get("testsuites", [])
+        spec = yaml.safe_load(open(collection_path))
+        method = spec.get("execution_method", "sequential")
+        max_inst = spec.get("max_concurrent_instances", 1)
+        delay = spec.get("delay_between_instances(s)", 0)
+        entries = spec.get("testsuites", [])
 
-        def _run_suite(path_str):
-            suite_path = os.path.join(project_root, path_str)
-            self.logger.info(f"▶ Running suite: {suite_path}")
+        def _run_entry(entry):
+            # Support string or dict entry
+            if isinstance(entry, str):
+                path = entry
+                platform = None
+                device_id = None
+            else:
+                path = entry.get("testsuite")
+                platform = entry.get("platform")
+                device_id = entry.get("device_id")
+
+            # set context device_id to the thread context if provided. to appium driver
+            set_context("device_id", device_id)
+            if platform in PLATFORM_LIST["mobile"]:
+                check_dependencies()
+            suite_path = os.path.join(project_root, path)
             self.run_suite(suite_path)
 
         if method == "parallel" and max_inst > 1:
-            with ThreadPoolExecutor(max_workers=max_inst) as exe:
+            with ThreadPoolExecutor(max_workers=max_inst) as executor:
                 futures = []
-                for path_str in suites:
-                    futures.append(exe.submit(_run_suite, path_str))
-                    time.sleep(delay)
+                for entry in entries:
+                    futures.append(executor.submit(_run_entry, entry))
+                    if delay:
+                        time.sleep(delay)
                 for f in futures:
                     f.result()
         else:
-            for path_str in suites:
-                _run_suite(path_str)
+            for entry in entries:
+                _run_entry(entry)
                 if delay:
                     time.sleep(delay)

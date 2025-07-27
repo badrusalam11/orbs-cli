@@ -13,7 +13,11 @@ class MobileFactory:
         cfg = Config()
         server_url = cfg.get("appium_url", "http://localhost:4723/wd/hub")
         platform = cfg.get("platformName", "Android")
-        device_name = cfg.get("deviceName", "")
+        # Use context to determine device name or fallback to config
+        device_name = get_context("platform", "")
+        if not device_name:
+            # Fallback to config if context is not set
+            device_name = cfg.get("deviceName", "")
 
         # Use user-provided or config-based capabilities
         extra_caps = capabilities or cfg.get_dict("capabilities") or {}

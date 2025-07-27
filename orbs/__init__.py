@@ -12,7 +12,7 @@ import yaml
 from ._constant import PLATFORM_LIST
 
 from .runner import Runner
-from .utils   import Logger
+from .utils   import Logger, check_dependencies
 from .config import Config
 
 config = Config()  # global singleton instance
@@ -76,16 +76,3 @@ def run(target=None, platform=None):
         )
         sys.exit(1)
 
-def check_dependencies():
-    from orbs.cli import choose_device, ensure_appium_server, get_connected_devices, write_device_property
-
-        # Start Appium server if needed
-    ensure_appium_server()
-
-    # Read default deviceName from appium.properties if present
-    device_name = config.get("deviceName", "")
-    # If a placeholder or empty, prompt selection
-    if not device_name or device_name.lower() in ('', 'auto', 'detect'):
-        devices = get_connected_devices()
-        device_name = choose_device(devices)
-        write_device_property(device_name)
