@@ -472,13 +472,20 @@ def select_platform():
 def spy(web: bool = False, mobile: bool = False, url: str = typer.Option(None, "--url")):
     """
     Start element spy session (web or mobile).
+    Usage: orbs spy --url=https://google.com --web
     """
     if web:
+        # Fix URL format if protocol is missing
+        if url and not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+            typer.secho(f"ℹ️ Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
+        
         runner = WebSpyRunner(url=url)
     elif mobile:
         runner = MobileSpyRunner()  # not yet implemented
     else:
         typer.echo("Please specify a platform: --web or --mobile")
+        typer.echo("Example: orbs spy --url=https://google.com --web")
         raise typer.Exit(code=1)
 
     try:

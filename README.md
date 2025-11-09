@@ -40,6 +40,136 @@ orbs run <target> — run one of .feature, .yml, or .py test scripts
 
 orbs serve [--port <port>] — expose a REST API to list, run, and schedule test suites
 
+orbs spy — interactive element inspector for web and mobile applications
+
+🔍 Spy Functionality
+
+The **spy** command provides an interactive element inspector similar to Katalon's Object Spy, allowing you to capture element locators easily for your test automation.
+
+### Web Spy - Quick Start
+
+The primary command for web element inspection:
+
+```bash
+# Basic web spy command (always include https://)
+orbs spy --url=https://google.com --web
+
+# Other examples
+orbs spy --url=https://example.com --web
+orbs spy --url=https://github.com --web
+orbs spy --url=https://stackoverflow.com --web
+```
+
+**⚠️ Important:** Always include the full URL with `https://` protocol to avoid errors.
+
+**Step-by-Step Usage:**
+
+1. **Start the spy session:**
+   ```bash
+   orbs spy --url=https://google.com --web
+   ```
+
+2. **Browser opens automatically** - Chrome will launch and navigate to your specified URL
+
+3. **Activate element selection** - Press `Ctrl+` ` (Ctrl + backtick key) in the browser
+
+4. **Click any element** - Mouse over and click elements to capture their locators
+
+5. **View captured data** - Locator information appears in your terminal console
+
+6. **Stop the session** - Press `Ctrl+C` in the terminal to exit
+
+**What Gets Captured:**
+- Element tag name and attributes
+- CSS selectors (ID, class, tag-based)
+- XPath expressions (absolute and relative)
+- Element text content
+- All HTML attributes for precise targeting
+
+### Mobile Spy
+
+Start a mobile spy session to inspect elements on mobile applications:
+
+```bash
+# Start mobile spy (requires connected device)
+orbs spy --mobile
+```
+
+**Prerequisites for Mobile Spy:**
+- Connected Android device (via USB debugging)
+- Appium server running (automatically started by orbs)
+- Target application installed on device
+
+**How to use Mobile Spy:**
+1. Ensure your Android device is connected and USB debugging is enabled
+2. Run the mobile spy command
+3. Select your target device if multiple devices are connected
+4. Navigate to your target mobile application
+5. Use the spy interface to inspect elements
+6. Press `Ctrl+C` to stop the spy session
+
+**Mobile Spy Features:**
+- Real-time device screen capture
+- Element hierarchy inspection
+- Android-specific locators (ID, XPath, UiSelector)
+- Element properties and attributes
+- Screenshot with element highlighting
+
+### Integration with Test Creation
+
+The spy functionality integrates seamlessly with orbs test creation:
+
+```bash
+# 1. Use spy to identify elements
+orbs spy --web --url https://login.example.com
+
+# 2. Create test case using discovered locators
+orbs create-testcase login_test
+
+# 3. Implement test using captured element information
+# Edit testcases/login_test.py with your locators
+```
+
+### Example Usage in Test Code
+
+After using spy to capture elements, you can use them in your test code:
+
+```python
+# Example usage of captured web elements
+from selenium.webdriver.common.by import By
+from orbs.browser_factory import BrowserFactory
+
+def test_login():
+    driver = BrowserFactory.create_driver()
+    
+    # Using captured locators from spy session
+    username_field = driver.find_element(By.ID, "username")
+    password_field = driver.find_element(By.ID, "password")
+    login_button = driver.find_element(By.XPATH, "//button[@type='submit']")
+    
+    username_field.send_keys("testuser")
+    password_field.send_keys("password123")
+    login_button.click()
+```
+
+```python
+# Example usage of captured mobile elements
+from appium.webdriver.common.mobileby import MobileBy
+from orbs.mobile_factory import MobileFactory
+
+def test_mobile_login():
+    driver = MobileFactory.create_driver()
+    
+    # Using captured locators from mobile spy session
+    username_field = driver.find_element(MobileBy.ID, "com.app:id/username")
+    password_field = driver.find_element(MobileBy.ID, "com.app:id/password")
+    login_button = driver.find_element(MobileBy.XPATH, "//android.widget.Button[@text='Login']")
+    
+    username_field.send_keys("testuser")
+    password_field.send_keys("password123")
+    login_button.click()
+```
+
 ✅ Installation
 
 pip install orbs
