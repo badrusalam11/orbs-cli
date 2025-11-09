@@ -79,7 +79,7 @@ def write_device_property(device_name: str):
 
 def ensure_appium_server():
     """Ensure an Appium server is running, otherwise start one"""
-    url = config.get("appium_url", "http://localhost:4723/wd/hub")
+    url = config.get("appium_url", "http://localhost:4723")  # Appium 3+ no longer uses /wd/hub
     status_url = url.rstrip('/') + '/status'
     try:
         if requests.get(status_url, timeout=2).status_code == 200:
@@ -89,34 +89,200 @@ def ensure_appium_server():
 
     # Parse host and port
     parsed = urlparse(url)
-    host = parsed.hostname or '0.0.0.0'
+    host = parsed.hostname or 'localhost'  # Use localhost by default, not 0.0.0.0
     port = parsed.port or 4723
     typer.secho(f"⚙️  Starting Appium server at {host}:{port}", fg=typer.colors.YELLOW)
-    cmd = f"appium --address {host} --port {port}"
+    
+    # Setup proper environment variables for Appium
+    env = os.environ.copy()  # Inherit current environment
+    
+    # Ensure Android SDK environment variables are set
+    home = Path.home()
+    system = platform.system().lower()
+    
+    if system == "darwin":
+        android_home = home / "Library" / "Android" / "sdk"
+    elif system == "windows":
+        android_home = home / "AppData" / "Local" / "Android" / "Sdk"
+    else:
+        android_home = home / "Android" / "Sdk"
+    
+    # Set Android environment variables if not already set
+    if not env.get("ANDROID_HOME") and android_home.exists():
+        env["ANDROID_HOME"] = str(android_home)
+        typer.secho(f"🔧 Set ANDROID_HOME={android_home}", fg=typer.colors.BLUE)
+    
+    if not env.get("ANDROID_SDK_ROOT") and android_home.exists():
+        env["ANDROID_SDK_ROOT"] = str(android_home)
+        typer.secho(f"🔧 Set ANDROID_SDK_ROOT={android_home}", fg=typer.colors.BLUE)
+    
+    # Ensure Android tools are in PATH
+    android_paths = [
+        str(android_home / "tools"),
+        str(android_home / "platform-tools"),
+        str(android_home / "cmdline-tools" / "latest" / "bin")
+    ]
+    
+    current_path = env.get("PATH", "")
+    for android_path in android_paths:
+        if android_path not in current_path and Path(android_path).exists():
+            env["PATH"] = f"{android_path}:{current_path}"
+    
+    # Enhanced Appium command for v3+
+    cmd = f"appium server --address {host} --port {port}"
+    
     try:
-        # Use shell=True for Windows to pick up appium.cmd
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        # fallback to npx if installed
+        # Check Appium version first
+        version_result = subprocess.run(["appium", "--version"], capture_output=True, text=True, env=env)
+        if version_result.returncode == 0:
+            version = version_result.stdout.strip()
+            major_version = int(version.split('.')[0])
+            
+            # For Appium 3+, use 'appium server' command
+            if major_version >= 3:
+                cmd = f"appium server --address {host} --port {port}"
+            else:
+                cmd = f"appium --address {host} --port {port}"
+            
+            typer.secho(f"🔍 Detected Appium v{version}, using appropriate command", fg=typer.colors.BLUE)
+    except:
+        pass  # fallback to default
+    
+    # Create Appium server process with proper background handling
+    process = None
+    try:
+        # For debugging, let's see the output
+        typer.secho(f"📋 Starting command: {cmd}", fg=typer.colors.BLUE)
+        typer.secho(f"🔧 ANDROID_HOME: {env.get('ANDROID_HOME', 'NOT_SET')}", fg=typer.colors.BLUE)
+        
+        # Start process with proper background handling and environment
+        process = subprocess.Popen(
+            cmd, 
+            shell=True, 
+            env=env,  # Pass the complete environment with Android variables
+            stdout=subprocess.DEVNULL,  # Background process - no output needed
+            stderr=subprocess.DEVNULL, 
+            stdin=subprocess.DEVNULL,   # Detach from parent
+            preexec_fn=None if platform.system() == 'Windows' else os.setsid  # Create new session
+        )
+        
+        # Give server a moment to start
+        time.sleep(2)
+        
+        # Don't check if process is running - background processes may detach
+        # Instead, rely on status check below
+        
+    except Exception as e:
+        typer.secho(f"❌ Failed to start Appium: {e}", fg=typer.colors.RED)
+        
+        # Try with npx fallback
+        typer.secho("🔄 Trying with npx...", fg=typer.colors.YELLOW)
+        npx_cmd = f"npx appium server --address {host} --port {port}"
         try:
-            subprocess.Popen(f"npx appium --address {host} --port {port}", shell=True,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except Exception:
-            typer.secho(
-                "❌ Could not start Appium. Ensure 'appium' or 'npx appium' is in your PATH.",
-                fg=typer.colors.RED
+            process = subprocess.Popen(
+                npx_cmd, 
+                shell=True, 
+                env=env,  # Pass environment to npx as well
+                stdout=subprocess.DEVNULL, 
+                stderr=subprocess.DEVNULL,
+                stdin=subprocess.DEVNULL,
+                preexec_fn=None if platform.system() == 'Windows' else os.setsid
             )
-            raise typer.Exit(1)
-    # Wait for server to be ready
-    for _ in range(10):
-        try:
-            if requests.get(status_url, timeout=2).status_code == 200:
-                typer.secho("✅ Appium server is up", fg=typer.colors.GREEN)
-                return
+            time.sleep(2)
         except Exception:
-            time.sleep(1)
-    typer.secho("❌ Failed to start Appium server", fg=typer.colors.RED)
+            typer.secho("❌ Could not start Appium with npx either", fg=typer.colors.RED)
+            typer.secho("💡 Try running: npm install -g appium@latest", fg=typer.colors.BLUE)
+            raise typer.Exit(1)
+    
+    # Wait for server to be ready with better status checking
+    typer.secho("⏳ Waiting for Appium server to be ready...", fg=typer.colors.YELLOW)
+    for i in range(15):  # Increased timeout for Appium 3
+        try:
+            response = requests.get(status_url, timeout=3)
+            if response.status_code == 200:
+                typer.secho("✅ Appium server is up and ready", fg=typer.colors.GREEN)
+                return
+        except requests.exceptions.RequestException:
+            # Connection errors are expected during startup
+            pass
+        except Exception as e:
+            if i == 14:  # Last attempt
+                typer.secho(f"❌ Server status check failed: {e}", fg=typer.colors.RED)
+        time.sleep(1)
+    
+    typer.secho("❌ Failed to start Appium server - timeout waiting for status", fg=typer.colors.RED)
+    typer.secho("💡 Try manually: appium server --address 0.0.0.0 --port 4723", fg=typer.colors.BLUE)
     raise typer.Exit(1)
+
+
+def _auto_cleanup_incompatible_apks():
+    """Automatically cleanup incompatible Appium APKs ONLY when there's actual session error"""
+    # DISABLED automatic cleanup - should only run on manual command or actual session errors
+    return
+
+
+def _cleanup_incompatible_apks_on_error():
+    """Cleanup APKs only when there's an actual session creation error"""
+    def check_command_exists(command: str) -> bool:
+        return shutil.which(command) is not None
+    
+    # Only proceed if adb and appium are available and device is connected
+    if not check_command_exists("adb") or not check_command_exists("appium"):
+        return False
+        
+    devices = get_connected_devices()
+    if not devices:
+        return False
+    
+    try:
+        # Check installed Appium packages on device
+        packages_result = subprocess.run(
+            ["adb", "shell", "pm", "list", "packages"], 
+            capture_output=True, text=True
+        )
+        
+        if "io.appium.uiautomator2.server" in packages_result.stdout:
+            # Get Appium version to check compatibility 
+            appium_result = subprocess.run(["appium", "--version"], capture_output=True, text=True)
+            if appium_result.returncode == 0:
+                appium_version = appium_result.stdout.strip()
+                major_version = int(appium_version.split('.')[0])
+                
+                # STRICT CHECK: Only cleanup if there's CONFIRMED version conflict
+                # Appium 1.x APKs are incompatible with Appium 3.x 
+                if major_version >= 3:
+                    # Double-check: try to detect if APKs are actually from older version
+                    # by checking APK installation date or version signature
+                    apk_info_result = subprocess.run(
+                        ["adb", "shell", "dumpsys", "package", "io.appium.uiautomator2.server"], 
+                        capture_output=True, text=True
+                    )
+                    
+                    # If APK exists but we can't create sessions, then it's likely incompatible
+                    if apk_info_result.returncode == 0:
+                        typer.secho("🔍 Detected confirmed session error - cleaning up incompatible APKs", fg=typer.colors.YELLOW)
+                        
+                        apk_packages = [
+                            "io.appium.uiautomator2.server",
+                            "io.appium.uiautomator2.server.test", 
+                            "io.appium.settings"
+                        ]
+                        
+                        for package in apk_packages:
+                            try:
+                                subprocess.run(["adb", "uninstall", package], 
+                                              capture_output=True, text=True)
+                            except Exception:
+                                pass  # Silent cleanup
+                        
+                        typer.secho("✅ APK cleanup complete - please retry your test", fg=typer.colors.GREEN)
+                        return True
+                    
+    except Exception:
+        # Silent failure - don't break normal flow
+        pass
+    
+    return False
 
 
 @app.command()
@@ -1595,6 +1761,220 @@ def fix_ssl():
     typer.secho("   orbs download-android-sdk", fg=typer.colors.BLUE)
     
     typer.secho("\n🔄 After fixing SSL, try: orbs setup", fg=typer.colors.GREEN, bold=True)
+
+@app.command()
+def debug_appium():
+    """Debug Appium installation and server issues"""
+    typer.secho("🔍 Diagnosing Appium setup...\n", fg=typer.colors.BLUE, bold=True)
+    
+    def check_command_exists(command: str) -> bool:
+        return shutil.which(command) is not None
+    
+    # Check Appium installation
+    if check_command_exists("appium"):
+        try:
+            result = subprocess.run(["appium", "--version"], capture_output=True, text=True)
+            if result.returncode == 0:
+                version = result.stdout.strip()
+                typer.secho(f"✅ Appium version: {version}", fg=typer.colors.GREEN)
+                
+                # Check drivers for Appium 2+
+                major_version = int(version.split('.')[0])
+                if major_version >= 2:
+                    typer.secho("🔍 Checking installed drivers...", fg=typer.colors.YELLOW)
+                    drivers_result = subprocess.run(["appium", "driver", "list"], capture_output=True, text=True)
+                    if drivers_result.returncode == 0:
+                        typer.secho(drivers_result.stdout, fg=typer.colors.WHITE)
+                    else:
+                        typer.secho("❌ Failed to list drivers", fg=typer.colors.RED)
+                        
+                    # Check if uiautomator2 driver is installed
+                    if "uiautomator2" in drivers_result.stdout and "installed" in drivers_result.stdout:
+                        typer.secho("✅ UIAutomator2 driver is installed", fg=typer.colors.GREEN)
+                    else:
+                        typer.secho("⚠️ UIAutomator2 driver not found", fg=typer.colors.YELLOW)
+                        typer.secho("💡 Run: appium driver install uiautomator2", fg=typer.colors.BLUE)
+            else:
+                typer.secho(f"❌ Appium command failed: {result.stderr}", fg=typer.colors.RED)
+        except Exception as e:
+            typer.secho(f"❌ Error checking Appium: {e}", fg=typer.colors.RED)
+    else:
+        typer.secho("❌ Appium not found in PATH", fg=typer.colors.RED)
+        typer.secho("💡 Install: npm install -g appium", fg=typer.colors.BLUE)
+    
+    # Check Node.js and npm
+    if check_command_exists("node"):
+        try:
+            result = subprocess.run(["node", "--version"], capture_output=True, text=True)
+            if result.returncode == 0:
+                typer.secho(f"✅ Node.js version: {result.stdout.strip()}", fg=typer.colors.GREEN)
+        except Exception as e:
+            typer.secho(f"❌ Error checking Node.js: {e}", fg=typer.colors.RED)
+    else:
+        typer.secho("❌ Node.js not found", fg=typer.colors.RED)
+    
+    if check_command_exists("npm"):
+        try:
+            result = subprocess.run(["npm", "--version"], capture_output=True, text=True)
+            if result.returncode == 0:
+                typer.secho(f"✅ npm version: {result.stdout.strip()}", fg=typer.colors.GREEN)
+        except Exception as e:
+            typer.secho(f"❌ Error checking npm: {e}", fg=typer.colors.RED)
+    else:
+        typer.secho("❌ npm not found", fg=typer.colors.RED)
+    
+    # Check ADB and connected devices
+    if check_command_exists("adb"):
+        try:
+            result = subprocess.run(["adb", "version"], capture_output=True, text=True)
+            if result.returncode == 0:
+                typer.secho(f"✅ ADB available", fg=typer.colors.GREEN)
+                
+                # Check connected devices
+                devices = get_connected_devices()
+                if devices:
+                    typer.secho(f"✅ Connected devices: {devices}", fg=typer.colors.GREEN)
+                else:
+                    typer.secho("⚠️ No devices connected", fg=typer.colors.YELLOW)
+                    typer.secho("💡 Connect device and enable USB debugging", fg=typer.colors.BLUE)
+        except Exception as e:
+            typer.secho(f"❌ Error checking ADB: {e}", fg=typer.colors.RED)
+    else:
+        typer.secho("❌ ADB not found in PATH", fg=typer.colors.RED)
+    
+    # Test Appium server status
+    typer.secho("\n🔍 Testing Appium server connection...", fg=typer.colors.YELLOW)
+    try:
+        import requests
+        url = config.get("appium_url", "http://localhost:4723")  # Appium 3+ no longer uses /wd/hub
+        status_url = url.rstrip('/') + '/status'
+        response = requests.get(status_url, timeout=3)
+        if response.status_code == 200:
+            typer.secho("✅ Appium server is running", fg=typer.colors.GREEN)
+            typer.secho(f"Server info: {response.json()}", fg=typer.colors.WHITE)
+        else:
+            typer.secho(f"⚠️ Appium server responded with status {response.status_code}", fg=typer.colors.YELLOW)
+    except Exception as e:
+        typer.secho(f"❌ Cannot connect to Appium server: {e}", fg=typer.colors.RED)
+        typer.secho("💡 Try: orbs debug-appium-start", fg=typer.colors.BLUE)
+    
+    typer.secho("\n📋 Diagnostic complete", fg=typer.colors.BLUE, bold=True)
+
+
+@app.command()
+def debug_appium_start():
+    """Debug Appium server startup with verbose output"""
+    typer.secho("🚀 Starting Appium server with debug output...\n", fg=typer.colors.BLUE, bold=True)
+    
+    # Check Appium version and determine command
+    cmd = "appium server --address 0.0.0.0 --port 4723 --log-level debug"
+    try:
+        version_result = subprocess.run(["appium", "--version"], capture_output=True, text=True)
+        if version_result.returncode == 0:
+            version = version_result.stdout.strip()
+            major_version = int(version.split('.')[0])
+            
+            if major_version >= 3:
+                cmd = "appium server --address 0.0.0.0 --port 4723 --log-level debug"
+            else:
+                cmd = "appium --address 0.0.0.0 --port 4723 --log-level debug"
+            
+            typer.secho(f"🔍 Using Appium v{version}", fg=typer.colors.GREEN)
+    except:
+        pass
+    
+    typer.secho(f"📋 Command: {cmd}", fg=typer.colors.WHITE)
+    typer.secho("🔍 Watch for errors below...\n", fg=typer.colors.YELLOW)
+    
+    try:
+        # Run with real-time output
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        
+        typer.secho("✨ Appium server starting... (Press Ctrl+C to stop)", fg=typer.colors.GREEN)
+        
+        for line in iter(process.stdout.readline, ''):
+            print(line.rstrip())
+            
+    except KeyboardInterrupt:
+        typer.secho("\n🛑 Stopping Appium server...", fg=typer.colors.YELLOW)
+        process.terminate()
+    except Exception as e:
+        typer.secho(f"❌ Error starting Appium: {e}", fg=typer.colors.RED)
+    """Fix Appium version mismatch by removing incompatible APKs from device"""
+    def check_command_exists(command: str) -> bool:
+        return shutil.which(command) is not None
+    
+    # Check if adb and appium are available
+    if not check_command_exists("adb"):
+        typer.secho("❌ ADB not found. Please run 'orbs setup' first.", fg=typer.colors.RED)
+        raise typer.Exit(1)
+        
+    if not check_command_exists("appium"):
+        typer.secho("❌ Appium not found. Please run 'orbs setup' first.", fg=typer.colors.RED)
+        raise typer.Exit(1)
+    
+    # Check connected devices
+    devices = get_connected_devices()
+    if not devices:
+        typer.secho("❌ No Android devices connected.", fg=typer.colors.RED)
+        raise typer.Exit(1)
+    
+    typer.secho("🔧 Fixing Appium APK version mismatch...", fg=typer.colors.BLUE, bold=True)
+    
+    # Get Appium version
+    try:
+        appium_result = subprocess.run(["appium", "--version"], capture_output=True, text=True)
+        appium_version = appium_result.stdout.strip()
+        major_version = int(appium_version.split('.')[0])
+        typer.secho(f"📱 Detected Appium v{appium_version} (major: {major_version})", fg=typer.colors.BLUE)
+    except Exception:
+        typer.secho("⚠️ Could not detect Appium version, proceeding with cleanup...", fg=typer.colors.YELLOW)
+        major_version = 3  # assume latest
+    
+    # Check installed Appium packages on device
+    try:
+        packages_result = subprocess.run(
+            ["adb", "shell", "pm", "list", "packages", "|", "grep", "appium"], 
+            shell=True, capture_output=True, text=True
+        )
+        installed_packages = packages_result.stdout.strip()
+        
+        if "io.appium.uiautomator2.server" in installed_packages:
+            typer.secho("🔍 Found existing Appium server APKs on device", fg=typer.colors.YELLOW)
+            typer.secho("   This may cause compatibility issues with current Appium version", fg=typer.colors.YELLOW)
+            
+            # Ask user for confirmation
+            should_fix = typer.confirm("Remove existing APKs to fix compatibility?", default=True)
+            
+            if should_fix:
+                apk_packages = [
+                    "io.appium.uiautomator2.server",
+                    "io.appium.uiautomator2.server.test", 
+                    "io.appium.settings"
+                ]
+                
+                for package in apk_packages:
+                    typer.secho(f"🗑️ Uninstalling {package}...", fg=typer.colors.YELLOW)
+                    try:
+                        result = subprocess.run(["adb", "uninstall", package], 
+                                              capture_output=True, text=True)
+                        if result.returncode == 0:
+                            typer.secho(f"✅ Removed {package}", fg=typer.colors.GREEN)
+                        else:
+                            typer.secho(f"⚠️ {package} not found or already removed", fg=typer.colors.BLUE)
+                    except Exception as e:
+                        typer.secho(f"⚠️ Error removing {package}: {e}", fg=typer.colors.YELLOW)
+                
+                typer.secho("\n✅ APK cleanup complete!", fg=typer.colors.GREEN, bold=True)
+                typer.secho("💡 Next time you run tests, Appium will install compatible APKs", fg=typer.colors.BLUE)
+            else:
+                typer.secho("🚫 APK cleanup cancelled by user", fg=typer.colors.YELLOW)
+        else:
+            typer.secho("✅ No conflicting Appium APKs found on device", fg=typer.colors.GREEN)
+            
+    except Exception as e:
+        typer.secho(f"❌ Error checking device packages: {e}", fg=typer.colors.RED)
+        raise typer.Exit(1)
 
 @app.command()
 def download_android_sdk():

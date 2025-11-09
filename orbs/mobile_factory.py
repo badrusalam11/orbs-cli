@@ -27,8 +27,35 @@ class MobileFactory:
         capabilities: dict = None,
         retry_count: int = 2
     ):
+        # Ensure Appium server is running before creating driver
+        from orbs.cli import ensure_appium_server
+        ensure_appium_server()
+        
         cfg = Config()
-        server_url = cfg.get("appium_url", "http://localhost:4723/wd/hub")
+        # Get base URL and make it compatible with all Appium versions
+        base_url = cfg.get("appium_url", "http://localhost:4723")
+        
+        # Auto-detect Appium version and adjust URL accordingly
+        try:
+            import subprocess
+            appium_result = subprocess.run(["appium", "--version"], capture_output=True, text=True)
+            if appium_result.returncode == 0:
+                appium_version = appium_result.stdout.strip()
+                major_version = int(appium_version.split('.')[0])
+                
+                # Appium 1.x uses /wd/hub, Appium 2.x+ uses direct URL
+                if major_version == 1:
+                    server_url = base_url + "/wd/hub" if "/wd/hub" not in base_url else base_url
+                else:
+                    # Appium 2.x and 3.x use direct URL without /wd/hub
+                    server_url = base_url.replace("/wd/hub", "") if "/wd/hub" in base_url else base_url
+            else:
+                # Fallback - assume modern Appium
+                server_url = base_url.replace("/wd/hub", "") if "/wd/hub" in base_url else base_url
+        except:
+            # Fallback - assume modern Appium
+            server_url = base_url.replace("/wd/hub", "") if "/wd/hub" in base_url else base_url
+            
         platform = cfg.get("platformName", "Android")
         
         # Use context to determine device name or fallback to config
@@ -80,6 +107,17 @@ class MobileFactory:
                     
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
+                
+                # Check if this is a session creation error that might be due to APK version mismatch
+                error_str = str(e).lower()
+                if any(keyword in error_str for keyword in ['unknown command', 'resource could not be found', '404']):
+                    # Try reactive APK cleanup
+                    from orbs.cli import _cleanup_incompatible_apks_on_error
+                    if _cleanup_incompatible_apks_on_error():
+                        print("APK cleanup performed - retrying without restart...")
+                        time.sleep(2)  # Give device time to settle
+                        continue  # Retry immediately without UiAutomator2 restart
+                
                 if attempt < retry_count:
                     print("Restarting UiAutomator2 and retrying...")
                     MobileFactory._restart_uiautomator2()
