@@ -319,7 +319,8 @@ def implement_feature(name: str):
 def run_command(
     target: str,
     env_file: Path = typer.Option(None, "--env", "-e", help="Path to .env file to load before running"),
-    platform: str = typer.Option(None, "--platform", "-p", help="Platform to run tests on (android, chrome, firefox)")
+    platform: str = typer.Option(None, "--platform", "-p", help="Platform to run tests on (android, chrome, firefox)"),
+    device_id: str = typer.Option(None, "--deviceId", help="Device ID for mobile testing")
 ):
     # Validate platform if provided
     if platform:
@@ -341,8 +342,8 @@ def run_command(
             raise typer.Exit(1)
         load_dotenv(dotenv_path=env_file, override=True)
     
-    # Execute the run with platform parameter
-    run(target, platform)
+    # Execute the run with platform and device_id parameters
+    run(target, platform, device_id)
 
 @app.command()
 def select_device():

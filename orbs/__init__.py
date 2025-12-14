@@ -18,7 +18,7 @@ from .config import Config
 config = Config()  # global singleton instance
 
 
-def run(target=None, platform=None):
+def run(target=None, platform=None, device_id=None):
     logger = Logger.get_logger()
     
     # Use platform from CLI if provided, otherwise use default_platform from config
@@ -27,9 +27,11 @@ def run(target=None, platform=None):
     else:
         current_platform = config.get('default_platform')
     
-    # Set platform to thread context for use by browser_factory
+    # Set platform and device_id to thread context
     from .thread_context import set_context
     set_context('platform', current_platform)
+    if device_id:
+        set_context('device_id', device_id)
     
     # precondition for mobile testing
     if current_platform in PLATFORM_LIST["mobile"]:
