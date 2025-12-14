@@ -10,7 +10,16 @@ class BrowserFactory:
     @staticmethod
     def create_driver():
         cfg = Config()
-        browser = cfg.get("browser", "chrome").lower()
+        
+        # Check if platform is set in context (from CLI --platform or collection)
+        platform_from_context = get_context('platform')
+        if platform_from_context:
+            # Use platform from CLI/context as browser
+            browser = platform_from_context.lower()
+        else:
+            # Fallback to browser config
+            browser = cfg.get("browser", "chrome").lower()
+            
         extra_args = cfg.get_list("args")
         print(f"Creating {browser} driver with args: {extra_args}")
 

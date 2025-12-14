@@ -149,6 +149,9 @@ class Runner:
 
             # set context device_id to the thread context if provided. to appium driver
             set_context("device_id", device_id)
+            # set platform context if specified in collection
+            if platform:
+                set_context("platform", platform)
             if platform in PLATFORM_LIST["mobile"]:
                 check_dependencies()
             suite_path = os.path.join(project_root, path)

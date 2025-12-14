@@ -27,6 +27,10 @@ def run(target=None, platform=None):
     else:
         current_platform = config.get('default_platform')
     
+    # Set platform to thread context for use by browser_factory
+    from .thread_context import set_context
+    set_context('platform', current_platform)
+    
     # precondition for mobile testing
     if current_platform in PLATFORM_LIST["mobile"]:
         check_dependencies()
