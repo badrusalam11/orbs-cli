@@ -91,6 +91,14 @@ class Runner:
 
             data = {"status": status, "name": case}
 
+            # Reset Web driver for clean state between test cases
+            try:
+                from orbs.keyword.web import Web
+                Web.reset_driver()
+            except ImportError:
+                # Fallback if Web class not available
+                pass
+
             # 🔹 Global AfterTestCase hooks
             for hook in enabled_listeners.get('after_test_case', []):
                 self._invoke_hook(hook, case, data)
