@@ -62,6 +62,16 @@ class Runner:
             suite = yaml.safe_load(f)
 
         for case in suite.get("test_cases", []):
+            # Handle both old and new format
+            if isinstance(case, dict):
+                # New format with enabled field
+                case_path = case.get("path")
+                enabled = case.get("enabled", True)  # default to True
+                if not enabled:
+                    self.logger.info(f"Skipping disabled test case: {case_path}")
+                    continue
+                case = case_path
+            
             case = self._normalized_path(case)
             # 🔹 Per-case SetupTestCase hooks (@SetupTestCase)
             for hook in enabled_listeners.get('setup_test_case', []):
@@ -142,10 +152,17 @@ class Runner:
                 path = entry
                 platform = None
                 device_id = None
+                enabled = True  # default enabled for old format
             else:
                 path = entry.get("testsuite")
                 platform = entry.get("platform")
                 device_id = entry.get("device_id")
+                enabled = entry.get("enabled", True)  # default to True
+
+            # Skip if disabled
+            if not enabled:
+                self.logger.info(f"Skipping disabled testsuite: {path}")
+                return
 
             # set context device_id to the thread context if provided. to appium driver
             set_context("device_id", device_id)

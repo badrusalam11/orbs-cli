@@ -9,8 +9,10 @@ max_concurrent_instances: 3
 delay_between_instances(s): 5  
 
 testsuites:
-  - testsuite: testsuites\login_cura.yml
+  - testsuite: testsuites\{{ suite_collection_name }}_web.yml
     platform: chrome
-  - testsuite: testsuites\login_sauce.yml
-    platform: mobile
-    device_id:
+    enabled: true
+  - testsuite: testsuites\{{ suite_collection_name }}_mobile.yml
+    platform: android
+    device_id: 
+    enabled: true
