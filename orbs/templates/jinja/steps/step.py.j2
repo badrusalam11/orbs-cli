@@ -1,19 +1,46 @@
 import time
-from selenium.webdriver.chrome.options import Options
 from behave import given, when, then
-from selenium import webdriver
 
-from orbs.browser_factory import BrowserFactory
-from orbs.mobile_factory import MobileFactory
+# Import keyword libraries based on platform
+from orbs.keyword.web import Web
+from orbs.keyword.mobile import Mobile
 
 @given('the user opens the login page')
 def step_open_login(context):
+    # Web example:
+    # Web.open("https://example.com/login")
+    # Web.maximize_window()
+    
+    # Mobile example:
+    # Mobile.launch_app()
+    # Mobile.wait_for_element("accessibility_id=login-screen")
+    
     pass
 
 @when('the user fill username {username} and password {password}')
 def step_username(context, username, password):
+    # Web example:
+    # Web.set_text("id=username", username)
+    # Web.set_text("id=password", password)
+    # Web.click("id=login-button")
+    
+    # Mobile example:
+    # Mobile.set_text("accessibility_id=username-field", username)
+    # Mobile.set_text("accessibility_id=password-field", password)
+    # Mobile.tap("accessibility_id=login-button")
+    
     pass
 
 @then('the user should see the dashboard')
 def step_dashboard(context):
+    # Web example:
+    # Web.wait_for_visible("id=dashboard", 10)
+    # Web.verify_text_contains("css=.welcome-message", "Welcome")
+    # Web.take_screenshot("dashboard_loaded.png")
+    
+    # Mobile example:
+    # Mobile.wait_for_visible("accessibility_id=dashboard-screen", 10)
+    # Mobile.verify_text_contains("accessibility_id=welcome-label", "Welcome")
+    # Mobile.take_screenshot("mobile_dashboard.png")
+    
     pass

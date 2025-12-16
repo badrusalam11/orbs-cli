@@ -1,5 +1,70 @@
-from orbs.runner import Runner
+# Test case using Orbs keyword approach
+# Choose your platform: web or mobile
+
+# For Web automation:
+from orbs.keyword.web import Web
+
+# For Mobile automation:
+# from orbs.keyword.mobile import Mobile
+
+def test_example():
+    """Example test case using keywords"""
+    
+    # === WEB EXAMPLE ===
+    # Web.set_timeout(10)
+    # Web.open("https://example.com")
+    # Web.maximize_window()
+    # 
+    # # Login flow
+    # Web.click("id=login-button")
+    # Web.set_text("id=username", "testuser")
+    # Web.set_text("id=password", "testpass")
+    # Web.click("id=submit-button")
+    # 
+    # # Verify success
+    # Web.wait_for_visible("id=dashboard", 10)
+    # Web.verify_text_contains("css=.welcome", "Welcome")
+    # Web.take_screenshot("success.png")
+    
+    # === MOBILE EXAMPLE ===
+    # Mobile.set_timeout(10)
+    # Mobile.launch_app()
+    # 
+    # # Login flow
+    # Mobile.tap("accessibility_id=login-button")
+    # Mobile.set_text("accessibility_id=username-field", "testuser")
+    # Mobile.set_text("accessibility_id=password-field", "testpass")
+    # Mobile.tap("accessibility_id=submit-button")
+    # 
+    # # Verify success
+    # Mobile.wait_for_visible("accessibility_id=dashboard-screen", 10)
+    # Mobile.verify_text_contains("accessibility_id=welcome-label", "Welcome")
+    # Mobile.take_screenshot("mobile_success.png")
+    
+    pass
 
 def run():
-    runner = Runner()
-    # runner.run_feature("include/features/feature.feature")
+    """Entry point for Orbs runner"""
+    try:
+        test_example()
+        print("✅ Test completed successfully!")
+    except Exception as e:
+        print(f"❌ Test failed: {e}")
+        
+        # Take failure screenshot
+        try:
+            # Web.take_screenshot("test_failure.png")
+            # Mobile.take_screenshot("mobile_test_failure.png")
+            pass
+        except:
+            pass
+        
+        raise
+    finally:
+        # Clean up drivers
+        try:
+            # Web.quit()
+            # Mobile.quit()
+            pass
+        except:
+            pass
