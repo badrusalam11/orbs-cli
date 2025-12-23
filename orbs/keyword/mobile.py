@@ -2,6 +2,11 @@
 """
 Mobile automation keywords for Orbs framework
 Provides high-level Appium operations with automatic driver management
+
+IMPORTANT: This class uses thread-local storage for driver instances to support
+parallel test execution. Each thread gets its own driver instance stored in 
+thread context, preventing driver conflicts when running multiple test suites
+concurrently with different mobile platform configurations.
 """
 
 import time
@@ -20,38 +25,37 @@ from ..thread_context import get_context, set_context
 class Mobile:
     """High-level mobile automation keywords"""
     
-    _driver = None
     _wait_timeout = 10
     _lock = threading.Lock()
     
     @classmethod
     def _get_driver(cls):
-        """Get or create the mobile driver instance (thread-safe)"""
-        if cls._driver is None:
+        """Get or create the mobile driver instance (thread-safe, thread-local)"""
+        # Use thread context to store driver per thread
+        driver = get_context('mobile_driver')
+        if driver is None:
             with cls._lock:
-                if cls._driver is None:
-                    cls._driver = MobileFactory.create_driver()
-                    set_context('mobile_driver', cls._driver)
-        return cls._driver
+                # Double-check in case another thread just created it
+                driver = get_context('mobile_driver')
+                if driver is None:
+                    driver = MobileFactory.create_driver()
+                    set_context('mobile_driver', driver)
+        return driver
     
     @classmethod
     def use_driver(cls, driver):
         """Use an existing driver instance"""
-        with cls._lock:
-            cls._driver = driver
-            set_context('mobile_driver', driver)
+        set_context('mobile_driver', driver)
         return driver
     
     @classmethod
     def sync_with_context(cls, behave_context):
         """Sync Mobile driver with behave context"""
-        with cls._lock:
-            if hasattr(behave_context, 'driver') and behave_context.driver:
-                cls._driver = behave_context.driver
-                set_context('mobile_driver', behave_context.driver)
-            else:
-                behave_context.driver = cls._get_driver()
-        return cls._driver
+        if hasattr(behave_context, 'driver') and behave_context.driver:
+            set_context('mobile_driver', behave_context.driver)
+        else:
+            behave_context.driver = cls._get_driver()
+        return get_context('mobile_driver')
     
     @classmethod
     def _parse_locator(cls, locator: str) -> tuple:
@@ -471,37 +475,42 @@ class Mobile:
     def reset_driver(cls):
         """Reset driver for clean state between test cases (thread-safe)"""
         with cls._lock:
-            if cls._driver:
+            driver = get_context('mobile_driver')
+            if driver:
                 try:
-                    cls._driver.quit()
+                    driver.quit()
                     print("Mobile driver quit successfully")
                 except Exception as e:
                     print(f"Warning: Error quitting mobile driver: {e}")
                 finally:
-                    cls._driver = None
+                    from ..thread_context import delete_context
+                    delete_context('mobile_driver')
                     print("Mobile driver reset for next test case")
     
     @classmethod
     def quit(cls):
         """Quit mobile driver and end session (thread-safe)"""
         with cls._lock:
-            if cls._driver:
+            driver = get_context('mobile_driver')
+            if driver:
                 try:
-                    cls._driver.quit()
+                    driver.quit()
                     print("Mobile session ended")
                 except Exception as e:
                     print(f"Warning: Error during mobile quit: {e}")
                 finally:
-                    cls._driver = None
+                    from ..thread_context import delete_context
+                    delete_context('mobile_driver')
     
     @classmethod
     def is_driver_alive(cls) -> bool:
         """Check if mobile driver is still alive and responsive"""
-        if cls._driver is None:
+        driver = get_context('mobile_driver')
+        if driver is None:
             return False
         
         try:
-            cls._driver.get_window_size()
+            driver.get_window_size()
             return True
         except Exception:
             return False
@@ -509,8 +518,9 @@ class Mobile:
     @classmethod
     def get_driver_status(cls) -> dict:
         """Get mobile driver status for debugging"""
+        driver = get_context('mobile_driver')
         return {
-            "driver_exists": cls._driver is not None,
+            "driver_exists": driver is not None,
             "driver_alive": cls.is_driver_alive(),
             "device_size": cls.get_device_size() if cls.is_driver_alive() else None,
             "orientation": cls.get_orientation() if cls.is_driver_alive() else None

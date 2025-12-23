@@ -66,7 +66,7 @@ class Runner:
             if isinstance(case, dict):
                 # New format with enabled field
                 case_path = case.get("path")
-                enabled = case.get("enabled", True)  # default to True
+                enabled = case.get("enabled", False)  # default to False
                 if not enabled:
                     self.logger.info(f"Skipping disabled test case: {case_path}")
                     continue
@@ -165,27 +165,33 @@ class Runner:
                 path = entry
                 platform = None
                 device_id = None
-                enabled = True  # default enabled for old format
+                enabled = False  # default enabled for old format
             else:
                 path = entry.get("testsuite")
                 platform = entry.get("platform")
                 device_id = entry.get("device_id")
-                enabled = entry.get("enabled", True)  # default to True
+                enabled = entry.get("enabled", False)  # default to False
 
             # Skip if disabled
             if not enabled:
                 self.logger.info(f"Skipping disabled testsuite: {path}")
                 return
 
-            # set context device_id to the thread context if provided. to appium driver
-            set_context("device_id", device_id)
-            # set platform context if specified in collection
-            if platform:
-                set_context("platform", platform)
-            if platform in PLATFORM_LIST["mobile"]:
-                check_dependencies()
-            suite_path = os.path.join(project_root, path)
-            self.run_suite(suite_path)
+            try:
+                # set context device_id to the thread context if provided. to appium driver
+                set_context("device_id", device_id)
+                # set platform context if specified in collection
+                if platform:
+                    set_context("platform", platform)
+                if platform in PLATFORM_LIST["mobile"]:
+                    check_dependencies()
+                suite_path = os.path.join(project_root, self._normalized_path(path))
+                self.run_suite(suite_path)
+            finally:
+                # Clean up thread context after suite execution
+                # This ensures no driver/platform context leaks to next suite in same thread
+                from orbs.thread_context import clear_context
+                clear_context()
 
         if method == "parallel" and max_inst > 1:
             with ThreadPoolExecutor(max_workers=max_inst) as executor:

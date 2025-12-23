@@ -2,6 +2,11 @@
 """
 Web automation keywords for Orbs framework
 Provides high-level Selenium operations with automatic driver management
+
+IMPORTANT: This class uses thread-local storage for driver instances to support
+parallel test execution. Each thread gets its own driver instance stored in 
+thread context, preventing driver conflicts when running multiple test suites
+concurrently with different browser configurations.
 """
 
 import time
@@ -20,25 +25,26 @@ from ..thread_context import get_context, set_context
 class Web:
     """High-level web automation keywords"""
     
-    _driver = None
     _wait_timeout = 10
     _lock = threading.Lock()  # Thread safety for driver creation
     
     @classmethod
     def _get_driver(cls):
-        """Get or create the WebDriver instance (thread-safe)"""
-        if cls._driver is None:
+        """Get or create the WebDriver instance (thread-safe, thread-local)"""
+        # Use thread context to store driver per thread
+        driver = get_context('web_driver')
+        if driver is None:
             with cls._lock:
-                # Double-check locking pattern
-                if cls._driver is None:
-                    cls._driver = BrowserFactory.create_driver()
-                    set_context('web_driver', cls._driver)
-        return cls._driver
+                # Double-check in case another thread just created it
+                driver = get_context('web_driver')
+                if driver is None:
+                    driver = BrowserFactory.create_driver()
+                    set_context('web_driver', driver)
+        return driver
     
     @classmethod
     def use_driver(cls, driver):
         """Use an existing driver instance (for behave context integration)"""
-        cls._driver = driver
         set_context('web_driver', driver)
         return driver
     
@@ -46,11 +52,10 @@ class Web:
     def sync_with_context(cls, behave_context):
         """Sync Web driver with behave context"""
         if hasattr(behave_context, 'driver') and behave_context.driver:
-            cls._driver = behave_context.driver
             set_context('web_driver', behave_context.driver)
         else:
             behave_context.driver = cls._get_driver()
-        return cls._driver
+        return get_context('web_driver')
     
     @classmethod
     def _parse_locator(cls, locator: str) -> tuple:
@@ -431,32 +436,36 @@ class Web:
     @classmethod
     def close(cls):
         """Close current browser window"""
-        if cls._driver:
-            cls._driver.close()
+        driver = get_context('web_driver')
+        if driver:
+            driver.close()
             print("Browser window closed")
     
     @classmethod
     def quit(cls):
         """Quit browser and end session (thread-safe)"""
         with cls._lock:
-            if cls._driver:
+            driver = get_context('web_driver')
+            if driver:
                 try:
-                    cls._driver.quit()
+                    driver.quit()
                     print("Browser session ended")
                 except Exception as e:
                     print(f"Warning: Error during quit: {e}")
                 finally:
-                    cls._driver = None
+                    from ..thread_context import delete_context
+                    delete_context('web_driver')
     
     @classmethod
     def is_driver_alive(cls) -> bool:
         """Check if driver is still alive and responsive"""
-        if cls._driver is None:
+        driver = get_context('web_driver')
+        if driver is None:
             return False
         
         try:
             # Try a simple operation to test if driver is responsive
-            cls._driver.current_url
+            driver.current_url
             return True
         except Exception:
             return False
@@ -464,20 +473,22 @@ class Web:
     @classmethod
     def get_driver_status(cls) -> dict:
         """Get driver status for debugging"""
+        driver = get_context('web_driver')
         return {
-            "driver_exists": cls._driver is not None,
+            "driver_exists": driver is not None,
             "driver_alive": cls.is_driver_alive(),
             "current_url": cls.get_url() if cls.is_driver_alive() else None,
-            "window_handles": len(cls._driver.window_handles) if cls.is_driver_alive() else 0
+            "window_handles": len(driver.window_handles) if cls.is_driver_alive() and driver else 0
         }
     
     @classmethod
     def reset_driver(cls):
         """Reset driver for clean state between test cases (thread-safe)"""
         with cls._lock:
-            if cls._driver:
+            driver = get_context('web_driver')
+            if driver:
                 try:
-                    cls._driver.quit()
+                    driver.quit()
                     print("Driver quit successfully")
                 except Exception as e:
                     print(f"Warning: Error quitting driver: {e}")
@@ -498,5 +509,7 @@ class Web:
                         # psutil not available, continue without force kill
                         pass
                 finally:
-                    cls._driver = None
+                    # Clear driver from thread context
+                    from ..thread_context import delete_context
+                    delete_context('web_driver')
                     print("Driver reset for next test case")
