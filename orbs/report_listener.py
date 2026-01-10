@@ -2,6 +2,8 @@
 
 import os
 import time
+from orbs.exception import ReportListenerException
+from orbs.guard import orbs_guard
 from orbs.report_generator import ReportGenerator
 from orbs.listener_manager import (
     BeforeTestSuite, AfterTestSuite,
@@ -9,10 +11,8 @@ from orbs.listener_manager import (
     BeforeStep, AfterStep,
     BeforeTestCase, AfterTestCase
 )
-from orbs.utils import Logger
+from orbs.log import log
 from orbs.thread_context import get_context, set_context, clear_context
-
-logger = Logger.get_logger()
 
 _scenario_start = {}
 _steps_info = {}
@@ -24,13 +24,14 @@ _scenario_screenshot_start_index = {}  # Track starting index of screenshots for
 _scenario_api_calls_start_index = {}   # Track starting index of API calls for each scenario
 
 @BeforeTestSuite
+@orbs_guard(ReportListenerException)
 def init_report(suite_path):
     _suite_start[suite_path] = time.time()
     _start_time[suite_path] = _suite_start[suite_path]
 
     rg = ReportGenerator(base_dir="reports")
     set_context("report", rg)
-    logger.info(f"Initialized reporting for suite: {suite_path}")
+    log.info(f"Initialized reporting for suite: {suite_path}")
 
     user_properties_path = os.path.join("settings", "user.properties")
     if not os.path.exists(user_properties_path):
@@ -39,7 +40,7 @@ def init_report(suite_path):
 
 @BeforeTestCase
 def before_test_case(case, data=None):
-    logger.info(f"Before test case: {case}")
+    log.info(f"Before test case: {case}")
     _testcase_start[case] = time.time()
 
 @BeforeScenario
@@ -64,7 +65,7 @@ def start_scenario_timer(context, scenario):
     current_api_calls = get_context("api_calls") or []
     _scenario_api_calls_start_index[scenario.name] = len(current_api_calls)
     
-    logger.info(f"Scenario '{scenario.name}' started with {len(current_screenshots)} existing screenshots and {len(current_api_calls)} existing API calls")
+    log.info(f"Scenario '{scenario.name}' started with {len(current_screenshots)} existing screenshots and {len(current_api_calls)} existing API calls")
 
 @BeforeStep
 def start_step_timer(context, step):
@@ -112,7 +113,7 @@ def record_scenario_result(context, scenario):
     api_calls_start_index = _scenario_api_calls_start_index.pop(scenario_name, 0)
     scenario_api_calls = all_api_calls[api_calls_start_index:]
     
-    logger.info(f"Scenario '{scenario_name}' captured {len(scenario_screenshots)} screenshots and {len(scenario_api_calls)} API calls")
+    log.info(f"Scenario '{scenario_name}' captured {len(scenario_screenshots)} screenshots and {len(scenario_api_calls)} API calls")
 
     # Record scenario with API calls included
     rg.record(
@@ -126,11 +127,11 @@ def record_scenario_result(context, scenario):
         api_calls=scenario_api_calls  # API calls from this scenario
     )
 
-    logger.info(f"Recorded scenario: {scenario_name} - {status} - {duration:.2f}s - Screenshots: {len(scenario_screenshots)} - API calls: {len(scenario_api_calls)}")
+    log.info(f"Recorded scenario: {scenario_name} - {status} - {duration:.2f}s - Screenshots: {len(scenario_screenshots)} - API calls: {len(scenario_api_calls)}")
 
 @AfterTestCase
 def after_test_case(case, data=None):
-    logger.info(f"After test case: {case}")
+    log.info(f"After test case: {case}")
     start = _testcase_start.pop(case, None) or 0
     duration = time.time() - start
     status = data.get('status', 'passed').upper() if data else 'PASSED'
@@ -151,13 +152,14 @@ def after_test_case(case, data=None):
     if api_calls:
         rg.testcase_api_calls[case] = api_calls
 
-    logger.info(f"Recorded testcase: {case} - {status} - {duration:.2f}s - Total Screenshots: {len(screenshots)} - Total API calls: {len(api_calls)}")
+    log.info(f"Recorded testcase: {case} - {status} - {duration:.2f}s - Total Screenshots: {len(screenshots)} - Total API calls: {len(api_calls)}")
 
     # cleanup
     set_context("screenshots", [])
     set_context("api_calls", [])
 
 @AfterTestSuite
+@orbs_guard(ReportListenerException)
 def finalize_report(suite_path):
     end_time = time.time()
     start = _suite_start.pop(suite_path, None) or 0
@@ -170,7 +172,7 @@ def finalize_report(suite_path):
 
     rg.record_overview(suite_path, round(duration, 2), start_time, end_time)
     run_dir = rg.finalize(suite_path)
-    logger.info(f"Report generated at: {run_dir}")
+    log.info(f"Report generated at: {run_dir}")
     
     # Clear any remaining tracking data
     _scenario_screenshot_start_index.clear()

@@ -1,7 +1,9 @@
+# orbs/guard.py
 from functools import wraps
-import logging
 from orbs.exception import OrbsException
-from orbs.config import Config
+from orbs.log import log
+from orbs.config import config
+
 
 def orbs_guard(error_cls, context_fn=None):
     """
@@ -22,7 +24,7 @@ def orbs_guard(error_cls, context_fn=None):
             except Exception as e:
                 # --- 1. read debug flag ---
                 try:
-                    debug = Config().get("debug", False)
+                    debug = config.get_bool("debug", False)
                 except Exception:
                     debug = False
 
@@ -35,16 +37,16 @@ def orbs_guard(error_cls, context_fn=None):
                         pass
 
                 message = (
-                    f"{context}: {str(e)}"
+                    f"{context}: {e}"
                     if context else str(e)
                 )
 
-                # --- 3. logging policy ---
-                logger = logging.getLogger(fn.__module__)
+                # --- 3. logging policy (CENTRALIZED) ---
                 if debug:
-                    logger.exception(message)   # full traceback
+                    log.error(message)
+                    log.debug("traceback", exc_info=True)
                 else:
-                    logger.error(message)
+                    log.error(message)
 
                 # --- 4. wrap into OrbsException ---
                 raise error_cls(message) from e

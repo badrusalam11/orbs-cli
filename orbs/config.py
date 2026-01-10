@@ -70,3 +70,6 @@ class Config:
             return float(raw)
         except (ValueError, TypeError):
             return default if default is not None else 0.0
+        
+
+config = Config()   # 👈 singleton DI SINI

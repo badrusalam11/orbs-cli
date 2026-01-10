@@ -9,14 +9,13 @@ from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
 
-from orbs.config import Config
+from orbs.config import config
 from orbs.exception import ReportGenerationException
 from orbs.guard import orbs_guard
 
 class ReportGenerator:
     @orbs_guard(ReportGenerationException)
     def __init__(self, base_dir="reports"):
-        self.config = Config()
         # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         timestamp = self.generate_report_name(datetime.now())
         if not os.path.exists(base_dir):
@@ -87,8 +86,8 @@ class ReportGenerator:
     def record_overview(self, suite_path, duration, start_time, end_time):
         self.overriew = {
             "testsuite_id": os.path.relpath(suite_path, os.getcwd()),
-            "tester_name": self.config.get("tester_name", "Unknown Tester"),
-            "environent": self.config.get("environment", "Unknown Environment"),
+            "tester_name": config.get("tester_name", "Unknown Tester"),
+            "environent": config.get("environment", "Unknown Environment"),
             "host_name": platform.node(),
             "os": platform.system(),
             "duration": duration,

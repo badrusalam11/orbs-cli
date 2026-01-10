@@ -1,15 +1,17 @@
 # File: orbs/browser_factory.py
 import os
+from orbs.exception import BrowserDriverException
+from orbs.guard import orbs_guard
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from orbs.config import Config
+from orbs.config import config
 from orbs.thread_context import get_context, set_context
 
 class BrowserFactory:
     @staticmethod
+    @orbs_guard(BrowserDriverException)
     def create_driver():
-        cfg = Config()
         
         # Check if platform is set in context (from CLI --platform or collection)
         platform_from_context = get_context('platform')
@@ -18,9 +20,9 @@ class BrowserFactory:
             browser = platform_from_context.lower()
         else:
             # Fallback to browser config
-            browser = cfg.get("browser", "chrome").lower()
+            browser = config.get("browser", "chrome").lower()
             
-        extra_args = cfg.get_list("args")
+        extra_args = config.get_list("args")
         print(f"Creating {browser} driver with args: {extra_args}")
 
         if browser == "chrome":

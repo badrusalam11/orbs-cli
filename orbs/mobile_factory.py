@@ -3,11 +3,14 @@ import subprocess
 import time
 from appium import webdriver
 from appium.options.common.base import AppiumOptions
-from orbs.config import Config
+from orbs.config import config
+from orbs.exception import MobileDriverException
+from orbs.guard import orbs_guard
 from orbs.thread_context import get_context, set_context
 
 class MobileFactory:
     @staticmethod
+    @orbs_guard(MobileDriverException)
     def _restart_uiautomator2():
         """Restart UiAutomator2 server to fix hanging issues"""
         try:
@@ -27,17 +30,16 @@ class MobileFactory:
         capabilities: dict = None,
         retry_count: int = 2
     ):
-        cfg = Config()
-        server_url = cfg.get("appium_url", "http://localhost:4723/wd/hub")
-        platform = cfg.get("platformName", "Android")
+        server_url = config.get("appium_url", "http://localhost:4723/wd/hub")
+        platform = config.get("platformName", "Android")
         
         # Use context to determine device name or fallback to config
         device_name = get_context("platform", "")
         if not device_name:
-            device_name = cfg.get("deviceName", "")
+            device_name = config.get("deviceName", "")
 
         # Use user-provided or config-based capabilities
-        extra_caps = capabilities or cfg.get_dict("capabilities") or {}
+        extra_caps = capabilities or config.get_dict("capabilities") or {}
 
         for attempt in range(retry_count + 1):
             try:
@@ -54,8 +56,8 @@ class MobileFactory:
                 options.set_capability("uiautomator2ServerInstallTimeout", 60000)  # 60 seconds
 
                 # Injected appPackage and appActivity override config
-                final_app_package = app_package or cfg.get("appPackage", None)
-                final_app_activity = app_activity or cfg.get("appActivity", None)
+                final_app_package = app_package or config.get("appPackage", None)
+                final_app_activity = app_activity or config.get("appActivity", None)
 
                 if final_app_package and final_app_activity:
                     options.set_capability("appPackage", final_app_package)

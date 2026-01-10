@@ -13,7 +13,7 @@ from orbs.utils import render_template
 from orbs import run
 import subprocess
 from InquirerPy import inquirer
-from orbs import config
+from orbs.config import config
 
 
 app = typer.Typer()

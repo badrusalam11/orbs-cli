@@ -1,4 +1,7 @@
 import sys, os
+
+from orbs.exception import ListenerLoadException
+from orbs.guard import orbs_guard
 # ensure our project root (where your listeners/ folder lives) is first on the import path
 project_root = os.getcwd()
 if project_root not in sys.path:
@@ -7,9 +10,7 @@ if project_root not in sys.path:
 import importlib
 import os
 import glob
-from orbs.utils import Logger
-
-logger = Logger.get_logger()
+from orbs.log import log
 
 # Global registry for lifecycle hooks
 enabled_listeners = {
@@ -127,44 +128,45 @@ def TeardownTestCase(_func=None, *, skipped=True):
     return decorator
 
 # Core & user listener discovery (no suite-specific loading here)
+@orbs_guard(ListenerLoadException)
 def load_core_and_user_listeners():
     # Load built-in listeners
     try:
         import orbs.report_listener
-        logger.info("Loaded orbs.report_listener hooks")
+        log.info("Loaded orbs.report_listener hooks")
     except ImportError:
-        logger.warning("No report_listener found")
+        log.warning("No report_listener found")
 
     # Load project-level listeners in cwd()/listeners
     listener_dir = os.path.join(os.getcwd(), "listeners")
-    logger.info(f"listener_dir: {listener_dir}")
+    log.info(f"listener_dir: {listener_dir}")
     if os.path.isdir(listener_dir):
         for file in glob.glob(os.path.join(listener_dir, "*.py")):
             name = os.path.splitext(os.path.basename(file))[0]
             if name.startswith("__"): continue
             try:
                 importlib.import_module(f"listeners.{name}")
-                logger.info(f"Loaded project listener: {name}")
+                log.info(f"Loaded project listener: {name}")
             except Exception as e:
-                logger.error(f"Failed loading listener {name}: {e}")
+                log.error(f"Failed loading listener {name}: {e}")
     else:
-        logger.info("No project listeners directory; skipping.")
+        log.info("No project listeners directory; skipping.")
 
 # Suite-specific listener loader called at runtime
-
+@orbs_guard(ListenerLoadException)
 def load_suite_listeners(suite_path):
     basename = os.path.splitext(os.path.basename(suite_path))[0]
     suite_module = f"testsuites.{basename}"
     try:
         importlib.import_module(suite_module)
-        logger.info(f"Loaded suite listener: {basename}")
+        log.info(f"Loaded suite listener: {basename}")
     except ImportError as e:
-        logger.debug(f"No suite listener {basename}.py found: {e}")
+        log.debug(f"No suite listener {basename}.py found: {e}")
     except Exception as ex:
-        logger.error(f"Failed to load suite listener {basename}: {ex}")
+        log.error(f"Failed to load suite listener {basename}: {ex}")
 
 # Initialize core and user listeners at import
 try:
     load_core_and_user_listeners()
 except Exception as e:
-    logger.error(f"Error during initial listener loading: {e}")
+    log.error(f"Error during initial listener loading: {e}")

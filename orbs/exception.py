@@ -20,46 +20,19 @@ class ReportGenerationException(OrbsException):
             message = "Report generation failed"
         super().__init__(message, error_code="REPORT_ERROR")
 
-class FileIOException(OrbsException):
-    """Exception for file I/O operations."""
-    def __init__(self, message=None, file_path=None):
-        self.file_path = file_path
-        if message is None:
-            message = f"File I/O error{f' for {file_path}' if file_path else ''}"
-        super().__init__(message, error_code="FILE_IO_ERROR")
-
-class PDFGenerationException(ReportGenerationException):
-    """Exception for PDF generation failures."""
+class ReportListenerException(OrbsException):
+    """Exception for report listener errors."""
     def __init__(self, message=None):
         if message is None:
-            message = "PDF generation failed"
-        super().__init__(message)
-        self.error_code = "PDF_ERROR"
+            message = "Report listener error occurred"
+        super().__init__(message, error_code="REPORT_LISTENER_ERROR")
 
-class JSONGenerationException(ReportGenerationException):
-    """Exception for JSON report generation failures."""
+class RunnerException(OrbsException):
+    """Exception for test runner errors."""
     def __init__(self, message=None):
         if message is None:
-            message = "JSON generation failed"
-        super().__init__(message)
-        self.error_code = "JSON_ERROR"
-
-class ImageProcessingException(ReportGenerationException):
-    """Exception for image/screenshot processing failures."""
-    def __init__(self, message=None, image_path=None):
-        self.image_path = image_path
-        if message is None:
-            message = f"Image processing failed{f' for {image_path}' if image_path else ''}"
-        super().__init__(message)
-        self.error_code = "IMAGE_ERROR"
-
-class DirectoryCreationException(FileIOException):
-    """Exception for directory creation failures."""
-    def __init__(self, message=None, dir_path=None):
-        if message is None:
-            message = f"Directory creation failed{f' for {dir_path}' if dir_path else ''}"
-        super().__init__(message, file_path=dir_path)
-        self.error_code = "DIR_CREATE_ERROR"
+            message = "Test runner error occurred"
+        super().__init__(message, error_code="RUNNER_ERROR")
 
 class ConfigurationException(OrbsException):
     """Exception for configuration related errors."""
@@ -67,3 +40,33 @@ class ConfigurationException(OrbsException):
         if message is None:
             message = "Configuration error occurred"
         super().__init__(message, error_code="CONFIG_ERROR")
+
+class BrowserDriverException(OrbsException):
+    """Exception for browser driver related errors."""
+    def __init__(self, message=None):
+        if message is None:
+            message = "Browser driver error occurred"
+        super().__init__(message, error_code="BROWSER_DRIVER_ERROR")
+
+class MobileDriverException(OrbsException):
+    """Exception for mobile driver related errors."""
+    def __init__(self, message=None):
+        if message is None:
+            message = "Mobile driver error occurred"
+        super().__init__(message, error_code="MOBILE_DRIVER_ERROR")
+
+class ListenerLoadException(OrbsException):
+    """Exception for listener loading failures."""
+    def __init__(self, message=None, listener_name=None):
+        self.listener_name = listener_name
+        if message is None:
+            message = f"Listener load error{f' for {listener_name}' if listener_name else ''}"
+        super().__init__(message, error_code="LISTENER_LOAD_ERROR")
+
+class DependencyException(OrbsException):
+    def __init__(self, message=None):
+        super().__init__(
+            message or "Dependency check failed",
+            error_code="DEPENDENCY_ERROR"
+        )
+  

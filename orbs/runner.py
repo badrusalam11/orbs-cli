@@ -5,28 +5,30 @@ from dotenv import load_dotenv
 import yaml
 import inspect
 from behave.__main__ import main as behave_main
-from orbs.loader import Loader
+from orbs.guard import orbs_guard
 from orbs.thread_context import set_context
-from orbs.utils import Logger, check_dependencies
+from orbs.log import log
+from orbs.dependency import check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
-from orbs.exception import FeatureException
+from orbs.exception import FeatureException, RunnerException
 import sys
+
+from orbs.utils import load_module_from_path
 from ._constant import PLATFORM_LIST
 
 
 
 class Runner:
     def __init__(self):
-        self.logger = Logger.get_logger()
-        self.loader = Loader()
-    
+        pass
+
     def _normalized_path(self, target):
         normalized_path = target.replace('\\', '/').replace('//', '/')
         return normalized_path
 
     def run_case(self, case_path):
-        self.logger.info(f"Running test case: {case_path}")
-        mod = self.loader.load_module_from_path(case_path)
+        log.info(f"Running test case: {case_path}")
+        mod = load_module_from_path(case_path)
         if hasattr(mod, "run"):
             mod.run()
         else:
@@ -44,8 +46,9 @@ class Runner:
             else:
                 hook(*args)
         except Exception as e:
-            self.logger.error(f"Error invoking hook {hook.__name__}: {e}", exc_info=True)
+            log.error(f"Error invoking hook {hook.__name__}: {e}", exc_info=True)
 
+    @orbs_guard(RunnerException)
     def run_suite(self, suite_path):
         # 1) Load ONLY the suite-specific hooks for this suite
         load_suite_listeners(suite_path)
@@ -68,7 +71,7 @@ class Runner:
                 case_path = case.get("path")
                 enabled = case.get("enabled", False)  # default to False
                 if not enabled:
-                    self.logger.info(f"Skipping disabled test case: {case_path}")
+                    log.info(f"Skipping disabled test case: {case_path}")
                     continue
                 case = case_path
             
@@ -86,7 +89,7 @@ class Runner:
             try:
                 self.run_case(case)
             except Exception as e:
-                self.logger.error(f"Error running test case {case}: {e}", exc_info=True)
+                log.error(f"Error running test case {case}: {e}", exc_info=True)
                 status = "failed"
 
             data = {"status": status, "name": case}
@@ -120,9 +123,10 @@ class Runner:
         for hook in enabled_listeners.get('after_test_suite', []):
             self._invoke_hook(hook, suite_path)
 
+    @orbs_guard(FeatureException)
     def run_feature(self, feature_path, tags=None):
-        self.logger.info(f"is feature {feature_path} exist: {os.path.exists(feature_path)}")
-        self.logger.info(f"Running feature: {feature_path} with tags: {tags}")
+        log.info(f"is feature {feature_path} exist: {os.path.exists(feature_path)}")
+        log.info(f"Running feature: {feature_path} with tags: {tags}")
         args = []
         if tags:
             args.extend(["--tags", tags])
@@ -130,12 +134,12 @@ class Runner:
 
         result_code = behave_main(args)  # <--- Capture the result code
         if result_code != 0:
-            self.logger.error(f"Feature run failed with code: {result_code}")
+            log.error(f"Feature run failed with code: {result_code}")
             raise FeatureException(f"Feature run failed with code: {result_code}")
         # You can optionally store this somewhere to use in run_case
         return result_code
     
-    
+    @orbs_guard(RunnerException)
     def run_suite_collection(self, collection_path: str):
         """
         Run a collection of test suites defined in a YAML file.
@@ -174,7 +178,7 @@ class Runner:
 
             # Skip if disabled
             if not enabled:
-                self.logger.info(f"Skipping disabled testsuite: {path}")
+                log.info(f"Skipping disabled testsuite: {path}")
                 return
 
             try:
