@@ -29,6 +29,7 @@ class ReportGenerator:
         self.pdf_path = os.path.join(self.run_dir, f"{timestamp}.pdf")
         self.overview_path = os.path.join(self.run_dir, "result.json")
         self.screenshot_path = os.path.join(self.run_dir, "screenshot.json")
+        self.junit_path = os.path.join(self.run_dir, "junit.xml")
 
         self.c = canvas.Canvas(self.pdf_path, pagesize=letter)
         self.width, self.height = letter
@@ -110,6 +111,108 @@ class ReportGenerator:
         
         with open(os.path.join(self.screenshot_path), 'w') as f:
             json.dump(self.testcase_screenshots, f, indent=2)
+    
+    @orbs_guard(ReportGenerationException)
+    def generate_junit_xml(self):
+        """Generate JUnit XML report for CI/CD integration"""
+        from xml.etree.ElementTree import Element, SubElement, tostring
+        from xml.dom import minidom
+        
+        # Calculate totals
+        total_tests = len(self.results) if self.results else len(self.testcase_result)
+        total_failures = sum(1 for r in (self.results or self.testcase_result) 
+                           if r.get('status', '').lower() == 'failed')
+        total_errors = 0  # Orbs doesn't distinguish errors from failures
+        total_skipped = sum(1 for r in (self.results or self.testcase_result) 
+                          if r.get('status', '').lower() == 'skipped')
+        total_time = self.overriew.get('duration', 0)
+        
+        # Root element
+        testsuites = Element('testsuites')
+        testsuites.set('name', self.overriew.get('testsuite_id', 'Test Suite'))
+        testsuites.set('tests', str(total_tests))
+        testsuites.set('failures', str(total_failures))
+        testsuites.set('errors', str(total_errors))
+        testsuites.set('skipped', str(total_skipped))
+        testsuites.set('time', f"{total_time:.3f}")
+        testsuites.set('timestamp', self.overriew.get('start_time', ''))
+        
+        if self.results:  # Cucumber/BDD scenarios
+            # Group by feature
+            features = {}
+            for item in self.results:
+                feature = item['feature']
+                if feature not in features:
+                    features[feature] = []
+                features[feature].append(item)
+            
+            # Create testsuite per feature
+            for feature_name, scenarios in features.items():
+                testsuite = SubElement(testsuites, 'testsuite')
+                testsuite.set('name', feature_name)
+                testsuite.set('tests', str(len(scenarios)))
+                testsuite.set('failures', str(sum(1 for s in scenarios if s['status'].lower() == 'failed')))
+                testsuite.set('errors', '0')
+                testsuite.set('skipped', str(sum(1 for s in scenarios if s['status'].lower() == 'skipped')))
+                testsuite.set('time', f"{sum(s['duration'] for s in scenarios):.3f}")
+                
+                # Add testcases (scenarios)
+                for scenario in scenarios:
+                    testcase = SubElement(testsuite, 'testcase')
+                    testcase.set('name', scenario['scenario'])
+                    testcase.set('classname', f"{feature_name}.{scenario['scenario']}")
+                    testcase.set('time', f"{scenario['duration']:.3f}")
+                    
+                    # Add failure/skipped info
+                    status = scenario['status'].lower()
+                    if status == 'failed':
+                        failure = SubElement(testcase, 'failure')
+                        failure.set('message', f"Scenario '{scenario['scenario']}' failed")
+                        failure.set('type', 'AssertionError')
+                        
+                        # Add step details
+                        steps_text = []
+                        for step in scenario.get('steps', []):
+                            step_status = step.get('status', 'UNKNOWN')
+                            steps_text.append(f"{step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
+                        failure.text = '\n'.join(steps_text)
+                    
+                    elif status == 'skipped':
+                        skipped = SubElement(testcase, 'skipped')
+                        skipped.set('message', 'Test skipped')
+        
+        else:  # Regular test cases
+            testsuite = SubElement(testsuites, 'testsuite')
+            testsuite.set('name', 'Test Cases')
+            testsuite.set('tests', str(len(self.testcase_result)))
+            testsuite.set('failures', str(sum(1 for t in self.testcase_result if t['status'].lower() == 'failed')))
+            testsuite.set('errors', '0')
+            testsuite.set('skipped', str(sum(1 for t in self.testcase_result if t['status'].lower() == 'skipped')))
+            testsuite.set('time', f"{sum(t['duration'] for t in self.testcase_result):.3f}")
+            
+            for test in self.testcase_result:
+                testcase = SubElement(testsuite, 'testcase')
+                testcase.set('name', test['name'])
+                testcase.set('classname', test['name'])
+                testcase.set('time', f"{test['duration']:.3f}")
+                
+                status = test['status'].lower()
+                if status == 'failed':
+                    failure = SubElement(testcase, 'failure')
+                    failure.set('message', f"Test case '{test['name']}' failed")
+                    failure.set('type', 'AssertionError')
+                elif status == 'skipped':
+                    skipped = SubElement(testcase, 'skipped')
+                    skipped.set('message', 'Test skipped')
+        
+        # Pretty print XML
+        xml_string = minidom.parseString(tostring(testsuites, encoding='utf-8')).toprettyxml(indent="  ")
+        
+        # Write to file
+        with open(self.junit_path, 'w', encoding='utf-8') as f:
+            f.write(xml_string)
+        
+        return self.junit_path
 
     def _new_page_if_needed(self, height_needed=100):
         if self.y < height_needed:
@@ -885,6 +988,7 @@ class ReportGenerator:
         # 7. Add footer and save
         self._add_footer()
         self.save_json()
+        self.generate_junit_xml()  # Generate JUnit XML for CI/CD
         self.c.save()
         return self.run_dir
 

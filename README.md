@@ -198,6 +198,8 @@ See the [LICENSE](https://github.com/badrusalam11/orbs-cli/blob/main/LICENSE) fi
 
 Built & maintained by **Muhamad Badru Salam** - QA Engineer (SDET)
 
+* Repository: [https://github.com/badrusalam11/orbs-cli](https://github.com/badrusalam11/orbs-cli)
+* Pypi: [https://pypi.org/project/orbs-cli](https://pypi.org/project/orbs-cli)
 * GitHub: [https://github.com/badrusalam11](https://github.com/badrusalam11)
 * LinkedIn: [https://www.linkedin.com/in/muhamad-badru-salam/](https://www.linkedin.com/in/muhamad-badru-salam/)
 * Email: [muhamadbadrusalam760@gmail.com](mailto:muhamadbadrusalam760@gmail.com)
