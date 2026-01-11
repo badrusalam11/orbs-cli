@@ -45,7 +45,8 @@ Edit `settings/browser.properties`:
 
 ```properties
 browser=chrome
-args=--incognito;--window-size=1920,1080;--headless
+headless=false
+args=--incognito;--window-size=1920,1080
 ```
 
 ### 3. Create Test Case
@@ -66,7 +67,7 @@ def test_google_search():
     Web.open("https://www.google.com")
     
     # Type search query
-    Web.type_text("name=q", "Orbs automation framework")
+    Web.set_text("name=q", "Orbs automation framework")
     
     # Submit search
     Web.press_enter("name=q")
@@ -104,8 +105,8 @@ headless=false
 # Window size (widthxheight)
 window_size=1920x1080
 
-# Additional Chrome options (comma-separated)
-chrome_options=--disable-gpu,--no-sandbox
+# Additional Arguments (comma-separated)
+args=--disable-gpu,--no-sandbox
 
 # WebDriver executable path (optional)
 driver_path=/path/to/chromedriver
@@ -194,7 +195,7 @@ Web.click("submit-button")  # Treated as id=submit-button
 ✅ Good:
 ```python
 Web.click("id=login-btn")
-Web.type_text("css=#email-field")
+Web.set_text("css=#email-field")
 ```
 
 ❌ Avoid:
@@ -256,12 +257,12 @@ Double-click an element.
 Web.double_click("id=file-item")
 ```
 
-#### `Web.type_text(locator, text, timeout=10, clear_first=True)`
+#### `Web.set_text(locator, text, timeout=10, clear_first=True)`
 Type text into an input field.
 
 ```python
-Web.type_text("id=username", "admin")
-Web.type_text("name=email", "test@example.com", clear_first=False)
+Web.set_text("id=username", "admin")
+Web.set_text("name=email", "test@example.com", clear_first=False)
 ```
 
 #### `Web.clear(locator, timeout=10)`
@@ -275,7 +276,7 @@ Web.clear("id=search-box")
 Press Enter key on an element.
 
 ```python
-Web.type_text("id=search", "automation")
+Web.set_text("id=search", "automation")
 Web.press_enter("id=search")
 ```
 
@@ -441,7 +442,7 @@ Switch to iframe.
 
 ```python
 Web.switch_to_frame("id=payment-iframe")
-Web.type_text("id=card-number", "4111111111111111")
+Web.set_text("id=card-number", "4111111111111111")
 Web.switch_to_default()
 ```
 
@@ -511,11 +512,11 @@ Close current browser window.
 Web.close_browser()
 ```
 
-#### `Web.quit_browser()`
+#### `Web.quit()`
 Close all browser windows and quit driver.
 
 ```python
-Web.quit_browser()
+Web.quit()
 ```
 
 ---
@@ -534,8 +535,8 @@ def test_user_login():
     Web.open("https://app.example.com/login")
     
     # Enter credentials
-    Web.type_text("id=email", "test@example.com")
-    Web.type_text("id=password", "SecurePass123")
+    Web.set_text("id=email", "test@example.com")
+    Web.set_text("id=password", "SecurePass123")
     
     # Submit form
     Web.click("id=login-button")
@@ -570,10 +571,10 @@ name: Login Test Suite
 description: End-to-end login tests
 
 testcases:
-  - testcases.login.test_user_login
-  - testcases.login.test_user_logout
-
-platform: chrome
+  - path: testcases/login/test_user_login
+    enable: true
+  - path: testcases/login/test_user_logout
+    enable: false
 ```
 
 Run:
@@ -630,11 +631,11 @@ def step_impl(context):
 
 @when('I enter email "{email}"')
 def step_impl(context, email):
-    Web.type_text("id=email", email)
+    Web.set_text("id=email", email)
 
 @when('I enter password "{password}"')
 def step_impl(context, password):
-    Web.type_text("id=password", password)
+    Web.set_text("id=password", password)
 
 @when('I click the login button')
 def step_impl(context):
@@ -684,8 +685,8 @@ class LoginPage:
     
     @staticmethod
     def login(email, password):
-        Web.type_text(LoginPage.EMAIL_FIELD, email)
-        Web.type_text(LoginPage.PASSWORD_FIELD, password)
+        Web.set_text(LoginPage.EMAIL_FIELD, email)
+        Web.set_text(LoginPage.PASSWORD_FIELD, password)
         Web.click(LoginPage.LOGIN_BUTTON)
     
     @staticmethod
@@ -742,8 +743,8 @@ def test_example():
 Use environment variables:
 
 ```python
-import os
-BASE_URL = os.getenv("BASE_URL", "https://staging.example.com")
+from orbs.config import config
+BASE_URL = config.get("BASE_URL", "https://staging.example.com")
 Web.open(f"{BASE_URL}/login")
 ```
 
@@ -794,7 +795,7 @@ Web.open(f"{BASE_URL}/login")
 **Solutions:**
 * Use headless mode: `headless=true`
 * Reduce unnecessary waits
-* Run in parallel (test suite level)
+* Run in parallel (test suite collection level)
 * Optimize locators (prefer ID, CSS over XPath)
 
 ---

@@ -153,11 +153,11 @@ def test_android_login():
     Mobile.wait_for_element("id=com.example.app:id/username", timeout=10)
     
     # Enter credentials
-    Mobile.type_text("id=com.example.app:id/username", "testuser")
-    Mobile.type_text("id=com.example.app:id/password", "password123")
+    Mobile.set_text("id=com.example.app:id/username", "testuser")
+    Mobile.set_text("id=com.example.app:id/password", "password123")
     
     # Click login
-    Mobile.click("id=com.example.app:id/login_button")
+    Mobile.tap("id=com.example.app:id/login_button")
     
     # Verify home screen
     Mobile.wait_for_element("id=com.example.app:id/home_screen", timeout=10)
@@ -273,20 +273,20 @@ Mobile.background_app(5)  # Background for 5 seconds
 
 ### Element Interaction
 
-#### `Mobile.click(locator, timeout=10)`
+#### `Mobile.tap(locator, timeout=10)`
 Tap on an element.
 
 ```python
-Mobile.click("id=com.example.app:id/submit_button")
-Mobile.click("xpath=//android.widget.Button[@text='Login']")
+Mobile.tap("id=com.example.app:id/submit_button")
+Mobile.tap("xpath=//android.widget.Button[@text='Login']")
 ```
 
-#### `Mobile.type_text(locator, text, timeout=10, clear_first=True)`
+#### `Mobile.set_text(locator, text, timeout=10, clear_first=True)`
 Enter text into an element.
 
 ```python
-Mobile.type_text("id=com.example.app:id/email", "test@example.com")
-Mobile.type_text("xpath=//android.widget.EditText[@content-desc='Username']", "admin")
+Mobile.set_text("id=com.example.app:id/email", "test@example.com")
+Mobile.set_text("xpath=//android.widget.EditText[@content-desc='Username']", "admin")
 ```
 
 #### `Mobile.clear(locator, timeout=10)`
@@ -327,7 +327,7 @@ Check if element is enabled.
 
 ```python
 if Mobile.is_enabled("id=com.example.app:id/submit"):
-    Mobile.click("id=com.example.app:id/submit")
+    Mobile.tap("id=com.example.app:id/submit")
 ```
 
 #### `Mobile.wait_for_element(locator, timeout=10)`
@@ -422,7 +422,7 @@ Mobile.press_home()
 Press Enter/Return key.
 
 ```python
-Mobile.type_text("id=search_field", "automation")
+Mobile.set_text("id=search_field", "automation")
 Mobile.press_enter()
 ```
 
@@ -462,19 +462,19 @@ Orbs supports multiple Android locator strategies:
 
 ```python
 # By resource ID (most stable)
-Mobile.click("id=com.android.calculator2:id/digit_5")
+Mobile.tap("id=com.android.calculator2:id/digit_5")
 
 # By XPath
-Mobile.click("xpath=//android.widget.Button[@text='Calculate']")
+Mobile.tap("xpath=//android.widget.Button[@text='Calculate']")
 
 # By content-desc (accessibility)
-Mobile.click("accessibility_id=Submit Form")
+Mobile.tap("accessibility_id=Submit Form")
 
 # By class
-Mobile.click("class=android.widget.EditText")
+Mobile.tap("class=android.widget.EditText")
 
 # By UIAutomator
-Mobile.click("uiautomator=new UiSelector().text('Login')")
+Mobile.tap("uiautomator=new UiSelector().text('Login')")
 ```
 
 ---
@@ -493,10 +493,10 @@ def test_calculator_addition():
     Mobile.wait_for_element("id=com.android.calculator2:id/digit_1", timeout=10)
     
     # Perform calculation: 5 + 3 = 8
-    Mobile.click("id=com.android.calculator2:id/digit_5")
-    Mobile.click("id=com.android.calculator2:id/op_add")
-    Mobile.click("id=com.android.calculator2:id/digit_3")
-    Mobile.click("id=com.android.calculator2:id/eq")
+    Mobile.tap("id=com.android.calculator2:id/digit_5")
+    Mobile.tap("id=com.android.calculator2:id/op_add")
+    Mobile.tap("id=com.android.calculator2:id/digit_3")
+    Mobile.tap("id=com.android.calculator2:id/eq")
     
     # Verify result
     result = Mobile.get_text("id=com.android.calculator2:id/result")
@@ -508,15 +508,15 @@ def test_form_submission():
     """Test form submission flow"""
     
     # Fill form
-    Mobile.type_text("id=com.example.app:id/name", "John Doe")
-    Mobile.type_text("id=com.example.app:id/email", "john@example.com")
+    Mobile.set_text("id=com.example.app:id/name", "John Doe")
+    Mobile.set_text("id=com.example.app:id/email", "john@example.com")
     Mobile.hide_keyboard()
     
     # Scroll to submit button
     Mobile.scroll_to("Submit")
     
     # Submit form
-    Mobile.click("id=com.example.app:id/submit")
+    Mobile.tap("id=com.example.app:id/submit")
     
     # Wait for confirmation
     Mobile.wait_for_visible("id=com.example.app:id/success_message", timeout=10)
@@ -537,11 +537,12 @@ name: Mobile Regression Suite
 description: Android app regression tests
 
 testcases:
-  - testcases.android_login.test_android_login
-  - testcases.calculator.test_calculator_addition
-  - testcases.forms.test_form_submission
-
-platform: android
+  - path: testcases/android_login/test_android_login
+    enable: true
+  - path: testcases/calculator/test_calculator_addition
+    enable: true
+  - path: testcases/forms/test_form_submission
+    enable: false
 ```
 
 Run:
@@ -599,12 +600,12 @@ orbs run testsuites/suite2.yml --deviceId=R58M40ABCDE
 
 ✅ Stable:
 ```python
-Mobile.click("id=com.example.app:id/login_button")
+Mobile.tap("id=com.example.app:id/login_button")
 ```
 
 ❌ Fragile:
 ```python
-Mobile.click("xpath=/hierarchy/android.widget.FrameLayout[1]/android.widget.Button[3]")
+Mobile.tap("xpath=/hierarchy/android.widget.FrameLayout[1]/android.widget.Button[3]")
 ```
 
 ### 2. Handle Keyboard
@@ -612,7 +613,7 @@ Mobile.click("xpath=/hierarchy/android.widget.FrameLayout[1]/android.widget.Butt
 Always hide keyboard after text input:
 
 ```python
-Mobile.type_text("id=email_field", "test@example.com")
+Mobile.set_text("id=email_field", "test@example.com")
 Mobile.hide_keyboard()
 ```
 
@@ -635,10 +636,10 @@ class LoginPage:
     
     @staticmethod
     def login(username, password):
-        Mobile.type_text(LoginPage.USERNAME, username)
-        Mobile.type_text(LoginPage.PASSWORD, password)
+        Mobile.set_text(LoginPage.USERNAME, username)
+        Mobile.set_text(LoginPage.PASSWORD, password)
         Mobile.hide_keyboard()
-        Mobile.click(LoginPage.LOGIN_BTN)
+        Mobile.tap(LoginPage.LOGIN_BTN)
 ```
 
 ### 5. Error Handling
@@ -648,7 +649,7 @@ def test_with_retry():
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            Mobile.click("id=unstable_element")
+            Mobile.tap("id=unstable_element")
             break
         except Exception as e:
             if attempt == max_retries - 1:
@@ -662,7 +663,7 @@ def test_with_retry():
 ```python
 def test_login():
     try:
-        Mobile.click("id=login_button")
+        Mobile.tap("id=login_button")
         # test logic
     except Exception as e:
         Mobile.take_screenshot("screenshots/failure.png")

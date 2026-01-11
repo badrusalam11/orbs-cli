@@ -5,9 +5,14 @@ from orbs.guard import orbs_guard
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
+from selenium.webdriver.safari.options import Options as SafariOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
 from orbs.config import config
 from orbs.thread_context import get_context, set_context
-
+from orbs.log import log
 class BrowserFactory:
     @staticmethod
     @orbs_guard(BrowserDriverException)
@@ -19,31 +24,115 @@ class BrowserFactory:
             # Use platform from CLI/context as browser
             browser = platform_from_context.lower()
         else:
-            # Fallback to browser config
+            # Fallback to browser config from settings/browser.properties
             browser = config.get("browser", "chrome").lower()
-            
-        extra_args = config.get_list("args")
-        print(f"Creating {browser} driver with args: {extra_args}")
+        
+        # Load browser configuration from settings/browser.properties
+        headless = config.get_bool("headless", False)
+        window_size = config.get("window_size", None)
+        driver_path = config.get("driver_path", None)
+        
+        # Get browser arguments from settings (comma-separated)
+        # Framework handles browser-specific compatibility automatically
+        args_list = config.get_list("args", sep=",")
+        
+        log.debug(f"Creating {browser} driver (headless={headless}, window_size={window_size}, args={args_list})")
 
         if browser == "chrome":
             options = ChromeOptions()
-            for arg in extra_args:
+            
+            # Add headless mode
+            if headless:
+                options.add_argument("--headless=new")
+            
+            # Add window size
+            if window_size:
+                options.add_argument(f"--window-size={window_size.replace('x', ',')}")
+            
+            # Add browser arguments (all chrome args are supported)
+            for arg in args_list:
                 options.add_argument(arg)
-            driver = webdriver.Chrome(options=options)
+            
+            # Create driver with optional custom driver path
+            if driver_path:
+                service = ChromeService(executable_path=driver_path)
+                driver = webdriver.Chrome(service=service, options=options)
+            else:
+                driver = webdriver.Chrome(options=options)
 
         elif browser == "firefox":
             options = FirefoxOptions()
-            for arg in extra_args:
-                if arg == "--headless":
-                    options.add_argument(arg)
-                elif arg == "--incognito":
+            
+            # Add headless mode
+            if headless:
+                options.add_argument("--headless")
+            
+            # Add window size
+            if window_size:
+                width, height = window_size.split('x')
+                options.add_argument(f"--width={width}")
+                options.add_argument(f"--height={height}")
+            
+            # Add browser arguments with Firefox compatibility handling
+            for arg in args_list:
+                if arg == "--incognito":
+                    # Firefox calls it "private browsing"
                     options.set_preference("browser.privatebrowsing.autostart", True)
-                else:
+                elif arg.startswith("--"):
                     options.add_argument(arg)
-            driver = webdriver.Firefox(options=options)
+            
+            # Create driver with optional custom driver path
+            if driver_path:
+                service = FirefoxService(executable_path=driver_path)
+                driver = webdriver.Firefox(service=service, options=options)
+            else:
+                driver = webdriver.Firefox(options=options)
+
+        elif browser == "edge":
+            options = EdgeOptions()
+            
+            # Add headless mode
+            if headless:
+                options.add_argument("--headless=new")
+            
+            # Add window size
+            if window_size:
+                options.add_argument(f"--window-size={window_size.replace('x', ',')}")
+            
+            # Add browser arguments (Edge supports Chrome args)
+            for arg in args_list:
+                options.add_argument(arg)
+            
+            # Create driver with optional custom driver path
+            if driver_path:
+                service = EdgeService(executable_path=driver_path)
+                driver = webdriver.Edge(service=service, options=options)
+            else:
+                driver = webdriver.Edge(options=options)
+
+        elif browser == "safari":
+            options = SafariOptions()
+            
+            # Safari doesn't support headless mode natively
+            # Window size is set after driver creation
+            
+            driver = webdriver.Safari(options=options)
+            
+            # Set window size if specified
+            if window_size and not headless:
+                width, height = window_size.split('x')
+                driver.set_window_size(int(width), int(height))
 
         else:
             raise Exception(f"Unsupported browser: {browser}")
+        
+        # Set window size for browsers that support it (if not already set)
+        if window_size and browser not in ["safari"]:
+            try:
+                width, height = window_size.split('x')
+                driver.set_window_size(int(width), int(height))
+            except:
+                pass  # Ignore if already set via arguments
 
         # Ensure screenshots list exists for this thread
         if get_context("screenshots") is None:
