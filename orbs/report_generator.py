@@ -9,11 +9,13 @@ from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
 
-from orbs.config import Config
+from orbs.config import config
+from orbs.exception import ReportGenerationException
+from orbs.guard import orbs_guard
 
 class ReportGenerator:
+    @orbs_guard(ReportGenerationException)
     def __init__(self, base_dir="reports"):
-        self.config = Config()
         # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         timestamp = self.generate_report_name(datetime.now())
         if not os.path.exists(base_dir):
@@ -45,6 +47,7 @@ class ReportGenerator:
         # ts     = f"{ts_sec}_{ms}"                       # e.g. "20250707_221530_123"
         return ts_sec
 
+    @orbs_guard(ReportGenerationException)
     def record(self, feature, scenario, status, duration, screenshot_paths=None, steps_info=None, category="positive", api_calls=None):
         """Record scenario with screenshots, steps, and API calls"""
         self.results.append({
@@ -58,6 +61,7 @@ class ReportGenerator:
             "api_calls": api_calls or []  # Add API calls to scenario record
         })
 
+    @orbs_guard(ReportGenerationException)
     def record_test_case_result(self, name, status, duration):
         self.testcase_result.append({
             "name": name,
@@ -65,6 +69,7 @@ class ReportGenerator:
             "duration": duration
         }) 
 
+    @orbs_guard(ReportGenerationException)
     def record_screenshot(self, testcase_name, screenshot_path):
         # Check if testcase entry exists
         for entry in self.testcase_screenshots:
@@ -77,11 +82,12 @@ class ReportGenerator:
             "screenshots": [screenshot_path]
         })
 
+    @orbs_guard(ReportGenerationException)
     def record_overview(self, suite_path, duration, start_time, end_time):
         self.overriew = {
             "testsuite_id": os.path.relpath(suite_path, os.getcwd()),
-            "tester_name": self.config.get("tester_name", "Unknown Tester"),
-            "environent": self.config.get("environment", "Unknown Environment"),
+            "tester_name": config.get("tester_name", "Unknown Tester"),
+            "environent": config.get("environment", "Unknown Environment"),
             "host_name": platform.node(),
             "os": platform.system(),
             "duration": duration,
@@ -94,6 +100,7 @@ class ReportGenerator:
             "testcase_results": self.testcase_result,
         }
 
+    @orbs_guard(ReportGenerationException)
     def save_json(self):
         with open(self.json_path, 'w') as f:
             json.dump(self.results, f, indent=2)
@@ -765,6 +772,7 @@ class ReportGenerator:
         self.y -= 15
         self.add_api_section(calls, f"API Calls for {case_name}")
 
+    @orbs_guard(ReportGenerationException)
     def finalize(self, suite_path):
         suite_name = os.path.basename(suite_path)
         
