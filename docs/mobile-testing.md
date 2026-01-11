@@ -161,7 +161,7 @@ def test_android_login():
     
     # Verify home screen
     Mobile.wait_for_element("id=com.example.app:id/home_screen", timeout=10)
-    assert Mobile.is_visible("id=com.example.app:id/home_screen")
+    assert Mobile.element_visible("id=com.example.app:id/home_screen")
     
     print("✅ Android login test passed")
 ```
@@ -169,7 +169,7 @@ def test_android_login():
 ### 7. Run Test
 
 ```bash
-orbs run testcases/android_login.py --platform=android
+orbs run testsuites/login.yml --platform=android
 ```
 
 ---
@@ -241,66 +241,78 @@ default_platform=android
 
 ### App Control
 
-#### `Mobile.launch_app()`
-Launch the application.
+#### `Mobile.launch(id=None, activity=None, reset=False)`
+Launch an application with optional package ID and activity.
 
 ```python
-Mobile.launch_app()
+# Launch from config
+Mobile.launch()
+
+# Launch specific app
+Mobile.launch("com.android.chrome", "com.google.android.apps.chrome.Main")
+
+# Launch with reset
+Mobile.launch("com.swaglabsmobileapp", ".MainActivity", reset=True)
+
+# Keyword args
+Mobile.launch(id="com.android.chrome", activity=".Main", reset=True)
 ```
 
-#### `Mobile.close_app()`
-Close the application.
+#### `Mobile.launch_and_install(apk, id=None, activity=None, reset=False)`
+Install APK and launch the application.
 
 ```python
-Mobile.close_app()
+# Install and launch
+Mobile.launch_and_install("/apps/myapp.apk")
+
+# Install with specific launch params
+Mobile.launch_and_install(
+    apk="/apps/chrome.apk",
+    id="com.android.chrome",
+    activity=".Main",
+    reset=True
+)
 ```
 
-#### `Mobile.reset_app()`
-Reset application to initial state.
+#### `Mobile.activate_app(bundle_id)`
+Activate app by bundle ID.
 
 ```python
-Mobile.reset_app()
+Mobile.activate_app("com.android.chrome")
 ```
 
-#### `Mobile.background_app(seconds)`
-Put app in background for specified seconds.
+#### `Mobile.terminate_app(bundle_id)`
+Terminate app by bundle ID.
 
 ```python
-Mobile.background_app(5)  # Background for 5 seconds
+Mobile.terminate_app("com.android.chrome")
 ```
 
 ---
 
 ### Element Interaction
 
-#### `Mobile.tap(locator, timeout=10)`
-Tap on an element.
+#### `Mobile.tap(locator, timeout=10, retry_count=3)`
+Tap on an element with retry logic.
 
 ```python
 Mobile.tap("id=com.example.app:id/submit_button")
 Mobile.tap("xpath=//android.widget.Button[@text='Login']")
 ```
 
-#### `Mobile.set_text(locator, text, timeout=10, clear_first=True)`
-Enter text into an element.
+#### `Mobile.set_text(locator, text, timeout=10, clear_first=True, retry_count=3)`
+Enter text into an element with retry logic.
 
 ```python
 Mobile.set_text("id=com.example.app:id/email", "test@example.com")
 Mobile.set_text("xpath=//android.widget.EditText[@content-desc='Username']", "admin")
 ```
 
-#### `Mobile.clear(locator, timeout=10)`
+#### `Mobile.clear_text(locator, timeout=10)`
 Clear text from an element.
 
 ```python
-Mobile.clear("id=com.example.app:id/search_field")
-```
-
-#### `Mobile.tap(x, y)`
-Tap at specific coordinates.
-
-```python
-Mobile.tap(500, 300)
+Mobile.clear_text("id=com.example.app:id/search_field")
 ```
 
 #### `Mobile.long_press(locator, duration=1000, timeout=10)`
@@ -314,19 +326,19 @@ Mobile.long_press("id=com.example.app:id/item", duration=2000)
 
 ### Element State
 
-#### `Mobile.is_visible(locator, timeout=10) -> bool`
-Check if element is displayed.
+#### `Mobile.element_visible(locator, timeout=10) -> bool`
+Check if element is visible.
 
 ```python
-if Mobile.is_visible("id=com.example.app:id/error_message"):
+if Mobile.element_visible("id=com.example.app:id/error_message"):
     print("Error displayed")
 ```
 
-#### `Mobile.is_enabled(locator, timeout=10) -> bool`
-Check if element is enabled.
+#### `Mobile.element_exists(locator, timeout=10) -> bool`
+Check if element exists.
 
 ```python
-if Mobile.is_enabled("id=com.example.app:id/submit"):
+if Mobile.element_exists("id=com.example.app:id/submit"):
     Mobile.tap("id=com.example.app:id/submit")
 ```
 
@@ -369,7 +381,7 @@ content_desc = Mobile.get_attribute("xpath=//android.widget.Button", "content-de
 ### Gestures
 
 #### `Mobile.swipe(start_x, start_y, end_x, end_y, duration=1000)`
-Swipe gesture.
+Swipe gesture from start to end coordinates.
 
 ```python
 # Swipe right
@@ -379,51 +391,53 @@ Mobile.swipe(100, 500, 900, 500, duration=800)
 Mobile.swipe(500, 1500, 500, 500, duration=600)
 ```
 
-#### `Mobile.scroll_to(text)`
-Scroll to element with text.
+#### `Mobile.swipe_up(start_x=None, distance=500, duration=1000)`
+Swipe up from bottom of screen.
 
 ```python
-Mobile.scroll_to("Settings")
+Mobile.swipe_up()
+Mobile.swipe_up(distance=800)
 ```
 
-#### `Mobile.scroll_down()`
-Scroll down.
+#### `Mobile.swipe_down(start_x=None, distance=500, duration=1000)`
+Swipe down from top of screen.
 
 ```python
-Mobile.scroll_down()
+Mobile.swipe_down()
+Mobile.swipe_down(distance=800)
 ```
 
-#### `Mobile.scroll_up()`
-Scroll up.
+#### `Mobile.swipe_left(start_y=None, distance=300, duration=1000)`
+Swipe left.
 
 ```python
-Mobile.scroll_up()
+Mobile.swipe_left()
+```
+
+#### `Mobile.swipe_right(start_y=None, distance=300, duration=1000)`
+Swipe right.
+
+```python
+Mobile.swipe_right()
+```
+
+#### `Mobile.scroll_to_element(locator, max_scrolls=5, direction='up')`
+Scroll until element is found.
+
+```python
+Mobile.scroll_to_element("id=com.example.app:id/settings")
+Mobile.scroll_to_element("accessibility_id=Submit", direction="down")
 ```
 
 ---
 
 ### Device Interaction
 
-#### `Mobile.press_back()`
+#### `Mobile.back()`
 Press Android back button.
 
 ```python
-Mobile.press_back()
-```
-
-#### `Mobile.press_home()`
-Press Android home button.
-
-```python
-Mobile.press_home()
-```
-
-#### `Mobile.press_enter()`
-Press Enter/Return key.
-
-```python
-Mobile.set_text("id=search_field", "automation")
-Mobile.press_enter()
+Mobile.back()
 ```
 
 #### `Mobile.hide_keyboard()`
@@ -456,7 +470,7 @@ Orbs supports multiple Android locator strategies:
 | XPath | `xpath=xpath-expression` | `xpath=//android.widget.Button[@text='Login']` |
 | Accessibility ID | `accessibility_id=content-desc` | `accessibility_id=Submit Button` |
 | Class Name | `class=class-name` | `class=android.widget.Button` |
-| Android UIAutomator | `uiautomator=UiSelector` | `uiautomator=new UiSelector().text("Login")` |
+| Android UIAutomator | `android_uiautomator=UiSelector` | `android_uiautomator=new UiSelector().text("Login")` |
 
 **Examples:**
 
@@ -474,7 +488,7 @@ Mobile.tap("accessibility_id=Submit Form")
 Mobile.tap("class=android.widget.EditText")
 
 # By UIAutomator
-Mobile.tap("uiautomator=new UiSelector().text('Login')")
+Mobile.tap("android_uiautomator=new UiSelector().text('Login')")
 ```
 
 ---
@@ -513,7 +527,7 @@ def test_form_submission():
     Mobile.hide_keyboard()
     
     # Scroll to submit button
-    Mobile.scroll_to("Submit")
+    Mobile.scroll_to_element("id=com.example.app:id/submit")
     
     # Submit form
     Mobile.tap("id=com.example.app:id/submit")
@@ -548,7 +562,7 @@ testcases:
 Run:
 
 ```bash
-orbs run testsuites/mobile_regression.yml
+orbs run testsuites/mobile_regression.yml --platform=android
 ```
 
 ---
@@ -586,10 +600,10 @@ Run tests on different devices in parallel:
 
 ```bash
 # Terminal 1
-orbs run testsuites/suite1.yml --deviceId=emulator-5554
+orbs run testsuites/suite1.yml --platform=android --deviceId=emulator-5554
 
 # Terminal 2
-orbs run testsuites/suite2.yml --deviceId=R58M40ABCDE
+orbs run testsuites/suite2.yml --platform=android --deviceId=R58M40ABCDE
 ```
 
 ---
@@ -655,7 +669,7 @@ def test_with_retry():
             if attempt == max_retries - 1:
                 raise
             print(f"Retry {attempt + 1}/{max_retries}")
-            Mobile.wait(2)
+            time.sleep(2)
 ```
 
 ### 6. Screenshot on Failure
@@ -753,35 +767,29 @@ adb logcat
 
 ## Advanced Topics
 
-### Install APK Programmatically
+### Device Information
 
 ```python
-Mobile.install_app("/path/to/app.apk")
+# Get screen size
+size = Mobile.get_device_size()
+print(f"Width: {size['width']}, Height: {size['height']}")
+
+# Get/Set orientation
+orientation = Mobile.get_orientation()  # PORTRAIT or LANDSCAPE
+Mobile.set_orientation("LANDSCAPE")
 ```
 
-### Remove App
+### Driver Management
 
 ```python
-Mobile.remove_app("com.example.app")
-```
+# Check driver status
+status = Mobile.get_driver_status()
 
-### Get Device Time
+# Reset driver between tests
+Mobile.reset_driver()
 
-```python
-device_time = Mobile.get_device_time()
-```
-
-### Network Simulation
-
-```python
-# Airplane mode on
-Mobile.set_network_connection(1)
-
-# WiFi only
-Mobile.set_network_connection(2)
-
-# All networks on
-Mobile.set_network_connection(6)
+# Quit session
+Mobile.quit()
 ```
 
 ### Parallel Execution
