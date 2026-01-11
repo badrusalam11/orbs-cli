@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "orbs"
 version = "0.1.0"
-description = "orbs - A minimal multiplatform test framework that adapt POM"
+description = "Orbs - an automation framework for Web, Mobile (Appium), and API testing designed to grow with your team"
 readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "Apache" }
+license = { text = "Apache-2.0" }
 authors = [
   { name = "Muhamad Badru Salam", email = "badrusalam760@gmail.com" }
 ]
