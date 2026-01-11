@@ -17,6 +17,8 @@ from orbs.config import config
 
 
 app = typer.Typer()
+setup_app = typer.Typer()
+app.add_typer(setup_app, name="setup")
 
 # Directories for templates
 BASE_DIR = Path(__file__).parent
@@ -351,9 +353,9 @@ def select_device():
     device_name = choose_device(devices)
     write_device_property(device_name)    
 
-@app.command()
-def setup():
-    """Install required dependencies for mobile testing"""
+@setup_app.command("android")
+def setup_android():
+    """Install required dependencies for Android mobile testing"""
     def install_nodejs_on_windows():
         import tempfile
         import urllib.request
