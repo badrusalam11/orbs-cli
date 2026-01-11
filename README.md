@@ -89,7 +89,7 @@ Generators, runners, and spy tools exist to accelerate work — not to obscure h
 ## Quick Start
 
 ```bash
-pip install orbs
+pip install orbs-cli
 
 orbs setup android
 orbs init myproject

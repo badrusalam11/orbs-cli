@@ -28,7 +28,7 @@ Complete reference for all Orbs command-line interface commands.
 ## Installation
 
 ```bash
-pip install orbs
+pip install orbs-cli
 ```
 
 Verify installation:
@@ -644,7 +644,7 @@ Run `orbs select-device` before mobile test execution to ensure correct device i
 
 ```bash
 # Ensure orbs is installed
-pip install orbs
+pip install orbs-cli
 
 # Or install in development mode
 pip install -e .

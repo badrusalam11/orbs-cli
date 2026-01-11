@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "orbs"
+name = "orbs-cli"
 version = "0.1.0"
 description = "Orbs - an automation framework for Web, Mobile (Appium), and API testing designed to grow with your team"
 readme = "README.md"
