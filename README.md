@@ -163,15 +163,15 @@ SERVER_URL=http://localhost:5006
 
 Detailed documentation is available under the `docs/` directory:
 
-* Philosophy & concepts
-* CLI reference
-* Web testing
-* Mobile testing
-* API testing
-* Spy usage
-* Architecture overview
+* [Philosophy & Concepts](docs/philosophy.md) - Framework principles and maturity levels
+* [CLI Reference](docs/cli-reference.md) - Complete command documentation
+* [Web Testing](docs/web-testing.md) - Browser automation guide
+* [Mobile Testing](docs/mobile-testing.md) - Android testing with Appium
+* [API Testing](docs/api-testing.md) - REST API testing guide
+* [Spy Tool](docs/spy.md) - Element inspection and capture
+* [Architecture](docs/architecture.md) - Technical design and patterns
 
-Start here: `docs/philosophy.md`
+**Start here:** [docs/philosophy.md](docs/philosophy.md)
 
 ---
 

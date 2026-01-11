@@ -1,5 +1,5 @@
 PLATFORM_LIST = {
     "mobile": ['android', 'iOS'],
-    "web": ['chrome', 'firefox'],
+    "web": ['chrome', 'firefox', 'safari', 'edge'],
     "api": ['api'],
 }
