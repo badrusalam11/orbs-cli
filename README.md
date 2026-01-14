@@ -127,7 +127,7 @@ orbs spy --web --url=https://example.com
 orbs spy --mobile
 ```
 
-📖 Full Spy documentation: `docs/spy.md`
+📖 Full Spy documentation: [docs/spy.md](https://github.com/badrusalam11/orbs-cli/blob/main/docs/spy.md)
 
 ---
 
@@ -155,7 +155,7 @@ APP_PORT=5006
 SERVER_URL=http://localhost:5006
 ```
 
-📖 Full configuration guide: `docs/configuration.md`
+📖 Full configuration guide: [docs/configuration.md](https://github.com/badrusalam11/orbs-cli/blob/main/docs/configuration.md)
 
 ---
 
@@ -163,15 +163,15 @@ SERVER_URL=http://localhost:5006
 
 Detailed documentation is available under the `docs/` directory:
 
-* [Philosophy & Concepts](docs/philosophy.md) - Framework principles and maturity levels
-* [CLI Reference](docs/cli-reference.md) - Complete command documentation
-* [Web Testing](docs/web-testing.md) - Browser automation guide
-* [Mobile Testing](docs/mobile-testing.md) - Android testing with Appium
-* [API Testing](docs/api-testing.md) - REST API testing guide
-* [Spy Tool](docs/spy.md) - Element inspection and capture
-* [Architecture](docs/architecture.md) - Technical design and patterns
+* [Philosophy & Concepts](https://github.com/badrusalam11/orbs-cli/blob/main/docs/philosophy.md) - Framework principles and maturity levels
+* [CLI Reference](https://github.com/badrusalam11/orbs-cli/blob/main/docs/cli-reference.md) - Complete command documentation
+* [Web Testing](https://github.com/badrusalam11/orbs-cli/blob/main/docs/web-testing.md) - Browser automation guide
+* [Mobile Testing](https://github.com/badrusalam11/orbs-cli/blob/main/docs/mobile-testing.md) - Android testing with Appium
+* [API Testing](https://github.com/badrusalam11/orbs-cli/blob/main/docs/api-testing.md) - REST API testing guide
+* [Spy Tool](https://github.com/badrusalam11/orbs-cli/blob/main/docs/spy.md) - Element inspection and capture
+* [Architecture](https://github.com/badrusalam11/orbs-cli/blob/main/docs/architecture.md) - Technical design and patterns
 
-**Start here:** [docs/philosophy.md](docs/philosophy.md)
+**Start here:** [docs/philosophy.md](https://github.com/badrusalam11/orbs-cli/blob/main/docs/philosophy.md)
 
 ---
 
