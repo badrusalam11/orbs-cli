@@ -2,7 +2,13 @@
 
 ## Introduction
 
-Orbs is built on a set of core principles that guide its design, implementation, and evolution. These principles ensure that automation scales with your team's maturity without requiring framework migration or test rewrites.
+Orbs is an automation platform that respects how people work.
+You can start visually, script directly, or build deep abstractions — all on the same core.
+Orbs gives guidance, not restrictions.
+Growth is supported, not enforced.
+
+Under the hood, Orbs is built on a set of core principles that guide its design, implementation, and evolution.
+These principles ensure that automation scales with your team's maturity without requiring framework migration or test rewrites.
 
 ---
 
