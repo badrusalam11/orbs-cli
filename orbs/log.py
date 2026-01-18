@@ -17,11 +17,21 @@ class ColorFormatter(logging.Formatter):
         logging.CRITICAL: "\033[41m", # Red background
     }
     RESET = "\033[0m"
+    ACTION_COLOR = "\033[32m"  # Green for actions
 
     def format(self, record):
+        # Special handling for ACTION level - replace levelname
+        if hasattr(record, 'is_action') and record.is_action:
+            record.levelname = "ACTION"
+        
         message = super().format(record)
         if not USE_COLOR:
             return message
+        
+        # Apply green color for ACTION
+        if hasattr(record, 'is_action') and record.is_action:
+            return f"{self.ACTION_COLOR}{message}{self.RESET}"
+        
         color = self.COLORS.get(record.levelno, "")
         return f"{color}{message}{self.RESET}"
 
@@ -52,6 +62,15 @@ class OrbsLogger(logging.Logger):
 
     def critical(self, msg, *args, **kwargs):
         super().critical(self._format_message(msg, args), **kwargs)
+    
+    def action(self, msg, *args, **kwargs):
+        """Log keyword actions (e.g., clicks, typing, navigation) with green color"""
+        message = self._format_message(msg, args)
+        # Use INFO level but mark it as action for custom formatting
+        extra = kwargs.get('extra', {})
+        extra['is_action'] = True
+        kwargs['extra'] = extra
+        super().info(message, **kwargs)
 
 
 # Register custom logger class

@@ -44,6 +44,8 @@ def init_report(suite_path):
 def before_test_case(case, data=None):
     log.info(f"Before test case: {case}")
     _testcase_start[case] = time.time()
+    # Store current test case name in context for scenario tracking
+    set_context('current_testcase', case)
 
 @BeforeScenario
 def start_scenario_timer(context, scenario):
@@ -142,7 +144,20 @@ def record_scenario_result(context, scenario):
     
     log.info(f"Scenario '{scenario_name}' captured {len(scenario_screenshots)} screenshots and {len(scenario_api_calls)} API calls")
 
-    # Record scenario with API calls included
+    # Build scenario data
+    scenario_data = {
+        "feature": feature_name,
+        "scenario": scenario_name,
+        "status": status,
+        "duration": round(duration, 2),
+        "screenshot": scenario_screenshots,
+        "steps": steps,
+        "category": category,
+        "api_calls": scenario_api_calls,
+        "error_message": error_message
+    }
+
+    # Record scenario globally (for cucumber.json)
     rg.record(
         feature_name,
         scenario_name,
@@ -154,6 +169,12 @@ def record_scenario_result(context, scenario):
         api_calls=scenario_api_calls,  # API calls from this scenario
         error_message=error_message  # Stacktrace if failed
     )
+    
+    # Also record scenario for current test case
+    current_testcase = get_context('current_testcase')
+    if current_testcase:
+        rg.record_scenario_for_testcase(current_testcase, scenario_data)
+        log.info(f"Linked scenario to test case: {current_testcase}")
 
     log.info(f"Recorded scenario: {scenario_name} - {status} - {duration:.2f}s - Screenshots: {len(scenario_screenshots)} - API calls: {len(scenario_api_calls)}")
 
@@ -186,7 +207,10 @@ def after_test_case(case, data=None):
     if not rg:
         return
 
-    rg.record_test_case_result(case, status, round(duration, 2), error_message=error_message)
+    # Get cucumber scenarios for this test case
+    cucumber_scenarios = rg.testcase_scenarios.get(case, [])
+
+    rg.record_test_case_result(case, status, round(duration, 2), error_message=error_message, cucumber=cucumber_scenarios)
 
     # Record all screenshots for the testcase (unchanged behavior)
     screenshots = get_context("screenshots") or []
@@ -198,11 +222,12 @@ def after_test_case(case, data=None):
     if api_calls:
         rg.testcase_api_calls[case] = api_calls
 
-    log.info(f"Recorded testcase: {case} - {status} - {duration:.2f}s - Total Screenshots: {len(screenshots)} - Total API calls: {len(api_calls)}")
+    log.info(f"Recorded testcase: {case} - {status} - {duration:.2f}s - Total Screenshots: {len(screenshots)} - Total API calls: {len(api_calls)} - Cucumber scenarios: {len(cucumber_scenarios)}")
 
     # cleanup
     set_context("screenshots", [])
     set_context("api_calls", [])
+    set_context('current_testcase', None)  # Clear current test case
 
 @AfterTestSuite
 @orbs_guard(ReportListenerException)

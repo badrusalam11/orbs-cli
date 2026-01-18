@@ -40,7 +40,8 @@ class ReportGenerator:
         self.overview = {}
         self.testcase_screenshots = []  # Track screenshots per test case
         self.current_page = 1  # Track current page number
-        self.testcase_api_calls = {}  
+        self.testcase_api_calls = {}
+        self.testcase_scenarios = {}  # Track scenarios per test case: {testcase_name: [scenarios]}  
     
     def generate_report_name(self, timestamp):
         now = timestamp
@@ -65,14 +66,22 @@ class ReportGenerator:
         })
 
     @orbs_guard(ReportGenerationException)
-    def record_test_case_result(self, name, status, duration, error_message=None):
+    def record_test_case_result(self, name, status, duration, error_message=None, cucumber=None):
         self.testcase_result.append({
             "name": name,
             "status": status,
             "duration": duration,
-            "error_message": error_message  # Add stacktrace/error message
+            "error_message": error_message,  # Add stacktrace/error message
+            "cucumber": cucumber or []  # Add cucumber scenarios
         }) 
 
+    @orbs_guard(ReportGenerationException)
+    def record_scenario_for_testcase(self, testcase_name, scenario_data):
+        """Record a scenario that belongs to a specific test case"""
+        if testcase_name not in self.testcase_scenarios:
+            self.testcase_scenarios[testcase_name] = []
+        self.testcase_scenarios[testcase_name].append(scenario_data)
+    
     @orbs_guard(ReportGenerationException)
     def record_screenshot(self, testcase_name, screenshot_path):
         # Check if testcase entry exists
@@ -121,19 +130,10 @@ class ReportGenerator:
         from xml.etree.ElementTree import Element, SubElement, tostring
         from xml.dom import minidom
         
-        # ✅ FIX: Always use testcase_result for accurate counts
-        # testcase_result contains the actual test execution results
-        # while self.results contains cucumber scenario details
-        if self.testcase_result:
-            total_tests = len(self.testcase_result)
-            total_failures = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'failed')
-            total_skipped = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'skipped')
-        else:
-            # Fallback to cucumber results if no test case results
-            total_tests = len(self.results) if self.results else 0
-            total_failures = sum(1 for r in self.results if r.get('status', '').lower() == 'failed')
-            total_skipped = sum(1 for r in self.results if r.get('status', '').lower() == 'skipped')
-        
+        # Use testcase_result as primary source (from result.json)
+        total_tests = len(self.testcase_result)
+        total_failures = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'failed')
+        total_skipped = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'skipped')
         total_errors = 0  # Orbs doesn't distinguish errors from failures
         total_time = self.overriew.get('duration', 0)
         
@@ -147,84 +147,71 @@ class ReportGenerator:
         testsuites.set('time', f"{total_time:.3f}")
         testsuites.set('timestamp', self.overriew.get('start_time', ''))
         
-        if self.results:  # Cucumber/BDD scenarios
-            # Group by feature
-            features = {}
-            for item in self.results:
-                feature = item['feature']
-                if feature not in features:
-                    features[feature] = []
-                features[feature].append(item)
+        # Create one testsuite for all test cases
+        testsuite = SubElement(testsuites, 'testsuite')
+        testsuite.set('name', 'Test Cases')
+        testsuite.set('tests', str(total_tests))
+        testsuite.set('failures', str(total_failures))
+        testsuite.set('errors', '0')
+        testsuite.set('skipped', str(total_skipped))
+        testsuite.set('time', f"{total_time:.3f}")
+        
+        # Add each test case as <testcase>
+        for tc in self.testcase_result:
+            testcase = SubElement(testsuite, 'testcase')
+            testcase.set('name', tc['name'])
+            testcase.set('classname', tc['name'])
+            testcase.set('time', f"{tc['duration']:.3f}")
             
-            # Create testsuite per feature
-            for feature_name, scenarios in features.items():
-                testsuite = SubElement(testsuites, 'testsuite')
-                testsuite.set('name', feature_name)
-                testsuite.set('tests', str(len(scenarios)))
-                testsuite.set('failures', str(sum(1 for s in scenarios if s['status'].lower() == 'failed')))
-                testsuite.set('errors', '0')
-                testsuite.set('skipped', str(sum(1 for s in scenarios if s['status'].lower() == 'skipped')))
-                testsuite.set('time', f"{sum(s['duration'] for s in scenarios):.3f}")
+            status = tc['status'].lower()
+            
+            # Add failure info if failed
+            if status == 'failed':
+                failure = SubElement(testcase, 'failure')
+                failure.set('message', f"Test case '{tc['name']}' failed")
+                failure.set('type', 'AssertionError')
                 
-                # Add testcases (scenarios)
-                for scenario in scenarios:
-                    testcase = SubElement(testsuite, 'testcase')
-                    testcase.set('name', scenario['scenario'])
-                    testcase.set('classname', f"{feature_name}.{scenario['scenario']}")
-                    testcase.set('time', f"{scenario['duration']:.3f}")
-                    
-                    # Add failure/skipped info
-                    status = scenario['status'].lower()
-                    if status == 'failed':
-                        failure = SubElement(testcase, 'failure')
-                        failure.set('message', f"Scenario '{scenario['scenario']}' failed")
-                        failure.set('type', 'AssertionError')
+                # Build failure text with cucumber scenarios if available
+                failure_text = []
+                
+                # Add cucumber scenario details if available
+                cucumber_scenarios = tc.get('cucumber', [])
+                if cucumber_scenarios:
+                    for scenario in cucumber_scenarios:
+                        failure_text.append(f"\n--- Scenario: {scenario['scenario']} ---")
+                        failure_text.append(f"Status: {scenario['status']}")
+                        failure_text.append(f"Duration: {scenario['duration']:.2f}s")
                         
-                        # Add step details and stacktrace
-                        failure_text = []
+                        # Add step details
                         for step in scenario.get('steps', []):
                             step_status = step.get('status', 'UNKNOWN')
-                            failure_text.append(f"{step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
+                            failure_text.append(f"  {step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
                         
-                        # Add stacktrace if available
+                        # Add scenario stacktrace if available
                         if scenario.get('error_message'):
-                            failure_text.append('\n--- Stacktrace ---')
+                            failure_text.append('\n--- Scenario Stacktrace ---')
                             failure_text.append(scenario['error_message'])
-                        
-                        failure.text = '\n'.join(failure_text)
-                    
-                    elif status == 'skipped':
-                        skipped = SubElement(testcase, 'skipped')
-                        skipped.set('message', 'Test skipped')
-        
-        else:  # Regular test cases
-            testsuite = SubElement(testsuites, 'testsuite')
-            testsuite.set('name', 'Test Cases')
-            testsuite.set('tests', str(len(self.testcase_result)))
-            testsuite.set('failures', str(sum(1 for t in self.testcase_result if t['status'].lower() == 'failed')))
-            testsuite.set('errors', '0')
-            testsuite.set('skipped', str(sum(1 for t in self.testcase_result if t['status'].lower() == 'skipped')))
-            testsuite.set('time', f"{sum(t['duration'] for t in self.testcase_result):.3f}")
-            
-            for test in self.testcase_result:
-                testcase = SubElement(testsuite, 'testcase')
-                testcase.set('name', test['name'])
-                testcase.set('classname', test['name'])
-                testcase.set('time', f"{test['duration']:.3f}")
                 
-                status = test['status'].lower()
-                if status == 'failed':
-                    failure = SubElement(testcase, 'failure')
-                    failure.set('message', f"Test case '{test['name']}' failed")
-                    failure.set('type', 'AssertionError')
-                    
-                    # Add stacktrace if available
-                    if test.get('error_message'):
-                        failure.text = test['error_message']
-                    
-                elif status == 'skipped':
-                    skipped = SubElement(testcase, 'skipped')
-                    skipped.set('message', 'Test skipped')
+                # Add test case stacktrace if available
+                if tc.get('error_message'):
+                    failure_text.append('\n--- Test Case Stacktrace ---')
+                    failure_text.append(tc['error_message'])
+                
+                if failure_text:
+                    failure.text = '\n'.join(failure_text)
+            
+            elif status == 'skipped':
+                skipped = SubElement(testcase, 'skipped')
+                skipped.set('message', 'Test skipped')
+            
+            # Add properties for cucumber scenarios (optional metadata)
+            cucumber_scenarios = tc.get('cucumber', [])
+            if cucumber_scenarios:
+                properties = SubElement(testcase, 'properties')
+                for idx, scenario in enumerate(cucumber_scenarios, 1):
+                    prop = SubElement(properties, 'property')
+                    prop.set('name', f'cucumber_scenario_{idx}')
+                    prop.set('value', f"{scenario['scenario']} - {scenario['status']} ({scenario['duration']:.2f}s)")
         
         # Pretty print XML
         xml_string = minidom.parseString(tostring(testsuites, encoding='utf-8')).toprettyxml(indent="  ")
@@ -839,199 +826,205 @@ class ReportGenerator:
         <h2 class="section-title">📊 Detailed Results</h2>
 """
         
-        # Add test case error details first (for failed tests without cucumber scenarios)
-        if not scenarios:
-            failed_tests = [tc for tc in test_cases if tc['status'].lower() == 'failed' and tc.get('error_message')]
-            if failed_tests:
-                html += """        <div class="detail-section">
-            <div class="detail-header" onclick="toggleDetail('test-errors')">
-                <h3 style="color: #e74c3c;">⚠️ Failed Test Cases - Error Details</h3>
-                <span class="collapse-icon" id="icon-test-errors">▼</span>
+        # Render test cases with their details (now using tc['cucumber'] array)
+        for tc_idx, tc in enumerate(test_cases, 1):
+            tc_name = tc['name']
+            tc_status = tc['status'].lower()
+            tc_duration = tc['duration']
+            tc_id = tc_name.replace('/', '-').replace('\\', '-').replace('.', '-')
+            
+            # Find screenshots for this test case
+            tc_screenshots = []
+            for entry in screenshots_data:
+                if entry['testcase_name'] == tc_name:
+                    tc_screenshots = entry['screenshots']
+                    break
+            
+            # Find API calls for this test case
+            tc_api_calls = self.testcase_api_calls.get(tc_name, [])
+            
+            # Start test case section
+            html += f"""        <div class="detail-section">
+            <div class="detail-header" onclick="toggleDetail('tc-{tc_id}')">
+                <h3>
+                    <span class="badge {tc_status}">{tc_status.upper()}</span>
+                    {tc_idx}. {tc_name}
+                    <span style="float: right; color: #7f8c8d; font-size: 14px; margin-left: 15px;">{int(tc_duration//60)}m {int(tc_duration%60)}s</span>
+                </h3>
+                <span class="collapse-icon" id="icon-tc-{tc_id}">▼</span>
             </div>
-            <div class="detail-content show" id="test-errors">
+            <div class="detail-content" id="tc-{tc_id}">
 """
+            
+            # If test case failed and has error message (no cucumber scenarios)
+            if tc_status == 'failed' and tc.get('error_message'):
+                error_msg = tc['error_message']
+                error_msg = error_msg.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
                 
-                for tc_idx, tc in enumerate(failed_tests, 1):
-                    error_msg = tc['error_message']
-                    # Escape HTML special characters
-                    error_msg = error_msg.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                    
-                    html += f"""                <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border-left: 4px solid #e74c3c;">
-                    <h4 style="color: #e74c3c; margin-bottom: 10px;">
-                        {tc_idx}. {tc['name']}
-                    </h4>
-                    <div class="stacktrace">{error_msg}</div>
+                html += f"""                <div class="error-alert">
+                    <div>
+                        <strong>Test case failed with error:</strong>
+                        <div class="stacktrace" style="margin-top: 10px;">{error_msg}</div>
+                    </div>
                 </div>
 """
-                
-                html += """            </div>
-        </div>
+            
+            # Get cucumber scenarios for this specific test case
+            tc_cucumber_scenarios = tc.get('cucumber', [])
+            
+            # If this test case has cucumber scenarios
+            if tc_cucumber_scenarios:
+                # Show scenarios (grouped by feature)
+                current_feature = None
+                for scenario_idx, scenario in enumerate(tc_cucumber_scenarios, 1):
+                    # Start new feature group if needed
+                    if scenario['feature'] != current_feature:
+                        if current_feature is not None:
+                            html += "                </div>\n"  # Close previous feature group
+                        current_feature = scenario['feature']
+                        html += f"""                <div style="margin: 20px 0; padding: 15px; background: #f0f4ff; border-radius: 8px;">
+                    <h4 style="margin-bottom: 15px; color: #667eea;">🎭 Feature: {current_feature}</h4>
 """
-        
-        # Add cucumber scenarios if available
-        if scenarios:
-            current_feature = None
-            for idx, scenario in enumerate(scenarios, 1):
-                if scenario['feature'] != current_feature:
-                    if current_feature is not None:
-                        html += "</div></div>"  # Close previous feature
-                    current_feature = scenario['feature']
-                    html += f"""        <div class="detail-section">
-            <div class="detail-header" onclick="toggleDetail('feature-{idx}')">
-                <h3>🎭 Feature: {current_feature}</h3>
-                <span class="collapse-icon" id="icon-feature-{idx}">▼</span>
-            </div>
-            <div class="detail-content" id="feature-{idx}">
-"""
-                
-                # Scenario detail
-                status_class = scenario['status'].lower()
-                html += f"""                <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <h4 style="margin-bottom: 10px;">
-                        <span class="badge {status_class}">{scenario['status'].upper()}</span>
-                        Scenario: {scenario['scenario']}
-                        <span style="float: right; color: #7f8c8d; font-size: 14px;">{scenario['duration']:.2f}s</span>
-                    </h4>
-"""
-                
-                # Steps
-                if scenario.get('steps'):
-                    html += """                    <div style="margin-top: 15px;">
-                        <strong>Steps:</strong>
-"""
-                    for step in scenario['steps']:
-                        step_status = step['status'].lower()
-                        html += f"""                        <div class="step {step_status}">
-                            <span class="keyword">{step['keyword']}</span>{step['name']}
-                            <span class="duration">{step['duration']:.2f}s</span>
-                        </div>
-"""
-                    html += "                    </div>\n"
-                
-                # Error Message / Stacktrace (expandable) - Show if failed
-                if status_class == 'failed' and scenario.get('error_message'):
-                    error_msg = scenario['error_message']
-                    # Escape HTML special characters
-                    error_msg = error_msg.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
                     
-                    html += f"""                    <div style="margin-top: 20px;">
-                        <div class="detail-header" onclick="toggleDetail('error-{idx}')">
-                            <strong style="color: #e74c3c;">⚠️ Error Details & Stacktrace</strong>
-                            <span class="collapse-icon" id="icon-error-{idx}">▼</span>
-                        </div>
-                        <div class="detail-content" id="error-{idx}">
-                            <div class="stacktrace">{error_msg}</div>
-                        </div>
-                    </div>
+                    # Scenario detail
+                    status_class = scenario['status'].lower()
+                    html += f"""                    <div style="margin: 15px 0; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid {'#27ae60' if status_class == 'passed' else '#e74c3c' if status_class == 'failed' else '#f39c12'};">
+                        <h5 style="margin-bottom: 10px;">
+                            <span class="badge {status_class}">{scenario['status'].upper()}</span>
+                            Scenario: {scenario['scenario']}
+                            <span style="float: right; color: #7f8c8d; font-size: 13px;">{scenario['duration']:.2f}s</span>
+                        </h5>
 """
-                
-                # API Calls
-                if scenario.get('api_calls'):
-                    html += """                    <div style="margin-top: 20px;">
-                        <div class="detail-header" onclick="toggleDetail('api-{}-{}')">
-                            <strong>🌐 API Calls ({} calls)</strong>
-                            <span class="collapse-icon" id="icon-api-{}-{}">▼</span>
-                        </div>
-                        <div class="detail-content" id="api-{}-{}">
-""".format(idx, scenario['scenario'].replace(' ', '-'), len(scenario['api_calls']), idx, scenario['scenario'].replace(' ', '-'), idx, scenario['scenario'].replace(' ', '-'))
                     
-                    for api_idx, call in enumerate(scenario['api_calls'], 1):
-                        method = call.get('method', '').upper()
-                        url = call.get('url', '')
-                        req = call.get('kwargs', {})
-                        resp = call.get('response_body', '')
+                    # Steps
+                    if scenario.get('steps'):
+                        html += """                        <div style="margin-top: 15px;">
+                            <strong style="font-size: 13px;">Steps:</strong>
+"""
+                        for step in scenario['steps']:
+                            step_status = step['status'].lower()
+                            html += f"""                            <div class="step {step_status}">
+                                <span class="keyword">{step['keyword']}</span>{step['name']}
+                                <span class="duration">{step['duration']:.2f}s</span>
+                            </div>
+"""
+                        html += "                        </div>\n"
+                    
+                    # Error stacktrace for failed scenarios
+                    if status_class == 'failed' and scenario.get('error_message'):
+                        error_msg = scenario['error_message']
+                        error_msg = error_msg.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
                         
-                        html += f"""                            <div class="api-call">
-                                <div class="api-header">
-                                    <span class="api-method {method}">{method}</span>
-                                    <span class="api-url">{url}</span>
-                                </div>
-                                <div class="api-body">
+                        html += f"""                        <div style="margin-top: 15px;">
+                            <div class="detail-header" onclick="toggleDetail('scenario-error-{tc_id}-{scenario_idx}')">
+                                <strong style="color: #e74c3c;">⚠️ Error Details</strong>
+                                <span class="collapse-icon" id="icon-scenario-error-{tc_id}-{scenario_idx}">▼</span>
+                            </div>
+                            <div class="detail-content" id="scenario-error-{tc_id}-{scenario_idx}">
+                                <div class="stacktrace">{error_msg}</div>
+                            </div>
+                        </div>
+"""
+                    
+                    # API Calls for this scenario
+                    if scenario.get('api_calls'):
+                        html += f"""                        <div style="margin-top: 15px;">
+                            <div class="detail-header" onclick="toggleDetail('scenario-api-{tc_id}-{scenario_idx}')">
+                                <strong>🌐 API Calls ({len(scenario['api_calls'])} calls)</strong>
+                                <span class="collapse-icon" id="icon-scenario-api-{tc_id}-{scenario_idx}">▼</span>
+                            </div>
+                            <div class="detail-content" id="scenario-api-{tc_id}-{scenario_idx}">
 """
                         
-                        # Request
-                        if req:
-                            if 'json' in req:
-                                req_body = json.dumps(req['json'], indent=2)
-                            else:
-                                req_body = str(req.get('data', ''))
+                        for api_idx, call in enumerate(scenario['api_calls'], 1):
+                            method = call.get('method', '').upper()
+                            url = call.get('url', '')
+                            req = call.get('kwargs', {})
+                            resp = call.get('response_body', '')
                             
-                            if req_body and req_body.strip():
-                                html += f"""                                    <h4>Request:</h4>
-                                    <pre>{req_body[:500]}{'...' if len(req_body) > 500 else ''}</pre>
+                            html += f"""                                <div class="api-call">
+                                    <div class="api-header">
+                                        <span class="api-method {method}">{method}</span>
+                                        <span class="api-url">{url}</span>
+                                    </div>
+                                    <div class="api-body">
+"""
+                            
+                            if req:
+                                if 'json' in req:
+                                    req_body = json.dumps(req['json'], indent=2)
+                                else:
+                                    req_body = str(req.get('data', ''))
+                                
+                                if req_body and req_body.strip():
+                                    html += f"""                                        <h4>Request:</h4>
+                                        <pre>{req_body[:500]}{'...' if len(req_body) > 500 else ''}</pre>
+"""
+                            
+                            if resp and resp.strip():
+                                html += f"""                                        <h4>Response:</h4>
+                                        <pre>{resp[:500]}{'...' if len(resp) > 500 else ''}</pre>
+"""
+                            
+                            html += """                                    </div>
+                                </div>
 """
                         
-                        # Response
-                        if resp and resp.strip():
-                            html += f"""                                    <h4>Response:</h4>
-                                    <pre>{resp[:500]}{'...' if len(resp) > 500 else ''}</pre>
+                        html += """                            </div>
+                        </div>
+"""
+                    
+                    # Screenshots for this scenario
+                    if scenario.get('screenshot'):
+                        screenshots_list = scenario['screenshot']
+                        html += f"""                        <div style="margin-top: 15px;">
+                            <div class="detail-header" onclick="toggleDetail('scenario-ss-{tc_id}-{scenario_idx}')">
+                                <strong>📸 Screenshots ({len(screenshots_list)} images)</strong>
+                                <span class="collapse-icon" id="icon-scenario-ss-{tc_id}-{scenario_idx}">▼</span>
+                            </div>
+                            <div class="detail-content" id="scenario-ss-{tc_id}-{scenario_idx}">
+                                <div class="screenshot-gallery">
+"""
+                        
+                        for img_idx, img_path in enumerate(screenshots_list):
+                            img_data = encode_image(img_path)
+                            if img_data:
+                                html += f"""                                    <div class="screenshot-item" onclick="showModal('{img_data}')">
+                                        <img src="{img_data}" alt="Screenshot {img_idx + 1}">
+                                    </div>
 """
                         
                         html += """                                </div>
                             </div>
-"""
-                    
-                    html += """                        </div>
-                    </div>
-"""
-                
-                # Screenshots (collapsible)
-                if scenario.get('screenshot'):
-                    screenshots = scenario['screenshot']
-                    html += f"""                    <div style="margin-top: 20px;">
-                        <div class="detail-header" onclick="toggleDetail('screenshot-{idx}')">
-                            <strong>📸 Screenshots ({len(screenshots)} images)</strong>
-                            <span class="collapse-icon" id="icon-screenshot-{idx}">▼</span>
                         </div>
-                        <div class="detail-content" id="screenshot-{idx}">
-                            <div class="screenshot-gallery">
 """
                     
-                    for img_idx, img_path in enumerate(screenshots):
-                        img_data = encode_image(img_path)
-                        if img_data:
-                            html += f"""                                <div class="screenshot-item" onclick="showModal('{img_data}')">
-                                    <img src="{img_data}" alt="Screenshot {img_idx + 1}">
-                                </div>
-"""
-                    
-                    html += """                            </div>
-                        </div>
-                    </div>
-"""
+                    html += "                    </div>\n"
                 
-                html += "                </div>\n"
+                if current_feature:
+                    html += "                </div>\n"  # Close last feature group
             
-            if current_feature:
-                html += "            </div>\n        </div>\n"
-        
-        # Test case screenshots (if no scenarios)
-        elif screenshots_data:
-            for entry in screenshots_data:
-                tc_name = entry['testcase_name']
-                screenshots = entry['screenshots']
-                
-                html += f"""        <div class="detail-section">
-            <div class="detail-header" onclick="toggleDetail('tc-{tc_name.replace('/', '-')}')">
-                <h3>📸 {tc_name}</h3>
-                <span class="collapse-icon" id="icon-tc-{tc_name.replace('/', '-')}">▼</span>
-            </div>
-            <div class="detail-content" id="tc-{tc_name.replace('/', '-')}">
-                <div class="screenshot-gallery">
+            # If no cucumber scenarios, show screenshots directly (test case level)
+            elif tc_screenshots:
+                html += f"""                <div style="margin-top: 15px;">
+                    <strong>📸 Screenshots ({len(tc_screenshots)} images)</strong>
+                    <div class="screenshot-gallery" style="margin-top: 10px;">
 """
                 
-                for img_idx, img_path in enumerate(screenshots):
+                for img_idx, img_path in enumerate(tc_screenshots):
                     img_data = encode_image(img_path)
                     if img_data:
-                        html += f"""                    <div class="screenshot-item" onclick="showModal('{img_data}')">
-                        <img src="{img_data}" alt="Screenshot {img_idx + 1}">
-                    </div>
+                        html += f"""                        <div class="screenshot-item" onclick="showModal('{img_data}')">
+                            <img src="{img_data}" alt="Screenshot {img_idx + 1}">
+                        </div>
 """
                 
-                html += """                </div>
-            </div>
-        </div>
+                html += """                    </div>
+                </div>
 """
+            
+            # Close test case section
+            html += "            </div>\n        </div>\n"
         
         # Modal and scripts
         html += f"""    </div>

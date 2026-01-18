@@ -20,6 +20,9 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException,
 
 from ..browser_factory import BrowserFactory
 from ..thread_context import get_context, set_context
+from ..guard import orbs_guard
+from ..exception import WebActionException
+from ..log import log
 
 
 class Web:
@@ -127,35 +130,43 @@ class Web:
     
     # Navigation methods
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda url, **_: f"Failed to open URL: {url}"
+    )
     def open(cls, url: str):
         """Open a URL in the browser"""
         driver = cls._get_driver()
         driver.get(url)
-        print(f"Opened URL: {url}")
+        log.action(f"Opened URL: {url}")
     
     @classmethod
     def refresh(cls):
         """Refresh the current page"""
         driver = cls._get_driver()
         driver.refresh()
-        print("Page refreshed")
+        log.action("Page refreshed")
     
     @classmethod
     def back(cls):
         """Go back to previous page"""
         driver = cls._get_driver()
         driver.back()
-        print("Navigated back")
+        log.action("Navigated back")
     
     @classmethod
     def forward(cls):
         """Go forward to next page"""
         driver = cls._get_driver()
         driver.forward()
-        print("Navigated forward")
+        log.action("Navigated forward")
     
     # Element interaction methods
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Click failed on element: {locator}"
+    )
     def click(cls, locator: str, timeout: Optional[int] = None, retry_count: int = 3):
         """Click on an element with retry logic for stale elements"""
         wait_time = timeout or cls._wait_timeout
@@ -169,12 +180,12 @@ class Web:
                 # Wait for element to be clickable (combines presence + clickable checks)
                 element = wait.until(EC.element_to_be_clickable((by, value)))
                 element.click()
-                print(f"Clicked element: {locator}")
+                log.action(f"Clicked element: {locator}")
                 return
                 
             except StaleElementReferenceException:
                 if attempt < retry_count - 1:
-                    print(f"Stale element detected, retrying click on {locator} (attempt {attempt + 1})")
+                    log.debug(f"Stale element detected, retrying click on {locator} (attempt {attempt + 1})")
                     time.sleep(0.5)
                     continue
                 else:
@@ -183,13 +194,17 @@ class Web:
                 raise TimeoutException(f"Element not clickable: {locator} (timeout: {wait_time}s)")
             except Exception as e:
                 if attempt < retry_count - 1:
-                    print(f"Click failed, retrying: {e}")
+                    log.debug(f"Click failed, retrying: {e}")
                     time.sleep(0.5)
                     continue
                 else:
                     raise
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Double click failed on element: {locator}"
+    )
     def double_click(cls, locator: str, timeout: Optional[int] = None):
         """Double click on an element"""
         from selenium.webdriver.common.action_chains import ActionChains
@@ -198,9 +213,13 @@ class Web:
         
         actions = ActionChains(driver)
         actions.double_click(element).perform()
-        print(f"Double clicked element: {locator}")
+        log.action(f"Double clicked element: {locator}")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Right click failed on element: {locator}"
+    )
     def right_click(cls, locator: str, timeout: Optional[int] = None):
         """Right click on an element"""
         from selenium.webdriver.common.action_chains import ActionChains
@@ -209,9 +228,13 @@ class Web:
         
         actions = ActionChains(driver)
         actions.context_click(element).perform()
-        print(f"Right clicked element: {locator}")
+        log.action(f"Right clicked element: {locator}")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, text, **_: f"Set text '{text}' failed on element: {locator}"
+    )
     def set_text(cls, locator: str, text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3):
         """Set text into an element with retry logic"""
         wait_time = timeout or cls._wait_timeout
@@ -228,19 +251,19 @@ class Web:
                     element.clear()
                 
                 element.send_keys(text)
-                print(f"Set text '{text}' into element: {locator}")
+                log.action(f"Set text '{text}' into element: {locator}")
                 return
                 
             except StaleElementReferenceException:
                 if attempt < retry_count - 1:
-                    print(f"Stale element detected, retrying set_text on {locator} (attempt {attempt + 1})")
+                    log.debug(f"Stale element detected, retrying set_text on {locator} (attempt {attempt + 1})")
                     time.sleep(0.5)
                     continue
                 else:
                     raise
             except Exception as e:
                 if attempt < retry_count - 1:
-                    print(f"Set text failed, retrying: {e}")
+                    log.debug(f"Set text failed, retrying: {e}")
                     time.sleep(0.5)
                     continue
                 else:
@@ -249,56 +272,84 @@ class Web:
     @classmethod
     def type(cls, locator: str, text: str, timeout: Optional[int] = None, clear_first: bool = True):
         """Type text into an element (deprecated: use set_text instead)"""
-        print("⚠️  Warning: Web.type() is deprecated, use Web.set_text() instead")
+        log.warning("Web.type() is deprecated, use Web.set_text() instead")
         return cls.set_text(locator, text, timeout, clear_first)
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Clear failed on element: {locator}"
+    )
     def clear(cls, locator: str, timeout: Optional[int] = None):
         """Clear text from an element"""
         element = cls._find_element(locator, timeout)
         element.clear()
-        print(f"Cleared element: {locator}")
+        log.action(f"Cleared element: {locator}")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Submit failed on form element: {locator}"
+    )
     def submit(cls, locator: str, timeout: Optional[int] = None):
         """Submit a form element"""
         element = cls._find_element(locator, timeout)
         element.submit()
-        print(f"Submitted form element: {locator}")
+        log.action(f"Submitted form element: {locator}")
     
     # Selection methods
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, text, **_: f"Select by text '{text}' failed on element: {locator}"
+    )
     def select_by_text(cls, locator: str, text: str, timeout: Optional[int] = None):
         """Select option by visible text"""
         element = cls._find_element(locator, timeout)
         select = Select(element)
         select.select_by_visible_text(text)
-        print(f"Selected option '{text}' from element: {locator}")
+        log.action(f"Selected option '{text}' from element: {locator}")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, value, **_: f"Select by value '{value}' failed on element: {locator}"
+    )
     def select_by_value(cls, locator: str, value: str, timeout: Optional[int] = None):
         """Select option by value"""
         element = cls._find_element(locator, timeout)
         select = Select(element)
         select.select_by_value(value)
-        print(f"Selected option with value '{value}' from element: {locator}")
+        log.action(f"Selected option with value '{value}' from element: {locator}")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, index, **_: f"Select by index {index} failed on element: {locator}"
+    )
     def select_by_index(cls, locator: str, index: int, timeout: Optional[int] = None):
         """Select option by index"""
         element = cls._find_element(locator, timeout)
         select = Select(element)
         select.select_by_index(index)
-        print(f"Selected option at index {index} from element: {locator}")
+        log.action(f"Selected option at index {index} from element: {locator}")
     
     # Wait methods
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Wait for element failed: {locator}"
+    )
     def wait_for_element(cls, locator: str, timeout: Optional[int] = None):
         """Wait for element to be present"""
         cls._find_element(locator, timeout)
-        print(f"Element found: {locator}")
+        log.action(f"Element found: {locator}")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Wait for visible failed: {locator}"
+    )
     def wait_for_visible(cls, locator: str, timeout: Optional[int] = None):
         """Wait for element to be visible"""
         driver = cls._get_driver()
@@ -308,11 +359,15 @@ class Web:
         try:
             wait = WebDriverWait(driver, wait_time)
             wait.until(EC.visibility_of_element_located((by, value)))
-            print(f"Element is visible: {locator}")
+            log.action(f"Element is visible: {locator}")
         except TimeoutException:
             raise TimeoutException(f"Element not visible: {locator} (timeout: {wait_time}s)")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Wait for clickable failed: {locator}"
+    )
     def wait_for_clickable(cls, locator: str, timeout: Optional[int] = None):
         """Wait for element to be clickable"""
         driver = cls._get_driver()
@@ -322,7 +377,7 @@ class Web:
         try:
             wait = WebDriverWait(driver, wait_time)
             wait.until(EC.element_to_be_clickable((by, value)))
-            print(f"Element is clickable: {locator}")
+            log.action(f"Element is clickable: {locator}")
         except TimeoutException:
             raise TimeoutException(f"Element not clickable: {locator} (timeout: {wait_time}s)")
     
@@ -330,7 +385,7 @@ class Web:
     def sleep(cls, seconds: float):
         """Sleep for specified seconds"""
         time.sleep(seconds)
-        print(f"Slept for {seconds} seconds")
+        log.action(f"Slept for {seconds} seconds")
     
     # Verification methods
     @classmethod
@@ -352,64 +407,80 @@ class Web:
             return False
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Get text failed on element: {locator}"
+    )
     def get_text(cls, locator: str, timeout: Optional[int] = None) -> str:
         """Get text content of element"""
         element = cls._find_element(locator, timeout)
         text = element.text
-        print(f"Got text '{text}' from element: {locator}")
+        log.action(f"Got text '{text}' from element: {locator}")
         return text
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, attribute, **_: f"Get attribute '{attribute}' failed on element: {locator}"
+    )
     def get_attribute(cls, locator: str, attribute: str, timeout: Optional[int] = None) -> str:
         """Get attribute value of element"""
         element = cls._find_element(locator, timeout)
         value = element.get_attribute(attribute)
-        print(f"Got attribute '{attribute}' = '{value}' from element: {locator}")
+        log.action(f"Got attribute '{attribute}' = '{value}' from element: {locator}")
         return value
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, expected_text, **_: f"Verify text '{expected_text}' failed on element: {locator}"
+    )
     def verify_text(cls, locator: str, expected_text: str, timeout: Optional[int] = None):
         """Verify element text matches expected"""
         actual_text = cls.get_text(locator, timeout)
         if actual_text != expected_text:
             raise AssertionError(f"Text mismatch. Expected: '{expected_text}', Actual: '{actual_text}'")
-        print(f"Text verified: '{expected_text}' in element: {locator}")
+        log.action(f"Text verified: '{expected_text}' in element: {locator}")
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, expected_text, **_: f"Verify text contains '{expected_text}' failed on element: {locator}"
+    )
     def verify_text_contains(cls, locator: str, expected_text: str, timeout: Optional[int] = None):
         """Verify element text contains expected text"""
         actual_text = cls.get_text(locator, timeout)
         if expected_text not in actual_text:
             raise AssertionError(f"Text '{expected_text}' not found in actual text: '{actual_text}'")
-        print(f"Text contains verified: '{expected_text}' in element: {locator}")
+        log.action(f"Text contains verified: '{expected_text}' in element: {locator}")
     
     # Browser management
     @classmethod
     def set_timeout(cls, seconds: int):
         """Set default wait timeout"""
         cls._wait_timeout = seconds
-        print(f"Default timeout set to {seconds} seconds")
+        log.action(f"Default timeout set to {seconds} seconds")
     
     @classmethod
     def maximize_window(cls):
         """Maximize browser window"""
         driver = cls._get_driver()
         driver.maximize_window()
-        print("Browser window maximized")
+        log.action("Browser window maximized")
     
     @classmethod
     def set_window_size(cls, width: int, height: int):
         """Set browser window size"""
         driver = cls._get_driver()
         driver.set_window_size(width, height)
-        print(f"Window size set to {width}x{height}")
+        log.action(f"Window size set to {width}x{height}")
     
     @classmethod
     def get_title(cls) -> str:
         """Get page title"""
         driver = cls._get_driver()
         title = driver.title
-        print(f"Page title: {title}")
+        log.action(f"Page title: {title}")
         return title
     
     @classmethod
@@ -417,10 +488,14 @@ class Web:
         """Get current URL"""
         driver = cls._get_driver()
         url = driver.current_url
-        print(f"Current URL: {url}")
+        log.action(f"Current URL: {url}")
         return url
     
     @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda filename=None, **_: f"Take screenshot failed: {filename or 'auto-generated'}"
+    )
     def take_screenshot(cls, filename: str = None) -> str:
         """Take screenshot and return path"""
         driver = cls._get_driver()
@@ -430,7 +505,7 @@ class Web:
             filename = f"screenshot_{timestamp}.png"
         
         path = driver.save_screenshot(filename)
-        print(f"Screenshot saved: {filename}")
+        log.action(f"Screenshot saved: {filename}")
         return filename
     
     @classmethod
@@ -439,7 +514,7 @@ class Web:
         driver = get_context('web_driver')
         if driver:
             driver.close()
-            print("Browser window closed")
+            log.info("Browser window closed")
     
     @classmethod
     def quit(cls):
@@ -449,9 +524,9 @@ class Web:
             if driver:
                 try:
                     driver.quit()
-                    print("Browser session ended")
+                    log.info("Browser session ended")
                 except Exception as e:
-                    print(f"Warning: Error during quit: {e}")
+                    log.warning(f"Error during quit: {e}")
                 finally:
                     from ..thread_context import delete_context
                     delete_context('web_driver')
@@ -489,9 +564,9 @@ class Web:
             if driver:
                 try:
                     driver.quit()
-                    print("Driver quit successfully")
+                    log.debug("Driver quit successfully")
                 except Exception as e:
-                    print(f"Warning: Error quitting driver: {e}")
+                    log.warning(f"Error quitting driver: {e}")
                     # Force kill any remaining processes
                     try:
                         import psutil
@@ -512,4 +587,4 @@ class Web:
                     # Clear driver from thread context
                     from ..thread_context import delete_context
                     delete_context('web_driver')
-                    print("Driver reset for next test case")
+                    log.info("Driver reset for next test case")

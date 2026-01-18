@@ -70,3 +70,16 @@ class DependencyException(OrbsException):
             error_code="DEPENDENCY_ERROR"
         )
   
+class WebActionException(OrbsException):
+    """Exception for web action failures."""
+    def __init__(self, message=None):
+        if message is None:
+            message = "Web action error occurred"
+        super().__init__(message, error_code="WEB_ACTION_ERROR")
+
+class MobileActionException(OrbsException):
+    """Exception for mobile action failures."""
+    def __init__(self, message=None):
+        if message is None:
+            message = "Mobile action error occurred"
+        super().__init__(message, error_code="MOBILE_ACTION_ERROR")
