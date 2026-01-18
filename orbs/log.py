@@ -2,7 +2,8 @@
 import logging
 import sys
 import os
-
+import threading
+from .thread_context import get_context
 
 # Detect whether to use colors (disable in CI or non-TTY)
 USE_COLOR = sys.stdout.isatty() and not os.getenv("CI")
@@ -23,6 +24,10 @@ class ColorFormatter(logging.Formatter):
         # Special handling for ACTION level - replace levelname
         if hasattr(record, 'is_action') and record.is_action:
             record.levelname = "ACTION"
+        
+        # Add test_id to the record if available in context
+        test_id = get_context('test_id') or 'MAIN'
+        record.test_id = test_id
         
         message = super().format(record)
         if not USE_COLOR:
@@ -81,9 +86,60 @@ log = logging.getLogger("orbs")
 log.setLevel(logging.DEBUG)
 
 if not log.handlers:
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = ColorFormatter(
-        "[%(asctime)s] %(levelname)s: %(message)s"
+    # Console handler with colors
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_formatter = ColorFormatter(
+        "[%(asctime)s][%(test_id)s] %(levelname)s: %(message)s"
     )
-    handler.setFormatter(formatter)
-    log.addHandler(handler)
+    console_handler.setFormatter(console_formatter)
+    log.addHandler(console_handler)
+
+# Track file handlers per thread (for parallel execution)
+_file_handlers_lock = threading.Lock()
+_file_handlers = {}  # {test_id: file_handler}
+
+class TestIdFilter(logging.Filter):
+    """Filter that only allows logs matching a specific test_id"""
+    def __init__(self, test_id):
+        super().__init__()
+        self.test_id = test_id
+    
+    def filter(self, record):
+        # Only allow logs with matching test_id (or MAIN for global logs)
+        record_test_id = getattr(record, 'test_id', 'MAIN')
+        return record_test_id == self.test_id
+
+def add_test_file_handler(test_id):
+    """Add file handler for specific test ID (thread-safe)"""
+    with _file_handlers_lock:
+        # Create logs directory if not exists
+        os.makedirs("logs", exist_ok=True)
+        
+        # Create new file handler for this test
+        file_handler = logging.FileHandler(f"logs/{test_id}.log", mode='w')
+        file_formatter = logging.Formatter(
+            "[%(asctime)s][%(test_id)s] %(levelname)s: %(message)s"
+        )
+        file_handler.setFormatter(file_formatter)
+        
+        # Add filter so only matching test_id logs go to this file
+        file_handler.addFilter(TestIdFilter(test_id))
+        
+        log.addHandler(file_handler)
+        
+        # Store handler by test_id
+        _file_handlers[test_id] = file_handler
+
+def remove_test_file_handler():
+    """Remove file handler for current test ID (thread-safe)"""
+    from .thread_context import get_context
+    test_id = get_context('test_id')
+    
+    if not test_id:
+        return
+    
+    with _file_handlers_lock:
+        file_handler = _file_handlers.pop(test_id, None)
+        if file_handler:
+            log.removeHandler(file_handler)
+            file_handler.close()

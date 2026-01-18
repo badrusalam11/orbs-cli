@@ -25,6 +25,7 @@ class ReportGenerator:
         self.screenshots_dir = os.path.join(self.run_dir, "screenshots")
         os.makedirs(self.screenshots_dir, exist_ok=True)
 
+        self.id_test = timestamp
         self.json_path = os.path.join(self.run_dir, "cucumber.json")
         self.pdf_path = os.path.join(self.run_dir, f"{timestamp}.pdf")
         self.overview_path = os.path.join(self.run_dir, "result.json")

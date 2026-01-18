@@ -13,7 +13,7 @@ from orbs.listener_manager import (
     BeforeStep, AfterStep,
     BeforeTestCase, AfterTestCase
 )
-from orbs.log import log
+from orbs.log import log, add_test_file_handler, remove_test_file_handler
 from orbs.thread_context import get_context, set_context, clear_context
 
 _scenario_start = {}
@@ -34,6 +34,10 @@ def init_report(suite_path):
     rg = ReportGenerator(base_dir="reports")
     set_context("report", rg)
     log.info(f"Initialized reporting for suite: {suite_path}")
+
+    # Setup file logging for this test
+    add_test_file_handler(rg.id_test)
+    set_context("test_id", rg.id_test)
 
     user_properties_path = os.path.join("settings", "user.properties")
     if not os.path.exists(user_properties_path):
@@ -248,3 +252,7 @@ def finalize_report(suite_path):
     # Clear any remaining tracking data
     _scenario_screenshot_start_index.clear()
     _scenario_api_calls_start_index.clear()
+    
+    # Cleanup test_id and file handler (AFTER all logging is done)
+    remove_test_file_handler()
+    set_context('test_id', None)
