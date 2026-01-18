@@ -614,7 +614,8 @@ class Mobile:
         log.action(f"Got attribute '{attribute}' = '{value}' from mobile element: {locator}")
         return value
     
-    @classmethod    @orbs_guard(
+    @classmethod
+    @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, expected, **_: f"Verify text '{expected}' failed for element: {locator}"
     )

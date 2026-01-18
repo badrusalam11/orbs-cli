@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "orbs-cli"
-version = "0.1.4"
+version = "0.1.5"
 description = "Orbs - an automation framework for Web, Mobile (Appium), and API testing designed to grow with your team"
 readme = "README.md"
 requires-python = ">=3.8"
