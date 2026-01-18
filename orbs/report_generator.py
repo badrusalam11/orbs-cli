@@ -30,6 +30,7 @@ class ReportGenerator:
         self.overview_path = os.path.join(self.run_dir, "result.json")
         self.screenshot_path = os.path.join(self.run_dir, "screenshot.json")
         self.junit_path = os.path.join(self.run_dir, "junit.xml")
+        self.html_path = os.path.join(self.run_dir, "report.html")
 
         self.c = canvas.Canvas(self.pdf_path, pagesize=letter)
         self.width, self.height = letter
@@ -220,6 +221,842 @@ class ReportGenerator:
             f.write(xml_string)
         
         return self.junit_path
+
+    @orbs_guard(ReportGenerationException)
+    def generate_html_report(self):
+        """Generate modern HTML report similar to Katalon"""
+        import base64
+        
+        # Prepare data
+        overview = self.overriew
+        test_cases = self.testcase_result
+        scenarios = self.results
+        screenshots_data = self.testcase_screenshots
+        
+        # Calculate pass rate
+        total = overview.get('total_testcase', 0)
+        passed = overview.get('passed', 0)
+        pass_rate = (passed / total * 100) if total > 0 else 0
+        
+        # Encode screenshots to base64 for embedding
+        def encode_image(img_path):
+            try:
+                with open(img_path, 'rb') as f:
+                    encoded = base64.b64encode(f.read()).decode('utf-8')
+                    ext = os.path.splitext(img_path)[1].lower()
+                    mime = 'image/png' if ext == '.png' else 'image/jpeg'
+                    return f"data:{mime};base64,{encoded}"
+            except Exception:
+                return ""
+        
+        # Build HTML
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Execution Report - {overview.get('testsuite_id', 'Test Suite')}</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }}
+        
+        .container {{
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }}
+        
+        header {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }}
+        
+        header h1 {{
+            font-size: 28px;
+            margin-bottom: 10px;
+        }}
+        
+        header p {{
+            opacity: 0.9;
+            font-size: 14px;
+        }}
+        
+        .dashboard {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }}
+        
+        .card {{
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }}
+        
+        .card:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }}
+        
+        .stat-card {{
+            text-align: center;
+        }}
+        
+        .stat-card .number {{
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }}
+        
+        .stat-card .label {{
+            font-size: 14px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }}
+        
+        .stat-card.total .number {{ color: #3498db; }}
+        .stat-card.passed .number {{ color: #27ae60; }}
+        .stat-card.failed .number {{ color: #e74c3c; }}
+        .stat-card.skipped .number {{ color: #f39c12; }}
+        
+        .info-card {{
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }}
+        
+        .info-card .label {{
+            font-weight: 600;
+            color: #7f8c8d;
+        }}
+        
+        .info-card .value {{
+            color: #2c3e50;
+        }}
+        
+        .chart-container {{
+            position: relative;
+            height: 300px;
+        }}
+        
+        table {{
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }}
+        
+        thead {{
+            background: #34495e;
+            color: white;
+        }}
+        
+        thead th {{
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+        
+        tbody tr {{
+            border-bottom: 1px solid #ecf0f1;
+            transition: background 0.2s;
+            cursor: pointer;
+        }}
+        
+        tbody tr:hover {{
+            background: #f8f9fa;
+        }}
+        
+        tbody td {{
+            padding: 15px;
+            font-size: 14px;
+        }}
+        
+        .badge {{
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+        
+        .badge.passed {{
+            background: #d4edda;
+            color: #155724;
+        }}
+        
+        .badge.failed {{
+            background: #f8d7da;
+            color: #721c24;
+        }}
+        
+        .badge.skipped {{
+            background: #fff3cd;
+            color: #856404;
+        }}
+        
+        .controls {{
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }}
+        
+        .search-box {{
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }}
+        
+        .search-box:focus {{
+            outline: none;
+            border-color: #667eea;
+        }}
+        
+        .filter-btn {{
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }}
+        
+        .filter-btn:hover {{
+            border-color: #667eea;
+            color: #667eea;
+        }}
+        
+        .filter-btn.active {{
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }}
+        
+        .detail-section {{
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }}
+        
+        .detail-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }}
+        
+        .detail-header:hover {{
+            background: #e9ecef;
+        }}
+        
+        .detail-header h3 {{
+            font-size: 18px;
+            color: #2c3e50;
+        }}
+        
+        .collapse-icon {{
+            transition: transform 0.3s;
+        }}
+        
+        .collapse-icon.open {{
+            transform: rotate(180deg);
+        }}
+        
+        .detail-content {{
+            display: none;
+            padding: 20px 0;
+        }}
+        
+        .detail-content.show {{
+            display: block;
+        }}
+        
+        .step {{
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }}
+        
+        .step.passed {{
+            border-left-color: #27ae60;
+            background: #d4edda;
+        }}
+        
+        .step.failed {{
+            border-left-color: #e74c3c;
+            background: #f8d7da;
+        }}
+        
+        .step .keyword {{
+            font-weight: 700;
+            margin-right: 8px;
+        }}
+        
+        .step .duration {{
+            float: right;
+            color: #7f8c8d;
+            font-size: 12px;
+        }}
+        
+        .screenshot-gallery {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }}
+        
+        .screenshot-item {{
+            position: relative;
+            cursor: pointer;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }}
+        
+        .screenshot-item:hover {{
+            transform: scale(1.05);
+        }}
+        
+        .screenshot-item img {{
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }}
+        
+        .api-call {{
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }}
+        
+        .api-header {{
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }}
+        
+        .api-method {{
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 12px;
+            margin-right: 12px;
+        }}
+        
+        .api-method.GET {{ background: #61affe; color: white; }}
+        .api-method.POST {{ background: #49cc90; color: white; }}
+        .api-method.PUT {{ background: #fca130; color: white; }}
+        .api-method.DELETE {{ background: #f93e3e; color: white; }}
+        .api-method.PATCH {{ background: #50e3c2; color: white; }}
+        
+        .api-url {{
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #2c3e50;
+            word-break: break-all;
+        }}
+        
+        .api-body {{
+            padding: 15px;
+        }}
+        
+        .api-body h4 {{
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #7f8c8d;
+        }}
+        
+        .api-body pre {{
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }}
+        
+        .modal {{
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }}
+        
+        .modal.show {{
+            display: flex;
+        }}
+        
+        .modal img {{
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }}
+        
+        .modal-close {{
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+        }}
+        
+        .section-title {{
+            font-size: 24px;
+            margin: 30px 0 20px 0;
+            color: #2c3e50;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }}
+        
+        @media (max-width: 768px) {{
+            .dashboard {{
+                grid-template-columns: 1fr;
+            }}
+            
+            .controls {{
+                flex-direction: column;
+            }}
+            
+            .search-box, .filter-btn {{
+                width: 100%;
+            }}
+            
+            .screenshot-gallery {{
+                grid-template-columns: 1fr;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🎯 Test Execution Report</h1>
+            <p>{overview.get('testsuite_id', 'Test Suite')} • Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Dashboard Stats -->
+        <div class="dashboard">
+            <div class="card stat-card total">
+                <div class="label">Total Tests</div>
+                <div class="number">{total}</div>
+            </div>
+            <div class="card stat-card passed">
+                <div class="label">Passed</div>
+                <div class="number">{passed}</div>
+            </div>
+            <div class="card stat-card failed">
+                <div class="label">Failed</div>
+                <div class="number">{overview.get('failed', 0)}</div>
+            </div>
+            <div class="card stat-card skipped">
+                <div class="label">Skipped</div>
+                <div class="number">{overview.get('skipped', 0)}</div>
+            </div>
+        </div>
+        
+        <!-- Info and Chart -->
+        <div class="dashboard">
+            <div class="card info-card">
+                <div class="label">Executor:</div>
+                <div class="value">{overview.get('tester_name', 'Unknown')}</div>
+                
+                <div class="label">Environment:</div>
+                <div class="value">{overview.get('environent', 'Unknown')}</div>
+                
+                <div class="label">Host:</div>
+                <div class="value">{overview.get('host_name', 'Unknown')}</div>
+                
+                <div class="label">OS:</div>
+                <div class="value">{overview.get('os', 'Unknown')}</div>
+                
+                <div class="label">Start Time:</div>
+                <div class="value">{overview.get('start_time', '')}</div>
+                
+                <div class="label">End Time:</div>
+                <div class="value">{overview.get('end_time', '')}</div>
+                
+                <div class="label">Duration:</div>
+                <div class="value">{int(overview.get('duration', 0)//60)}m {int(overview.get('duration', 0)%60)}s</div>
+                
+                <div class="label">Pass Rate:</div>
+                <div class="value" style="color: {'#27ae60' if pass_rate >= 80 else '#e74c3c'}; font-weight: 700;">{pass_rate:.1f}%</div>
+            </div>
+            
+            <div class="card">
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Cases Table -->
+        <h2 class="section-title">📋 Test Cases</h2>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search test cases...">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="passed">Passed</button>
+            <button class="filter-btn" data-filter="failed">Failed</button>
+            <button class="filter-btn" data-filter="skipped">Skipped</button>
+        </div>
+        
+        <div class="card">
+            <table id="testTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Test Case ID</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+"""
+        
+        # Add test case rows
+        for idx, tc in enumerate(test_cases, 1):
+            status = tc['status'].lower()
+            duration = tc['duration']
+            dur_str = f"{int(duration//60)}m {int(duration%60)}s"
+            
+            html += f"""                    <tr class="test-row" data-status="{status}" data-index="{idx}">
+                        <td>{idx}</td>
+                        <td>{tc['name']}</td>
+                        <td>{dur_str}</td>
+                        <td><span class="badge {status}">{status.upper()}</span></td>
+                    </tr>
+"""
+        
+        html += """                </tbody>
+            </table>
+        </div>
+        
+        <!-- Detailed Results -->
+        <h2 class="section-title">📊 Detailed Results</h2>
+"""
+        
+        # Add cucumber scenarios if available
+        if scenarios:
+            current_feature = None
+            for idx, scenario in enumerate(scenarios, 1):
+                if scenario['feature'] != current_feature:
+                    if current_feature is not None:
+                        html += "</div></div>"  # Close previous feature
+                    current_feature = scenario['feature']
+                    html += f"""        <div class="detail-section">
+            <div class="detail-header" onclick="toggleDetail('feature-{idx}')">
+                <h3>🎭 Feature: {current_feature}</h3>
+                <span class="collapse-icon" id="icon-feature-{idx}">▼</span>
+            </div>
+            <div class="detail-content" id="feature-{idx}">
+"""
+                
+                # Scenario detail
+                status_class = scenario['status'].lower()
+                html += f"""                <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <h4 style="margin-bottom: 10px;">
+                        <span class="badge {status_class}">{scenario['status'].upper()}</span>
+                        Scenario: {scenario['scenario']}
+                        <span style="float: right; color: #7f8c8d; font-size: 14px;">{scenario['duration']:.2f}s</span>
+                    </h4>
+"""
+                
+                # Steps
+                if scenario.get('steps'):
+                    html += """                    <div style="margin-top: 15px;">
+                        <strong>Steps:</strong>
+"""
+                    for step in scenario['steps']:
+                        step_status = step['status'].lower()
+                        html += f"""                        <div class="step {step_status}">
+                            <span class="keyword">{step['keyword']}</span>{step['name']}
+                            <span class="duration">{step['duration']:.2f}s</span>
+                        </div>
+"""
+                    html += "                    </div>\n"
+                
+                # API Calls
+                if scenario.get('api_calls'):
+                    html += """                    <div style="margin-top: 20px;">
+                        <div class="detail-header" onclick="toggleDetail('api-{}-{}')">
+                            <strong>🌐 API Calls ({} calls)</strong>
+                            <span class="collapse-icon" id="icon-api-{}-{}">▼</span>
+                        </div>
+                        <div class="detail-content" id="api-{}-{}">
+""".format(idx, scenario['scenario'].replace(' ', '-'), len(scenario['api_calls']), idx, scenario['scenario'].replace(' ', '-'), idx, scenario['scenario'].replace(' ', '-'))
+                    
+                    for api_idx, call in enumerate(scenario['api_calls'], 1):
+                        method = call.get('method', '').upper()
+                        url = call.get('url', '')
+                        req = call.get('kwargs', {})
+                        resp = call.get('response_body', '')
+                        
+                        html += f"""                            <div class="api-call">
+                                <div class="api-header">
+                                    <span class="api-method {method}">{method}</span>
+                                    <span class="api-url">{url}</span>
+                                </div>
+                                <div class="api-body">
+"""
+                        
+                        # Request
+                        if req:
+                            if 'json' in req:
+                                req_body = json.dumps(req['json'], indent=2)
+                            else:
+                                req_body = str(req.get('data', ''))
+                            
+                            if req_body and req_body.strip():
+                                html += f"""                                    <h4>Request:</h4>
+                                    <pre>{req_body[:500]}{'...' if len(req_body) > 500 else ''}</pre>
+"""
+                        
+                        # Response
+                        if resp and resp.strip():
+                            html += f"""                                    <h4>Response:</h4>
+                                    <pre>{resp[:500]}{'...' if len(resp) > 500 else ''}</pre>
+"""
+                        
+                        html += """                                </div>
+                            </div>
+"""
+                    
+                    html += """                        </div>
+                    </div>
+"""
+                
+                # Screenshots (collapsible)
+                if scenario.get('screenshot'):
+                    screenshots = scenario['screenshot']
+                    html += f"""                    <div style="margin-top: 20px;">
+                        <div class="detail-header" onclick="toggleDetail('screenshot-{idx}')">
+                            <strong>📸 Screenshots ({len(screenshots)} images)</strong>
+                            <span class="collapse-icon" id="icon-screenshot-{idx}">▼</span>
+                        </div>
+                        <div class="detail-content" id="screenshot-{idx}">
+                            <div class="screenshot-gallery">
+"""
+                    
+                    for img_idx, img_path in enumerate(screenshots):
+                        img_data = encode_image(img_path)
+                        if img_data:
+                            html += f"""                                <div class="screenshot-item" onclick="showModal('{img_data}')">
+                                    <img src="{img_data}" alt="Screenshot {img_idx + 1}">
+                                </div>
+"""
+                    
+                    html += """                            </div>
+                        </div>
+                    </div>
+"""
+                
+                html += "                </div>\n"
+            
+            if current_feature:
+                html += "            </div>\n        </div>\n"
+        
+        # Test case screenshots (if no scenarios)
+        elif screenshots_data:
+            for entry in screenshots_data:
+                tc_name = entry['testcase_name']
+                screenshots = entry['screenshots']
+                
+                html += f"""        <div class="detail-section">
+            <div class="detail-header" onclick="toggleDetail('tc-{tc_name.replace('/', '-')}')">
+                <h3>📸 {tc_name}</h3>
+                <span class="collapse-icon" id="icon-tc-{tc_name.replace('/', '-')}">▼</span>
+            </div>
+            <div class="detail-content" id="tc-{tc_name.replace('/', '-')}">
+                <div class="screenshot-gallery">
+"""
+                
+                for img_idx, img_path in enumerate(screenshots):
+                    img_data = encode_image(img_path)
+                    if img_data:
+                        html += f"""                    <div class="screenshot-item" onclick="showModal('{img_data}')">
+                        <img src="{img_data}" alt="Screenshot {img_idx + 1}">
+                    </div>
+"""
+                
+                html += """                </div>
+            </div>
+        </div>
+"""
+        
+        # Modal and scripts
+        html += f"""    </div>
+    
+    <!-- Image Modal -->
+    <div class="modal" id="imageModal" onclick="closeModal()">
+        <span class="modal-close">&times;</span>
+        <img id="modalImage" src="" alt="Full size">
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // Pie Chart
+        const ctx = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctx, {{
+            type: 'doughnut',
+            data: {{
+                labels: ['Passed', 'Failed', 'Skipped'],
+                datasets: [{{
+                    data: [{passed}, {overview.get('failed', 0)}, {overview.get('skipped', 0)}],
+                    backgroundColor: ['#27ae60', '#e74c3c', '#f39c12'],
+                    borderWidth: 0
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {{
+                    legend: {{
+                        position: 'bottom',
+                        labels: {{
+                            font: {{
+                                size: 14
+                            }},
+                            padding: 15
+                        }}
+                    }},
+                    title: {{
+                        display: true,
+                        text: 'Test Results Distribution',
+                        font: {{
+                            size: 16,
+                            weight: 'bold'
+                        }},
+                        padding: 20
+                    }}
+                }}
+            }}
+        }});
+        
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const testRows = document.querySelectorAll('.test-row');
+        const searchBox = document.getElementById('searchBox');
+        
+        filterBtns.forEach(btn => {{
+            btn.addEventListener('click', () => {{
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                testRows.forEach(row => {{
+                    const status = row.dataset.status;
+                    if (filter === 'all' || status === filter) {{
+                        row.style.display = '';
+                    }} else {{
+                        row.style.display = 'none';
+                    }}
+                }});
+            }});
+        }});
+        
+        // Search functionality
+        searchBox.addEventListener('input', (e) => {{
+            const searchTerm = e.target.value.toLowerCase();
+            testRows.forEach(row => {{
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            }});
+        }});
+        
+        // Toggle detail sections
+        function toggleDetail(id) {{
+            const content = document.getElementById(id);
+            const icon = document.getElementById('icon-' + id);
+            
+            if (content.classList.contains('show')) {{
+                content.classList.remove('show');
+                icon.classList.remove('open');
+            }} else {{
+                content.classList.add('show');
+                icon.classList.add('open');
+            }}
+        }}
+        
+        // Modal functions
+        function showModal(imgSrc) {{
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modalImg.src = imgSrc;
+            modal.classList.add('show');
+        }}
+        
+        function closeModal() {{
+            document.getElementById('imageModal').classList.remove('show');
+        }}
+        
+        // Keyboard support for modal
+        document.addEventListener('keydown', (e) => {{
+            if (e.key === 'Escape') {{
+                closeModal();
+            }}
+        }});
+    </script>
+</body>
+</html>"""
+        
+        # Write HTML file
+        with open(self.html_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+        
+        return self.html_path
 
     def _new_page_if_needed(self, height_needed=100):
         if self.y < height_needed:
@@ -996,6 +1833,7 @@ class ReportGenerator:
         self._add_footer()
         self.save_json()
         self.generate_junit_xml()  # Generate JUnit XML for CI/CD
+        self.generate_html_report()  # Generate HTML report
         self.c.save()
         return self.run_dir
 
