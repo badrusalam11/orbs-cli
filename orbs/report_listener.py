@@ -1,7 +1,9 @@
 # File: orbs/report_listener.py
 
 import os
+import sys
 import time
+import traceback
 from orbs.exception import ReportListenerException
 from orbs.guard import orbs_guard
 from orbs.report_generator import ReportGenerator
@@ -98,6 +100,31 @@ def record_scenario_result(context, scenario):
     steps = _steps_info.pop(scenario_name, [])
     feature = getattr(scenario, 'feature', None)
     feature_name = feature.name if feature else "Unknown Feature"
+    
+    # Capture stacktrace if scenario failed
+    error_message = None
+    if status == 'FAILED':
+        # Try to get exception from failed step
+        for step in scenario.steps:
+            if hasattr(step, 'exception') and step.exception:
+                error_message = ''.join(traceback.format_exception(
+                    type(step.exception), 
+                    step.exception, 
+                    step.exception.__traceback__
+                ))
+                break
+        
+        # Fallback: try scenario exception
+        if not error_message and hasattr(scenario, 'exception') and scenario.exception:
+            error_message = ''.join(traceback.format_exception(
+                type(scenario.exception),
+                scenario.exception,
+                scenario.exception.__traceback__
+            ))
+        
+        # Last resort: generic error
+        if not error_message:
+            error_message = f"Scenario '{scenario_name}' failed without stacktrace"
 
     rg = get_context("report")
     if not rg:
@@ -124,7 +151,8 @@ def record_scenario_result(context, scenario):
         scenario_screenshots,  # Screenshots from this scenario
         steps,
         category=category,
-        api_calls=scenario_api_calls  # API calls from this scenario
+        api_calls=scenario_api_calls,  # API calls from this scenario
+        error_message=error_message  # Stacktrace if failed
     )
 
     log.info(f"Recorded scenario: {scenario_name} - {status} - {duration:.2f}s - Screenshots: {len(scenario_screenshots)} - API calls: {len(scenario_api_calls)}")
@@ -135,12 +163,30 @@ def after_test_case(case, data=None):
     start = _testcase_start.pop(case, None) or 0
     duration = time.time() - start
     status = data.get('status', 'passed').upper() if data else 'PASSED'
+    
+    # Capture stacktrace if test case failed
+    error_message = None
+    if status == 'FAILED':
+        # Method 1: Try to get exception from data (passed by runner)
+        if data and 'exception' in data and data['exception']:
+            exc = data['exception']
+            error_message = ''.join(traceback.format_exception(
+                type(exc),
+                exc,
+                exc.__traceback__
+            ))
+        # Method 2: Fallback to sys.exc_info() for current exception
+        elif sys.exc_info()[0] is not None:
+            error_message = ''.join(traceback.format_exception(*sys.exc_info()))
+        # Method 3: Try error field
+        elif data and 'error' in data:
+            error_message = str(data['error'])
 
     rg = get_context("report")
     if not rg:
         return
 
-    rg.record_test_case_result(case, status, round(duration, 2))
+    rg.record_test_case_result(case, status, round(duration, 2), error_message=error_message)
 
     # Record all screenshots for the testcase (unchanged behavior)
     screenshots = get_context("screenshots") or []

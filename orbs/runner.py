@@ -86,13 +86,15 @@ class Runner:
 
             # Run the test case and capture status
             status = "passed"
+            exception = None
             try:
                 self.run_case(case)
             except Exception as e:
                 log.error(f"Error running test case {case}: {e}", exc_info=True)
                 status = "failed"
+                exception = e  # Store the exception
 
-            data = {"status": status, "name": case}
+            data = {"status": status, "name": case, "exception": exception}
 
             # Reset drivers for clean state between test cases
             try:

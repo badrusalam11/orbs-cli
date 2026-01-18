@@ -50,8 +50,8 @@ class ReportGenerator:
         return ts_sec
 
     @orbs_guard(ReportGenerationException)
-    def record(self, feature, scenario, status, duration, screenshot_paths=None, steps_info=None, category="positive", api_calls=None):
-        """Record scenario with screenshots, steps, and API calls"""
+    def record(self, feature, scenario, status, duration, screenshot_paths=None, steps_info=None, category="positive", api_calls=None, error_message=None):
+        """Record scenario with screenshots, steps, API calls, and error message/stacktrace"""
         self.results.append({
             "feature": feature,
             "scenario": scenario,
@@ -60,15 +60,17 @@ class ReportGenerator:
             "screenshot": screenshot_paths or [],
             "steps": steps_info or [],
             "category": category,
-            "api_calls": api_calls or []  # Add API calls to scenario record
+            "api_calls": api_calls or [],  # Add API calls to scenario record
+            "error_message": error_message  # Add stacktrace/error message
         })
 
     @orbs_guard(ReportGenerationException)
-    def record_test_case_result(self, name, status, duration):
+    def record_test_case_result(self, name, status, duration, error_message=None):
         self.testcase_result.append({
             "name": name,
             "status": status,
-            "duration": duration
+            "duration": duration,
+            "error_message": error_message  # Add stacktrace/error message
         }) 
 
     @orbs_guard(ReportGenerationException)
@@ -178,12 +180,18 @@ class ReportGenerator:
                         failure.set('message', f"Scenario '{scenario['scenario']}' failed")
                         failure.set('type', 'AssertionError')
                         
-                        # Add step details
-                        steps_text = []
+                        # Add step details and stacktrace
+                        failure_text = []
                         for step in scenario.get('steps', []):
                             step_status = step.get('status', 'UNKNOWN')
-                            steps_text.append(f"{step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
-                        failure.text = '\n'.join(steps_text)
+                            failure_text.append(f"{step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
+                        
+                        # Add stacktrace if available
+                        if scenario.get('error_message'):
+                            failure_text.append('\n--- Stacktrace ---')
+                            failure_text.append(scenario['error_message'])
+                        
+                        failure.text = '\n'.join(failure_text)
                     
                     elif status == 'skipped':
                         skipped = SubElement(testcase, 'skipped')
@@ -209,6 +217,11 @@ class ReportGenerator:
                     failure = SubElement(testcase, 'failure')
                     failure.set('message', f"Test case '{test['name']}' failed")
                     failure.set('type', 'AssertionError')
+                    
+                    # Add stacktrace if available
+                    if test.get('error_message'):
+                        failure.text = test['error_message']
+                    
                 elif status == 'skipped':
                     skipped = SubElement(testcase, 'skipped')
                     skipped.set('message', 'Test skipped')
@@ -619,6 +632,44 @@ class ReportGenerator:
             line-height: 1.5;
         }}
         
+        .stacktrace {{
+            background: #2c3e50;
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-top: 10px;
+            border-left: 4px solid #e74c3c;
+        }}
+        
+        .stacktrace .error-line {{
+            color: #ff6b6b;
+        }}
+        
+        .stacktrace .file-line {{
+            color: #4ecdc4;
+        }}
+        
+        .error-alert {{
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        
+        .error-alert::before {{
+            content: '⚠️';
+            font-size: 20px;
+        }}
+        
         .modal {{
             display: none;
             position: fixed;
@@ -788,6 +839,35 @@ class ReportGenerator:
         <h2 class="section-title">📊 Detailed Results</h2>
 """
         
+        # Add test case error details first (for failed tests without cucumber scenarios)
+        if not scenarios:
+            failed_tests = [tc for tc in test_cases if tc['status'].lower() == 'failed' and tc.get('error_message')]
+            if failed_tests:
+                html += """        <div class="detail-section">
+            <div class="detail-header" onclick="toggleDetail('test-errors')">
+                <h3 style="color: #e74c3c;">⚠️ Failed Test Cases - Error Details</h3>
+                <span class="collapse-icon" id="icon-test-errors">▼</span>
+            </div>
+            <div class="detail-content show" id="test-errors">
+"""
+                
+                for tc_idx, tc in enumerate(failed_tests, 1):
+                    error_msg = tc['error_message']
+                    # Escape HTML special characters
+                    error_msg = error_msg.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                    
+                    html += f"""                <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border-left: 4px solid #e74c3c;">
+                    <h4 style="color: #e74c3c; margin-bottom: 10px;">
+                        {tc_idx}. {tc['name']}
+                    </h4>
+                    <div class="stacktrace">{error_msg}</div>
+                </div>
+"""
+                
+                html += """            </div>
+        </div>
+"""
+        
         # Add cucumber scenarios if available
         if scenarios:
             current_feature = None
@@ -827,6 +907,23 @@ class ReportGenerator:
                         </div>
 """
                     html += "                    </div>\n"
+                
+                # Error Message / Stacktrace (expandable) - Show if failed
+                if status_class == 'failed' and scenario.get('error_message'):
+                    error_msg = scenario['error_message']
+                    # Escape HTML special characters
+                    error_msg = error_msg.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                    
+                    html += f"""                    <div style="margin-top: 20px;">
+                        <div class="detail-header" onclick="toggleDetail('error-{idx}')">
+                            <strong style="color: #e74c3c;">⚠️ Error Details & Stacktrace</strong>
+                            <span class="collapse-icon" id="icon-error-{idx}">▼</span>
+                        </div>
+                        <div class="detail-content" id="error-{idx}">
+                            <div class="stacktrace">{error_msg}</div>
+                        </div>
+                    </div>
+"""
                 
                 # API Calls
                 if scenario.get('api_calls'):
