@@ -118,13 +118,20 @@ class ReportGenerator:
         from xml.etree.ElementTree import Element, SubElement, tostring
         from xml.dom import minidom
         
-        # Calculate totals
-        total_tests = len(self.results) if self.results else len(self.testcase_result)
-        total_failures = sum(1 for r in (self.results or self.testcase_result) 
-                           if r.get('status', '').lower() == 'failed')
+        # ✅ FIX: Always use testcase_result for accurate counts
+        # testcase_result contains the actual test execution results
+        # while self.results contains cucumber scenario details
+        if self.testcase_result:
+            total_tests = len(self.testcase_result)
+            total_failures = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'failed')
+            total_skipped = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'skipped')
+        else:
+            # Fallback to cucumber results if no test case results
+            total_tests = len(self.results) if self.results else 0
+            total_failures = sum(1 for r in self.results if r.get('status', '').lower() == 'failed')
+            total_skipped = sum(1 for r in self.results if r.get('status', '').lower() == 'skipped')
+        
         total_errors = 0  # Orbs doesn't distinguish errors from failures
-        total_skipped = sum(1 for r in (self.results or self.testcase_result) 
-                          if r.get('status', '').lower() == 'skipped')
         total_time = self.overriew.get('duration', 0)
         
         # Root element
