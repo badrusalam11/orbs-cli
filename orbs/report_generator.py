@@ -101,7 +101,7 @@ class ReportGenerator:
         self.overriew = {
             "testsuite_id": os.path.relpath(suite_path, os.getcwd()),
             "tester_name": config.get("tester_name", "Unknown Tester"),
-            "environent": config.get("environment", "Unknown Environment"),
+            "environent": config.get("ORBS_ENV", "default"),
             "host_name": platform.node(),
             "os": platform.system(),
             "duration": duration,
@@ -225,7 +225,7 @@ class ReportGenerator:
 
     @orbs_guard(ReportGenerationException)
     def generate_html_report(self):
-        """Generate modern HTML report similar to Katalon"""
+        """Generate modern HTML report with detailed test results"""
         import base64
         
         # Prepare data

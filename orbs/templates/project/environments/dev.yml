@@ -1,0 +1,25 @@
+# Development Environment Configuration
+
+# Application URLs
+url: "https://dev.example.com"
+api_url: "https://api-dev.example.com"
+
+# Credentials
+username: "dev_user"
+password: "dev_password"
+
+# API Configuration
+api_timeout: 60
+api_retry: 5
+
+# Database Configuration
+db_host: "dev-db.example.com"
+db_port: 5432
+db_name: "dev_db"
+
+# Custom Configuration
+custom_config:
+  feature_flag_1: true
+  feature_flag_2: true
+  max_retry: 5
+  debug_mode: true

@@ -18,7 +18,7 @@ Interactive element inspection and locator capture for web and mobile testing.
 
 ## Introduction
 
-The **Orbs Spy** is an interactive tool for inspecting and capturing element locators from web pages and mobile apps. Similar to Katalon's Object Spy, it helps you:
+The **Orbs Spy** is an interactive tool for inspecting and capturing element locators from web pages and mobile apps. It helps you:
 
 * **Inspect elements** interactively without writing code
 * **Capture multiple locator strategies** (ID, XPath, CSS, etc.)

@@ -1,6 +1,6 @@
 """
-orbs - A lightweight Appium framework with structured runner,
-report generator, and POM-based test execution. Inspired by Katalon.
+orbs - A lightweight test automation framework with structured runner,
+report generator, and POM-based test execution.
 """
 
 __version__ = "0.1.0"

@@ -1,0 +1,25 @@
+# UAT (User Acceptance Testing) Environment Configuration
+
+# Application URLs
+url: "https://uat.example.com"
+api_url: "https://api-uat.example.com"
+
+# Credentials
+username: "uat_user"
+password: "uat_password"
+
+# API Configuration
+api_timeout: 45
+api_retry: 3
+
+# Database Configuration
+db_host: "uat-db.example.com"
+db_port: 5432
+db_name: "uat_db"
+
+# Custom Configuration
+custom_config:
+  feature_flag_1: true
+  feature_flag_2: true
+  max_retry: 3
+  debug_mode: false
