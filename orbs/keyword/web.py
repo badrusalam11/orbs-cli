@@ -442,6 +442,18 @@ class Web:
             raise AssertionError(f"Text mismatch. Expected: '{expected_text}', Actual: '{actual_text}'")
         log.action(f"Text verified: '{expected_text}' in element: {locator}")
     
+    # verify eleent visible
+    @classmethod
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Verify element visible failed: {locator}"
+    )
+    def verify_element_visible(cls, locator: str, timeout: Optional[int] = None):
+        """Verify element is visible"""
+        if not cls.element_visible(locator, timeout):
+            raise AssertionError(f"Element not visible: {locator}")
+        log.action(f"Element visibility verified: {locator}")
+
     @classmethod
     @orbs_guard(
         WebActionException,
