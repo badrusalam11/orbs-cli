@@ -23,6 +23,38 @@ from ..thread_context import get_context, set_context
 from ..guard import orbs_guard
 from ..exception import WebActionException
 from ..log import log
+from .locator import WebElementEntity
+
+
+# Standalone function for easier syntax
+def find_test_obj(xml_path: str, timeout: Optional[int] = None):
+    """
+    Find element from object repository XML with self-healing (standalone function)
+    
+    This is a convenience function that can be used directly without the Web class prefix.
+    Perfect for inline usage with other Web keywords.
+    
+    Args:
+        xml_path: Path to the XML file in object repository 
+                 (e.g., "object_repository\\input_login-button.xml")
+        timeout: Maximum time to wait for the element (default: 10s)
+        
+    Returns:
+        WebElement: The found element
+        
+    Raises:
+        FileNotFoundError: If XML file not found
+        NoSuchElementException: If element not found with any locator
+        
+    Example:
+        # Direct usage
+        find_test_obj("object_repository\\input_username.xml").send_keys("admin")
+        
+        # With Web keywords
+        Web.set_text(find_test_obj("object_repository\\input_username.xml"), "admin")
+        Web.click(find_test_obj("object_repository\\button_login.xml"))
+    """
+    return Web.find_test_obj(xml_path, timeout)
 
 
 class Web:
@@ -100,6 +132,25 @@ class Web:
         return strategy_map[strategy], value
     
     @classmethod
+    def _resolve_element(cls, locator_or_element: Union[str, WebElement], timeout: Optional[int] = None) -> WebElement:
+        """
+        Resolve element from locator string or WebElement
+        
+        Args:
+            locator_or_element: Either a locator string (e.g., "id=login") or a WebElement
+            timeout: Timeout for finding element if locator string is provided
+            
+        Returns:
+            WebElement
+        """
+        if isinstance(locator_or_element, WebElement):
+            return locator_or_element
+        elif isinstance(locator_or_element, str):
+            return cls._find_element(locator_or_element, timeout)
+        else:
+            raise TypeError(f"Expected str or WebElement, got {type(locator_or_element)}")
+    
+    @classmethod
     def _find_element(cls, locator: str, timeout: Optional[int] = None) -> WebElement:
         """Find a single element with wait"""
         driver = cls._get_driver()
@@ -127,6 +178,102 @@ class Web:
             return driver.find_elements(by, value)
         except TimeoutException:
             return []
+    
+    @classmethod
+    def _find_element_with_healing(cls, locators: List[tuple], timeout: Optional[int] = None) -> tuple:
+        """
+        Try multiple locators with self-healing
+        
+        Args:
+            locators: List of (strategy, value) tuples to try
+            timeout: Timeout in seconds
+            
+        Returns:
+            Tuple of (WebElement, locator_string, locator_index)
+            
+        Raises:
+            NoSuchElementException: If element not found with any locator
+        """
+        driver = cls._get_driver()
+        wait_time = timeout or cls._wait_timeout
+        
+        last_exception = None
+        
+        for idx, (strategy, value) in enumerate(locators):
+            try:
+                # Convert strategy to locator string
+                locator_str = f"{strategy}={value}"
+                by, val = cls._parse_locator(locator_str)
+                
+                wait = WebDriverWait(driver, min(wait_time, 3))  # Use shorter timeout for alternatives
+                element = wait.until(EC.presence_of_element_located((by, val)))
+                
+                # Log if we used a fallback locator
+                if idx > 0:
+                    log.info(f"Self-healing: Element found using alternative locator #{idx + 1}: {strategy}={value}")
+                
+                return element, locator_str, idx
+                
+            except (TimeoutException, NoSuchElementException) as e:
+                last_exception = e
+                continue
+        
+        # If we get here, none of the locators worked
+        raise NoSuchElementException(
+            f"Element not found with any of the {len(locators)} locators (timeout: {wait_time}s)"
+        ) from last_exception
+    
+    @classmethod
+    def find_test_obj(cls, xml_path: str, timeout: Optional[int] = None) -> WebElement:
+        """
+        Find element from object repository XML with self-healing
+        
+        This keyword loads element locators from a WebElementEntity XML file
+        and attempts to find the element using the primary locator first,
+        then falls back to alternative locators if needed (self-healing).
+        
+        Args:
+            xml_path: Path to the XML file in object repository 
+                     (e.g., "object_repository/input_login-button.xml")
+            timeout: Maximum time to wait for the element (default: _wait_timeout)
+            
+        Returns:
+            WebElement: The found element
+            
+        Raises:
+            FileNotFoundError: If XML file not found
+            NoSuchElementException: If element not found with any locator
+            
+        Example:
+            element = Web.find_test_obj("object_repository/input_login-button.xml")
+            element.click()
+        """
+        # Parse the XML file
+        web_element = WebElementEntity(xml_path)
+        
+        # Get all locators (primary + alternatives)
+        locators = web_element.get_all_locators()
+        
+        if not locators:
+            raise ValueError(f"No valid locators found in {xml_path}")
+        
+        log.info(f"Finding element '{web_element.name}' from {xml_path} "
+                f"(primary: {locators[0][0]}={locators[0][1]}, {len(locators) - 1} alternatives)")
+        
+        # Try to find element with self-healing
+        try:
+            element, used_locator, locator_idx = cls._find_element_with_healing(locators, timeout)
+            
+            if locator_idx == 0:
+                log.action(f"Found '{web_element.name}' using primary locator: {used_locator}")
+            else:
+                log.action(f"Found '{web_element.name}' using alternative locator ({locator_idx + 1}/{len(locators)}): {used_locator}")
+            
+            return element
+            
+        except NoSuchElementException as e:
+            log.error(f"Failed to find '{web_element.name}' from {xml_path}")
+            raise
     
     # Navigation methods
     @classmethod
@@ -167,18 +314,27 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Click failed on element: {locator}"
     )
-    def click(cls, locator: str, timeout: Optional[int] = None, retry_count: int = 3):
-        """Click on an element with retry logic for stale elements"""
+    def click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, retry_count: int = 3):
+        """Click on an element with retry logic for stale elements
+        
+        Args:
+            locator: Element locator string (e.g., 'id=login') or WebElement object
+            timeout: Wait timeout in seconds
+            retry_count: Number of retry attempts for stale elements
+        """
         wait_time = timeout or cls._wait_timeout
         
         for attempt in range(retry_count):
             try:
-                driver = cls._get_driver()
-                by, value = cls._parse_locator(locator)
-                wait = WebDriverWait(driver, wait_time)
+                # Support both string locator and WebElement
+                if isinstance(locator, WebElement):
+                    element = locator
+                else:
+                    driver = cls._get_driver()
+                    by, value = cls._parse_locator(locator)
+                    wait = WebDriverWait(driver, wait_time)
+                    element = wait.until(EC.element_to_be_clickable((by, value)))
                 
-                # Wait for element to be clickable (combines presence + clickable checks)
-                element = wait.until(EC.element_to_be_clickable((by, value)))
                 element.click()
                 log.action(f"Clicked element: {locator}")
                 return
@@ -205,10 +361,10 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Double click failed on element: {locator}"
     )
-    def double_click(cls, locator: str, timeout: Optional[int] = None):
+    def double_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Double click on an element"""
         from selenium.webdriver.common.action_chains import ActionChains
-        element = cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         driver = cls._get_driver()
         
         actions = ActionChains(driver)
@@ -220,10 +376,10 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Right click failed on element: {locator}"
     )
-    def right_click(cls, locator: str, timeout: Optional[int] = None):
+    def right_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Right click on an element"""
         from selenium.webdriver.common.action_chains import ActionChains
-        element = cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         driver = cls._get_driver()
         
         actions = ActionChains(driver)
@@ -235,17 +391,28 @@ class Web:
         WebActionException,
         context_fn=lambda locator, text, **_: f"Set text '{text}' failed on element: {locator}"
     )
-    def set_text(cls, locator: str, text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3):
-        """Set text into an element with retry logic"""
+    def set_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3):
+        """Set text into an element with retry logic
+        
+        Args:
+            locator: Element locator string (e.g., 'id=username') or WebElement object
+            text: Text to input
+            timeout: Wait timeout in seconds
+            clear_first: Clear existing text before typing
+            retry_count: Number of retry attempts for stale elements
+        """
         wait_time = timeout or cls._wait_timeout
         
         for attempt in range(retry_count):
             try:
-                driver = cls._get_driver()
-                by, value = cls._parse_locator(locator)
-                wait = WebDriverWait(driver, wait_time)
-                
-                element = wait.until(EC.element_to_be_clickable((by, value)))
+                # Support both string locator and WebElement
+                if isinstance(locator, WebElement):
+                    element = locator
+                else:
+                    driver = cls._get_driver()
+                    by, value = cls._parse_locator(locator)
+                    wait = WebDriverWait(driver, wait_time)
+                    element = wait.until(EC.element_to_be_clickable((by, value)))
                 
                 if clear_first:
                     element.clear()
@@ -280,22 +447,22 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Clear failed on element: {locator}"
     )
-    def clear(cls, locator: str, timeout: Optional[int] = None):
+    def clear(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Clear text from an element"""
-        element = cls._find_element(locator, timeout)
-        element.clear()
+        element = cls._resolve_element(locator, timeout)
         log.action(f"Cleared element: {locator}")
+        element.clear()
     
     @classmethod
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Submit failed on form element: {locator}"
     )
-    def submit(cls, locator: str, timeout: Optional[int] = None):
+    def submit(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Submit a form element"""
-        element = cls._find_element(locator, timeout)
-        element.submit()
+        element = cls._resolve_element(locator, timeout)
         log.action(f"Submitted form element: {locator}")
+        element.submit()
     
     # Selection methods
     @classmethod
@@ -303,9 +470,9 @@ class Web:
         WebActionException,
         context_fn=lambda locator, text, **_: f"Select by text '{text}' failed on element: {locator}"
     )
-    def select_by_text(cls, locator: str, text: str, timeout: Optional[int] = None):
+    def select_by_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None):
         """Select option by visible text"""
-        element = cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         select = Select(element)
         select.select_by_visible_text(text)
         log.action(f"Selected option '{text}' from element: {locator}")
@@ -315,9 +482,9 @@ class Web:
         WebActionException,
         context_fn=lambda locator, value, **_: f"Select by value '{value}' failed on element: {locator}"
     )
-    def select_by_value(cls, locator: str, value: str, timeout: Optional[int] = None):
+    def select_by_value(cls, locator: Union[str, WebElement], value: str, timeout: Optional[int] = None):
         """Select option by value"""
-        element = cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         select = Select(element)
         select.select_by_value(value)
         log.action(f"Selected option with value '{value}' from element: {locator}")
@@ -327,9 +494,9 @@ class Web:
         WebActionException,
         context_fn=lambda locator, index, **_: f"Select by index {index} failed on element: {locator}"
     )
-    def select_by_index(cls, locator: str, index: int, timeout: Optional[int] = None):
+    def select_by_index(cls, locator: Union[str, WebElement], index: int, timeout: Optional[int] = None):
         """Select option by index"""
-        element = cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         select = Select(element)
         select.select_by_index(index)
         log.action(f"Selected option at index {index} from element: {locator}")
@@ -340,26 +507,36 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Wait for element failed: {locator}"
     )
-    def wait_for_element(cls, locator: str, timeout: Optional[int] = None):
+    def wait_for_element(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Wait for element to be present"""
-        cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         log.action(f"Element found: {locator}")
+        return element
     
     @classmethod
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Wait for visible failed: {locator}"
     )
-    def wait_for_visible(cls, locator: str, timeout: Optional[int] = None):
+    def wait_for_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Wait for element to be visible"""
         driver = cls._get_driver()
-        by, value = cls._parse_locator(locator)
         wait_time = timeout or cls._wait_timeout
         
         try:
+            # If already a WebElement, check if displayed
+            if isinstance(locator, WebElement):
+                wait = WebDriverWait(driver, wait_time)
+                wait.until(lambda d: locator.is_displayed())
+                log.action(f"Element is visible: {locator}")
+                return locator
+            
+            # If string locator, use standard WebDriverWait
+            by, value = cls._parse_locator(locator)
             wait = WebDriverWait(driver, wait_time)
-            wait.until(EC.visibility_of_element_located((by, value)))
+            element = wait.until(EC.visibility_of_element_located((by, value)))
             log.action(f"Element is visible: {locator}")
+            return element
         except TimeoutException:
             raise TimeoutException(f"Element not visible: {locator} (timeout: {wait_time}s)")
     
@@ -368,16 +545,25 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Wait for clickable failed: {locator}"
     )
-    def wait_for_clickable(cls, locator: str, timeout: Optional[int] = None):
+    def wait_for_clickable(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Wait for element to be clickable"""
         driver = cls._get_driver()
-        by, value = cls._parse_locator(locator)
         wait_time = timeout or cls._wait_timeout
         
         try:
+            # If already a WebElement, check if displayed and enabled
+            if isinstance(locator, WebElement):
+                wait = WebDriverWait(driver, wait_time)
+                wait.until(lambda d: locator.is_displayed() and locator.is_enabled())
+                log.action(f"Element is clickable: {locator}")
+                return locator
+            
+            # If string locator, use standard WebDriverWait
+            by, value = cls._parse_locator(locator)
             wait = WebDriverWait(driver, wait_time)
-            wait.until(EC.element_to_be_clickable((by, value)))
+            element = wait.until(EC.element_to_be_clickable((by, value)))
             log.action(f"Element is clickable: {locator}")
+            return element
         except TimeoutException:
             raise TimeoutException(f"Element not clickable: {locator} (timeout: {wait_time}s)")
     
@@ -389,18 +575,31 @@ class Web:
     
     # Verification methods
     @classmethod
-    def element_exists(cls, locator: str, timeout: Optional[int] = None) -> bool:
+    def element_exists(cls, locator: Union[str, WebElement], timeout: Optional[int] = None) -> bool:
         """Check if element exists"""
         try:
+            # If already WebElement, check if it's still valid
+            if isinstance(locator, WebElement):
+                try:
+                    # Try to access an attribute to check if element is still valid
+                    locator.is_enabled()
+                    return True
+                except:
+                    return False
+            # If string locator, try to find it
             cls._find_element(locator, timeout)
             return True
         except NoSuchElementException:
             return False
     
     @classmethod
-    def element_visible(cls, locator: str, timeout: Optional[int] = None) -> bool:
+    def element_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None) -> bool:
         """Check if element is visible"""
         try:
+            # If already WebElement, check if displayed
+            if isinstance(locator, WebElement):
+                return locator.is_displayed()
+            # If string locator, wait for visibility
             cls.wait_for_visible(locator, timeout)
             return True
         except TimeoutException:
@@ -411,9 +610,9 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Get text failed on element: {locator}"
     )
-    def get_text(cls, locator: str, timeout: Optional[int] = None) -> str:
+    def get_text(cls, locator: Union[str, WebElement], timeout: Optional[int] = None) -> str:
         """Get text content of element"""
-        element = cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         text = element.text
         log.action(f"Got text '{text}' from element: {locator}")
         return text
@@ -423,9 +622,9 @@ class Web:
         WebActionException,
         context_fn=lambda locator, attribute, **_: f"Get attribute '{attribute}' failed on element: {locator}"
     )
-    def get_attribute(cls, locator: str, attribute: str, timeout: Optional[int] = None) -> str:
+    def get_attribute(cls, locator: Union[str, WebElement], attribute: str, timeout: Optional[int] = None) -> str:
         """Get attribute value of element"""
-        element = cls._find_element(locator, timeout)
+        element = cls._resolve_element(locator, timeout)
         value = element.get_attribute(attribute)
         log.action(f"Got attribute '{attribute}' = '{value}' from element: {locator}")
         return value
@@ -435,20 +634,20 @@ class Web:
         WebActionException,
         context_fn=lambda locator, expected_text, **_: f"Verify text '{expected_text}' failed on element: {locator}"
     )
-    def verify_text(cls, locator: str, expected_text: str, timeout: Optional[int] = None):
+    def verify_text(cls, locator: Union[str, WebElement], expected_text: str, timeout: Optional[int] = None):
         """Verify element text matches expected"""
         actual_text = cls.get_text(locator, timeout)
         if actual_text != expected_text:
             raise AssertionError(f"Text mismatch. Expected: '{expected_text}', Actual: '{actual_text}'")
         log.action(f"Text verified: '{expected_text}' in element: {locator}")
     
-    # verify eleent visible
+    # verify element visible
     @classmethod
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Verify element visible failed: {locator}"
     )
-    def verify_element_visible(cls, locator: str, timeout: Optional[int] = None):
+    def verify_element_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Verify element is visible"""
         if not cls.element_visible(locator, timeout):
             raise AssertionError(f"Element not visible: {locator}")
@@ -459,7 +658,7 @@ class Web:
         WebActionException,
         context_fn=lambda locator, expected_text, **_: f"Verify text contains '{expected_text}' failed on element: {locator}"
     )
-    def verify_text_contains(cls, locator: str, expected_text: str, timeout: Optional[int] = None):
+    def verify_text_contains(cls, locator: Union[str, WebElement], expected_text: str, timeout: Optional[int] = None):
         """Verify element text contains expected text"""
         actual_text = cls.get_text(locator, timeout)
         if expected_text not in actual_text:

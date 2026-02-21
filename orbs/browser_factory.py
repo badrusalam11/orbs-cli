@@ -32,9 +32,9 @@ class BrowserFactory:
         window_size = config.get("window_size", None)
         driver_path = config.get("driver_path", None)
         
-        # Get browser arguments from settings (comma-separated)
+        # Get browser arguments from settings (semicolon-separated)
         # Framework handles browser-specific compatibility automatically
-        args_list = config.get_list("args", sep=",")
+        args_list = config.get_list("args", sep=";")
         
         log.debug(f"Creating {browser} driver (headless={headless}, window_size={window_size}, args={args_list})")
 

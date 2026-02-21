@@ -52,6 +52,20 @@ custom_config:
 
 ## Setting Active Environment
 
+You can specify the environment in two ways:
+
+### Method 1: CLI Argument (Recommended)
+
+Pass the `--env` flag directly to the `orbs run` command:
+
+```bash
+orbs run testsuites/login.yml --env=dev
+```
+
+This method is preferred as it's explicit and doesn't require modifying shell environment.
+
+### Method 2: Environment Variable
+
 Set the `ORBS_ENV` environment variable to specify which configuration to use:
 
 ### Windows PowerShell
@@ -69,7 +83,7 @@ set ORBS_ENV=dev
 export ORBS_ENV=dev
 ```
 
-If `ORBS_ENV` is not set, the system will use `default.yml`.
+If no environment is specified (neither `--env` flag nor `ORBS_ENV` variable), the system will use `default.yml`.
 
 ## API Usage
 
@@ -171,6 +185,33 @@ $env:API_KEY = "your_api_key"
 
 ## Running Tests with Different Environments
 
+There are two ways to specify the environment when running tests:
+
+1. **Environment Variable**: Set `ORBS_ENV` before running tests
+2. **CLI Argument**: Use `--env` flag with the `orbs run` command
+
+### Using CLI Argument (Recommended)
+
+The `--env` flag allows you to specify the environment directly in the command:
+
+```bash
+# Development
+orbs run testsuites/login.yml --env=dev
+
+# UAT
+orbs run testsuites/smoke_test.yml --env=uat
+
+# Staging
+orbs run testsuites/regression.yml --env=staging
+
+# Production
+orbs run testsuites/critical_path.yml --env=prod
+```
+
+### Using Environment Variable
+
+Alternatively, you can set the `ORBS_ENV` environment variable:
+
 ### Development
 ```bash
 # Set environment
@@ -205,6 +246,8 @@ ORBS_ENV=dev orbs run testsuites/login.yml
 ```powershell
 $env:ORBS_ENV = "dev"; orbs run testsuites/login.yml
 ```
+
+> **Note**: The `--env` CLI argument takes precedence over the `ORBS_ENV` environment variable. If both are specified, the CLI argument will be used.
 
 ## Best Practices
 
@@ -274,6 +317,24 @@ Use descriptive environment names:
 ## Integration with CI/CD
 
 ### GitHub Actions
+
+**Using CLI Argument (Recommended)**:
+```yaml
+# .github/workflows/test.yml
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, uat, staging]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run tests
+        run: |
+          orbs run testsuites/smoke_test.yml --env=${{ matrix.environment }}
+```
+
+**Using Environment Variable**:
 ```yaml
 # .github/workflows/test.yml
 jobs:
@@ -292,6 +353,20 @@ jobs:
 ```
 
 ### GitLab CI
+
+**Using CLI Argument (Recommended)**:
+```yaml
+# .gitlab-ci.yml
+test:dev:
+  script:
+    - orbs run testsuites/regression.yml --env=dev
+
+test:uat:
+  script:
+    - orbs run testsuites/regression.yml --env=uat
+```
+
+**Using Environment Variable**:
 ```yaml
 # .gitlab-ci.yml
 test:dev:
@@ -306,6 +381,29 @@ test:uat:
 ```
 
 ### Jenkins
+
+**Using CLI Argument (Recommended)**:
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Test') {
+            steps {
+                script {
+                    def environments = ['dev', 'uat', 'staging']
+                    environments.each { env ->
+                        sh """
+                            orbs run testsuites/smoke_test.yml --env=${env}
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+**Using Environment Variable**:
 ```groovy
 pipeline {
     agent any
@@ -333,9 +431,10 @@ pipeline {
 **Problem**: Changes to environment files not reflecting
 
 **Solution**: 
-- Ensure `ORBS_ENV` is set correctly
+- Ensure environment is specified correctly via `--env` flag or `ORBS_ENV` variable
 - Check file name matches environment name exactly (case-sensitive)
 - Verify YAML syntax is valid
+- Remember: `--env` CLI argument takes precedence over `ORBS_ENV` environment variable
 
 ### Environment variable not substituted
 **Problem**: `${VAR_NAME}` appearing literally in config
@@ -365,7 +464,11 @@ cd my-project
 # Run environment demo
 python demo_environment.py
 
-# Try different environments
+# Try different environments using CLI flag
+orbs run testsuites/example.yml --env=dev
+orbs run testsuites/example.yml --env=uat
+
+# Or using environment variable
 $env:ORBS_ENV = "dev"
 python demo_environment.py
 ```
