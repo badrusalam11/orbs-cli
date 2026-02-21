@@ -24,7 +24,7 @@ def orbs_guard(error_cls, context_fn=None):
             except Exception as e:
                 # --- 1. read debug flag ---
                 try:
-                    debug = config.get_bool("debug", False)
+                    debug = config.get_bool("ORBS_DEBUG", False)
                 except Exception:
                     debug = False
 

@@ -120,7 +120,7 @@ orbs spy
 
 ## Spy
 
-Orbs provides an interactive **Web & Mobile Spy**, similar to Katalon's Object Spy, for inspecting elements and capturing locators.
+Orbs provides an interactive **Web & Mobile Spy**, for inspecting elements and capturing locators.
 
 ```bash
 orbs spy --web --url=https://example.com

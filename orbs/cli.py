@@ -59,6 +59,34 @@ def choose_device(devices: list[str]) -> str:
     return choice
 
 
+def get_available_environments():
+    """Get list of available environment files from environments directory"""
+    env_dir = Path.cwd() / "environments"
+    if not env_dir.exists():
+        return []
+    
+    env_files = list(env_dir.glob("*.yml"))
+    environments = [f.stem for f in env_files if f.stem != "README"]
+    return sorted(environments)
+
+
+def choose_environment() -> str:
+    """Prompt user to choose an environment via arrow keys"""
+    environments = get_available_environments()
+    
+    if not environments:
+        typer.secho("❌ No environment files found in 'environments/' directory", fg=typer.colors.RED)
+        typer.secho("💡 Create environment files like: environments/dev.yml, environments/uat.yml", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
+    
+    choice = inquirer.select(
+        message="Select environment:",
+        choices=environments,
+        default="default" if "default" in environments else environments[0]
+    ).execute()
+    return choice
+
+
 def write_device_property(device_name: str):
     """Update only the deviceName in appium.properties"""
     SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -320,10 +348,12 @@ def implement_feature(name: str):
 @app.command("run")
 def run_command(
     target: str,
-    env_file: Path = typer.Option(None, "--env", "-e", help="Path to .env file to load before running"),
+    env: str = typer.Option(None, "--env", "-e", help="Environment to run (dev, uat, staging, prod)"),
     platform: str = typer.Option(None, "--platform", "-p", help="Platform to run tests on (android, chrome, firefox)"),
     device_id: str = typer.Option(None, "--deviceId", help="Device ID for mobile testing")
 ):
+    """Run a suite/case/feature with specified environment"""
+    
     # Validate platform if provided
     if platform:
         # Remove any spaces around the platform value
@@ -336,13 +366,42 @@ def run_command(
             typer.secho(f"❌ Invalid platform: {platform}. Must be one of: {', '.join(examples)}", fg=typer.colors.RED)
             raise typer.Exit(1)
     
-    """Run a suite/case/feature with optional environment file"""
-    # If a custom env file is provided, override defaults
-    if env_file:
-        if not env_file.exists():
-            typer.secho(f"❌ Env file not found: {env_file}", fg=typer.colors.RED)
-            raise typer.Exit(1)
-        load_dotenv(dotenv_path=env_file, override=True)
+    # Determine which environment to use
+    selected_env = None
+    
+    # Priority 1: CLI argument --env
+    if env:
+        selected_env = env
+        typer.secho(f"🌍 Using environment from CLI argument: {selected_env}", fg=typer.colors.CYAN)
+    
+    # Priority 2: ORBS_ENV environment variable
+    elif os.getenv("ORBS_ENV"):
+        selected_env = os.getenv("ORBS_ENV")
+        typer.secho(f"🌍 Using environment from ORBS_ENV: {selected_env}", fg=typer.colors.CYAN)
+    
+    # Priority 3: Check .env file
+    elif Path(".env").exists():
+        load_dotenv()
+        env_from_file = os.getenv("ORBS_ENV")
+        if env_from_file:
+            selected_env = env_from_file
+            typer.secho(f"🌍 Using environment from .env file: {selected_env}", fg=typer.colors.CYAN)
+    
+    # Priority 4: Prompt user to select
+    if not selected_env:
+        typer.secho("⚠️  No environment specified. Please select one:", fg=typer.colors.YELLOW)
+        selected_env = choose_environment()
+        typer.secho(f"🌍 Selected environment: {selected_env}", fg=typer.colors.GREEN)
+    
+    # Validate that the environment file exists
+    env_file_path = Path("environments") / f"{selected_env}.yml"
+    if not env_file_path.exists():
+        typer.secho(f"❌ Environment file not found: {env_file_path}", fg=typer.colors.RED)
+        typer.secho(f"💡 Available environments: {', '.join(get_available_environments())}", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
+    
+    # Set ORBS_ENV so config.py will load the correct environment
+    os.environ["ORBS_ENV"] = selected_env
     
     # Execute the run with platform and device_id parameters
     run(target, platform, device_id)

@@ -1,0 +1,25 @@
+# Default Environment Configuration
+# This is the default configuration loaded when no specific environment is set
+
+# Application URLs
+url: "https://example.com"
+api_url: "https://api.example.com"
+
+# Credentials (use environment variables for sensitive data in production)
+username: "test_user"
+password: "test_password"
+
+# API Configuration
+api_timeout: 30
+api_retry: 3
+
+# Database Configuration
+db_host: "localhost"
+db_port: 5432
+db_name: "test_db"
+
+# Custom Configuration
+custom_config:
+  feature_flag_1: true
+  feature_flag_2: false
+  max_retry: 3

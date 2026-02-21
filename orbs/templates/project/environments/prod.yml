@@ -1,0 +1,25 @@
+# Production Environment Configuration
+
+# Application URLs
+url: "https://example.com"
+api_url: "https://api.example.com"
+
+# Credentials (NEVER hardcode production credentials - use environment variables)
+username: "${PROD_USERNAME}"
+password: "${PROD_PASSWORD}"
+
+# API Configuration
+api_timeout: 30
+api_retry: 3
+
+# Database Configuration
+db_host: "prod-db.example.com"
+db_port: 5432
+db_name: "prod_db"
+
+# Custom Configuration
+custom_config:
+  feature_flag_1: true
+  feature_flag_2: false
+  max_retry: 3
+  debug_mode: false
