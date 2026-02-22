@@ -1,2 +1,3 @@
 recursive-include orbs/templates *
 recursive-include orbs/spy/js *.js
+recursive-include orbs/record/js *.js

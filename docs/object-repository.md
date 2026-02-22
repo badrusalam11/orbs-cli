@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `find_test_obj()` keyword reads Katalon-style `WebElementEntity` XML files from the project's object repository and returns a Selenium `WebElement`. It implements a self-healing strategy: if the primary locator fails, the framework will try alternative selectors and generated fallbacks derived from the element properties.
+The `find_test_obj()` keyword reads `WebElementEntity` XML files from the project's object repository and returns a Selenium `WebElement`. It implements a self-healing strategy: if the primary locator fails, the framework will try alternative selectors and generated fallbacks derived from the element properties.
 
 ## File format
 
