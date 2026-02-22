@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from urllib.parse import urlparse
 from dotenv import load_dotenv
@@ -532,9 +533,14 @@ def select_platform():
 
 
 @app.command()
-def spy(web: bool = False, mobile: bool = False, url: str = typer.Option(None, "--url")):
+def spy(
+    web: bool = typer.Option(False, "--web", help="Spy on web elements"),
+    mobile: bool = typer.Option(False, "--mobile", help="Spy on mobile elements (coming soon)"),
+    url: str = typer.Option(None, "--url", help="URL to open for spying (e.g. https://example.com)"),
+    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)")
+):
     """
-    Start element spy session (web or mobile).
+    Launch Spy Mode to inspect and capture UI elements for the Object Repository.
     Usage: orbs spy --url=https://google.com --web
     """
     if web:
@@ -554,9 +560,19 @@ def spy(web: bool = False, mobile: bool = False, url: str = typer.Option(None, "
     try:
         runner.start()
         typer.echo("[Orbs] Spy session started. Use Ctrl+` in the browser to capture. Press Ctrl+C here to stop.")
-        # Block until Ctrl+C
-        typer.echo("")  # just to move to a fresh line
-        typer.pause()   # waits until user hits Enter
+        
+        if daemon:
+            # Daemon mode: wait for stdin input (newline) or EOF to stop
+            typer.echo("")  # fresh line
+            try:
+                # Read from stdin until newline or EOF
+                sys.stdin.read(1)
+            except (EOFError, KeyboardInterrupt):
+                pass
+        else:
+            # Interactive mode: block until user hits Enter
+            typer.echo("")  # just to move to a fresh line
+            typer.pause()   # waits until user hits Enter
     except KeyboardInterrupt:
         pass
     finally:
@@ -569,7 +585,8 @@ def record(
     web: bool = typer.Option(False, "--web", help="Record web interactions"),
     mobile: bool = typer.Option(False, "--mobile", help="Record mobile interactions (coming soon)"),
     url: str = typer.Option(None, "--url", help="URL to open for recording (e.g. https://example.com)"),
-    testcase: str = typer.Option(None, "--testcase", help="Name for the generated test case")
+    testcase: str = typer.Option(None, "--testcase", help="Name for the generated test case"),
+    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)")
 ):
     """
     Record user interactions and generate test cases automatically.
@@ -604,7 +621,17 @@ def record(
     try:
         runner.start()
         typer.echo("")  # Fresh line for better output
-        typer.pause("Press Enter to stop recording and generate test case...")
+        
+        if daemon:
+            # Daemon mode: wait for stdin input (newline) or EOF to stop
+            try:
+                # Read from stdin until newline or EOF
+                sys.stdin.read(1)
+            except (EOFError, KeyboardInterrupt):
+                pass
+        else:
+            # Interactive mode: block until user hits Enter
+            typer.pause("Press Enter to stop recording and generate test case...")
     except KeyboardInterrupt:
         pass
     finally:
