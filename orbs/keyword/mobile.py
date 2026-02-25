@@ -13,6 +13,9 @@ import time
 import threading
 from typing import Union, List, Optional, Dict, Any
 from appium.webdriver.common.appiumby import AppiumBy
+from selenium.webdriver.common.actions import interaction
+from selenium.webdriver.common.actions.action_builder import ActionBuilder
+from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
@@ -332,10 +335,6 @@ class Mobile:
         
         try:
             # Try Appium 2.x W3C Actions API
-            from selenium.webdriver.common.actions import interaction
-            from selenium.webdriver.common.actions.action_builder import ActionBuilder
-            from selenium.webdriver.common.actions.pointer_input import PointerInput
-            
             actions = ActionBuilder(driver, mouse=PointerInput(interaction.POINTER_TOUCH, "touch"))
             actions.pointer_action.move_to(element)
             actions.pointer_action.pointer_down()

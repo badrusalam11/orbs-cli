@@ -13,6 +13,7 @@ import time
 import threading
 from typing import Union, List, Optional
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
@@ -24,6 +25,7 @@ from ..guard import orbs_guard
 from ..exception import WebActionException
 from ..log import log
 from .locator import WebElementEntity
+from ..config import config
 
 
 # Standalone function for easier syntax
@@ -75,6 +77,9 @@ class Web:
                 if driver is None:
                     driver = BrowserFactory.create_driver()
                     set_context('web_driver', driver)
+                    # Update wait timeout from execution.properties
+                    explicit_timeout = config.get_int("explicit_timeout", 10)
+                    cls._wait_timeout = explicit_timeout
         return driver
     
     @classmethod
@@ -197,9 +202,19 @@ class Web:
         driver = cls._get_driver()
         wait_time = timeout or cls._wait_timeout
         
+        # Check if self-healing is enabled
+        self_healing_enabled = config.get_bool("self_healing_enabled", True)
+        max_attempts = config.get_int("self_healing_max_attempts", 5) if self_healing_enabled else 1
+        
+        # Limit locators to try based on self-healing config
+        locators_to_try = locators[:max_attempts] if self_healing_enabled else locators[:1]
+        
+        if not self_healing_enabled and len(locators) > 1:
+            log.debug(f"Self-healing disabled, using primary locator only (not trying {len(locators) - 1} alternatives)")
+        
         last_exception = None
         
-        for idx, (strategy, value) in enumerate(locators):
+        for idx, (strategy, value) in enumerate(locators_to_try):
             try:
                 # Convert strategy to locator string
                 locator_str = f"{strategy}={value}"
@@ -219,9 +234,15 @@ class Web:
                 continue
         
         # If we get here, none of the locators worked
-        raise NoSuchElementException(
-            f"Element not found with any of the {len(locators)} locators (timeout: {wait_time}s)"
-        ) from last_exception
+        tried_count = len(locators_to_try)
+        total_count = len(locators)
+        
+        if self_healing_enabled and tried_count < total_count:
+            error_msg = f"Element not found with {tried_count} locators (tried {tried_count}/{total_count}, timeout: {wait_time}s)"
+        else:
+            error_msg = f"Element not found with any of the {tried_count} locators (timeout: {wait_time}s)"
+        
+        raise NoSuchElementException(error_msg) from last_exception
     
     @classmethod
     def find_test_obj(cls, xml_path: str, timeout: Optional[int] = None) -> WebElement:
@@ -363,7 +384,6 @@ class Web:
     )
     def double_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Double click on an element"""
-        from selenium.webdriver.common.action_chains import ActionChains
         element = cls._resolve_element(locator, timeout)
         driver = cls._get_driver()
         
@@ -378,7 +398,6 @@ class Web:
     )
     def right_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
         """Right click on an element"""
-        from selenium.webdriver.common.action_chains import ActionChains
         element = cls._resolve_element(locator, timeout)
         driver = cls._get_driver()
         

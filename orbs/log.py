@@ -4,6 +4,7 @@ import sys
 import os
 import threading
 from .thread_context import get_context
+from .config import config
 
 # Detect whether to use colors (disable in CI or non-TTY)
 USE_COLOR = sys.stdout.isatty() and not os.getenv("CI")
@@ -83,7 +84,15 @@ logging.setLoggerClass(OrbsLogger)
 
 # Create global logger
 log = logging.getLogger("orbs")
-log.setLevel(logging.DEBUG)
+
+# Read log level from execution.properties
+try:
+    log_level_str = config.get("log_level", "INFO").upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
+except Exception:
+    log_level = logging.INFO
+
+log.setLevel(log_level)
 
 if not log.handlers:
     # Console handler with colors
@@ -132,7 +141,6 @@ def add_test_file_handler(test_id):
 
 def remove_test_file_handler():
     """Remove file handler for current test ID (thread-safe)"""
-    from .thread_context import get_context
     test_id = get_context('test_id')
     
     if not test_id:

@@ -3,6 +3,8 @@ import json
 import platform
 import textwrap
 from datetime import datetime
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
@@ -128,9 +130,6 @@ class ReportGenerator:
     @orbs_guard(ReportGenerationException)
     def generate_junit_xml(self):
         """Generate JUnit XML report for CI/CD integration"""
-        from xml.etree.ElementTree import Element, SubElement, tostring
-        from xml.dom import minidom
-        
         # Use testcase_result as primary source (from result.json)
         total_tests = len(self.testcase_result)
         total_failures = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'failed')

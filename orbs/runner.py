@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
 import time
+from datetime import datetime
 from dotenv import load_dotenv
 import yaml
 import inspect
@@ -11,11 +12,11 @@ from orbs.log import log
 from orbs.dependency import check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
 from orbs.exception import FeatureException, RunnerException
-import sys
-
+from orbs.config import config
+from orbs.keyword.web import Web
 from orbs.utils import load_module_from_path
 from ._constant import PLATFORM_LIST
-
+import sys
 
 
 class Runner:
@@ -84,21 +85,75 @@ class Runner:
             for hook in enabled_listeners.get('before_test_case', []):
                 self._invoke_hook(hook, case)
 
-            # Run the test case and capture status
+            # Run the test case and capture status with retry logic
+            retry_enabled = config.get_bool("retry_enabled", False)
+            retry_max_attempts = config.get_int("retry_max_attempts", 2)
+            screenshot_on_fail = config.get_bool("screenshot_on_fail", False)
+            screenshot_on_retry = config.get_bool("screenshot_on_retry", False)
+            
             status = "passed"
             exception = None
-            try:
-                self.run_case(case)
-            except Exception as e:
-                log.error(f"Error running test case {case}: {e}", exc_info=True)
-                status = "failed"
-                exception = e  # Store the exception
+            attempt = 1
+            max_attempts = retry_max_attempts if retry_enabled else 1
+            
+            while attempt <= max_attempts:
+                try:
+                    if attempt > 1:
+                        log.info(f"Retrying test case {case} (attempt {attempt}/{max_attempts})")
+                        # Reset drivers for clean state before retry
+                        try:
+                            Web.reset_driver()
+                        except ImportError:
+                            pass
+                        
+                        try:
+                            from orbs.keyword.mobile import Mobile
+                            Mobile.reset_driver()
+                        except ImportError:
+                            pass
+                    
+                    self.run_case(case)
+                    status = "passed"
+                    exception = None
+                    break  # Success, exit retry loop
+                except Exception as e:
+                    log.error(f"Error running test case {case} (attempt {attempt}/{max_attempts}): {e}", exc_info=True)
+                    status = "failed"
+                    exception = e
+                    
+                    # Take screenshot before cleanup/retry (capture failure state)
+                    if attempt < max_attempts and screenshot_on_retry:
+                        # Screenshot on retry - capture before reset driver
+                        try:
+                            driver = Web._get_driver()
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            screenshot_filename = f"retry_attempt_{attempt}_{os.path.basename(case)}_{timestamp}.png"
+                            driver.save_screenshot(screenshot_filename)
+                            log.info(f"Screenshot taken before retry: {screenshot_filename}")
+                        except Exception as screenshot_error:
+                            log.warning(f"Failed to take screenshot on retry: {screenshot_error}")
+                    elif attempt == max_attempts and screenshot_on_fail:
+                        # Screenshot on final fail - capture before cleanup
+                        try:
+                            driver = Web._get_driver()
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            screenshot_filename = f"fail_{os.path.basename(case)}_{timestamp}.png"
+                            driver.save_screenshot(screenshot_filename)
+                            log.info(f"Screenshot taken on fail: {screenshot_filename}")
+                        except Exception as screenshot_error:
+                            log.warning(f"Failed to take screenshot on fail: {screenshot_error}")
+                    
+                    if attempt < max_attempts:
+                        log.info(f"Test case {case} failed, will retry...")
+                        attempt += 1
+                    else:
+                        log.error(f"Test case {case} failed after {max_attempts} attempts")
+                        break
 
             data = {"status": status, "name": case, "exception": exception}
 
             # Reset drivers for clean state between test cases
             try:
-                from orbs.keyword.web import Web
                 Web.reset_driver()
             except ImportError:
                 pass
