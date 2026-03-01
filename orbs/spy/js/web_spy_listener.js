@@ -289,6 +289,11 @@ function handleKeyDown(e) {
             }
             
             // Ensure it starts with //
+            // If path already starts with //, don't add it again
+            if (path.startsWith('//')) {
+                return path;
+            }
+            // Otherwise add // prefix (handles case where loop didn't reach body)
             return '//' + path.substring(1);
         }
 

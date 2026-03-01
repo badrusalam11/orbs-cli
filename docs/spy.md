@@ -551,7 +551,7 @@ Spy is primarily for local development. For CI/CD:
 ---
 
 ## Next Steps
-
+* [Object Repository](object-repository.md) - Use captured element using object repository
 * [Web Testing Guide](web-testing.md) - Use captured elements in web tests
 * [Mobile Testing Guide](mobile-testing.md) - Use captured elements in mobile tests
 * [CLI Reference](cli-reference.md) - All spy command options

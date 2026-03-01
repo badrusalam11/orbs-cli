@@ -2,7 +2,10 @@ import os
 import json
 import platform
 import textwrap
+import time
 from datetime import datetime
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom import minidom
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
@@ -26,6 +29,7 @@ class ReportGenerator:
         os.makedirs(self.screenshots_dir, exist_ok=True)
 
         self.id_test = timestamp
+        self.start_time = time.time()  # Track start time for duration calculation
         self.json_path = os.path.join(self.run_dir, "cucumber.json")
         self.pdf_path = os.path.join(self.run_dir, f"{timestamp}.pdf")
         self.overview_path = os.path.join(self.run_dir, "result.json")
@@ -98,10 +102,17 @@ class ReportGenerator:
 
     @orbs_guard(ReportGenerationException)
     def record_overview(self, suite_path, duration, start_time, end_time):
+        from orbs.thread_context import get_context
+        retry_count = get_context("retry_count") or 0
+        platform_name = get_context("platform") or config.get("default_platform", "chrome")
+        headless = config.get_bool("headless", False) or config.get_bool("browser_headless", False)
+        platform_display = f"{platform_name.title()} ({'headless' if headless else 'headed'})"
+        
         self.overriew = {
             "testsuite_id": os.path.relpath(suite_path, os.getcwd()),
             "tester_name": config.get("tester_name", "Unknown Tester"),
             "environent": config.get("ORBS_ENV", "default"),
+            "platform": platform_display,
             "host_name": platform.node(),
             "os": platform.system(),
             "duration": duration,
@@ -111,6 +122,7 @@ class ReportGenerator:
             "passed": sum(1 for r in self.testcase_result if r['status'].lower() == 'passed'),
             "failed": sum(1 for r in self.testcase_result if r['status'].lower() == 'failed'),
             "skipped": sum(1 for r in self.testcase_result if r['status'].lower() == 'skipped'),
+            "retries": retry_count,
             "testcase_results": self.testcase_result,
         }
 
@@ -128,9 +140,6 @@ class ReportGenerator:
     @orbs_guard(ReportGenerationException)
     def generate_junit_xml(self):
         """Generate JUnit XML report for CI/CD integration"""
-        from xml.etree.ElementTree import Element, SubElement, tostring
-        from xml.dom import minidom
-        
         # Use testcase_result as primary source (from result.json)
         total_tests = len(self.testcase_result)
         total_failures = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'failed')
@@ -755,6 +764,9 @@ class ReportGenerator:
                 <div class="label">Environment:</div>
                 <div class="value">{overview.get('environent', 'Unknown')}</div>
                 
+                <div class="label">Platform:</div>
+                <div class="value">{overview.get('platform', 'Unknown')}</div>
+                
                 <div class="label">Host:</div>
                 <div class="value">{overview.get('host_name', 'Unknown')}</div>
                 
@@ -1276,54 +1288,56 @@ class ReportGenerator:
         right = 400
 
         # Make sure we have room
-        self._new_page_if_needed(6 * line_h + 20)
+        self._new_page_if_needed(7 * line_h + 20)
 
-        # Block 1: executor, id, environment, host, os
+        # Block 1: executor, id, environment, platform, host, os
         self.c.setFont("Helvetica-Bold", 11)
         self.c.drawString(left,        self.y,           "Executor")
         self.c.drawString(left,        self.y - line_h,  "ID")
         self.c.drawString(left,        self.y - 2*line_h,"Environment")
-        self.c.drawString(left,        self.y - 3*line_h,"Host")
-        self.c.drawString(left,        self.y - 4*line_h,"OS")
+        self.c.drawString(left,        self.y - 3*line_h,"Platform")
+        self.c.drawString(left,        self.y - 4*line_h,"Host")
+        self.c.drawString(left,        self.y - 5*line_h,"OS")
 
         self.c.setFont("Helvetica", 10)
         self.c.drawString(mid,         self.y,           data.get("tester_name", "Unknown"))
         self.c.drawString(mid,         self.y - line_h,  data.get("testsuite_id", "Unknown"))
         self.c.drawString(mid,         self.y - 2*line_h,data.get("environent", ""))
-        self.c.drawString(mid,         self.y - 3*line_h,data.get("host_name", ""))
-        self.c.drawString(mid,         self.y - 4*line_h,data.get("os", ""))
+        self.c.drawString(mid,         self.y - 3*line_h,data.get("platform", ""))
+        self.c.drawString(mid,         self.y - 4*line_h,data.get("host_name", ""))
+        self.c.drawString(mid,         self.y - 5*line_h,data.get("os", ""))
 
         # Block 2: counts
         self.c.setFont("Helvetica-Bold", 11)
-        self.c.drawString(left,        self.y - 6*line_h, "Total")
-        self.c.drawString(left,        self.y - 7*line_h, "Passed")
-        self.c.drawString(left,        self.y - 8*line_h, "Failed")
+        self.c.drawString(left,        self.y - 7*line_h, "Total")
+        self.c.drawString(left,        self.y - 8*line_h, "Passed")
+        self.c.drawString(left,        self.y - 9*line_h, "Failed")
 
         self.c.setFont("Helvetica", 10)
         self.c.setFillColor(colors.black)
-        self.c.drawString(mid,         self.y - 6*line_h, str(data.get("total_testcase", 0)))
+        self.c.drawString(mid,         self.y - 7*line_h, str(data.get("total_testcase", 0)))
         self.c.setFillColor(colors.green)
-        self.c.drawString(mid,         self.y - 7*line_h, str(data.get("passed", 0)))
+        self.c.drawString(mid,         self.y - 8*line_h, str(data.get("passed", 0)))
         self.c.setFillColor(colors.red)
-        self.c.drawString(mid,         self.y - 8*line_h, str(data.get("failed", 0)))
+        self.c.drawString(mid,         self.y - 9*line_h, str(data.get("failed", 0)))
 
         # Block 3: time info
         self.c.setFillColor(colors.black)
         self.c.setFont("Helvetica-Bold", 11)
-        self.c.drawString(right,       self.y - 6*line_h, "Start")
-        self.c.drawString(right,       self.y - 7*line_h, "End")
-        self.c.drawString(right,       self.y - 8*line_h, "Elapsed")
+        self.c.drawString(right,       self.y - 7*line_h, "Start")
+        self.c.drawString(right,       self.y - 8*line_h, "End")
+        self.c.drawString(right,       self.y - 9*line_h, "Elapsed")
 
         self.c.setFont("Helvetica", 10)
-        self.c.drawString(right + 60,  self.y - 6*line_h, data.get("start_time", ""))
-        self.c.drawString(right + 60,  self.y - 7*line_h, data.get("end_time", ""))
+        self.c.drawString(right + 60,  self.y - 7*line_h, data.get("start_time", ""))
+        self.c.drawString(right + 60,  self.y - 8*line_h, data.get("end_time", ""))
         dur = data.get("duration", 0)
         elapsed = f"{int(dur//60)}m - {int(dur%60)}s"
-        self.c.drawString(right + 60,  self.y - 8*line_h, elapsed)
+        self.c.drawString(right + 60,  self.y - 9*line_h, elapsed)
 
         # reset color and move cursor
         self.c.setFillColor(colors.black)
-        self.y -= (9 * line_h)
+        self.y -= (10 * line_h)
         
     def add_cucumber_summary_table(self):
         left_margin = 50

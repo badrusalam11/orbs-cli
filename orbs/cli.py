@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from urllib.parse import urlparse
 from dotenv import load_dotenv
@@ -9,6 +10,7 @@ from pathlib import Path
 from orbs._constant import PLATFORM_LIST
 from orbs.spy.mobile import MobileSpyRunner
 from orbs.spy.web import WebSpyRunner
+from orbs.record.web import WebRecordRunner
 from orbs.utils import render_template
 from orbs import run
 import subprocess
@@ -531,16 +533,21 @@ def select_platform():
 
 
 @app.command()
-def spy(web: bool = False, mobile: bool = False, url: str = typer.Option(None, "--url")):
+def spy(
+    web: bool = typer.Option(False, "--web", help="Spy on web elements"),
+    mobile: bool = typer.Option(False, "--mobile", help="Spy on mobile elements (coming soon)"),
+    url: str = typer.Option(None, "--url", help="URL to open for spying (e.g. https://example.com)"),
+    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)")
+):
     """
-    Start element spy session (web or mobile).
+    Launch Spy Mode to inspect and capture UI elements for the Object Repository.
     Usage: orbs spy --url=https://google.com --web
     """
     if web:
         # Fix URL format if protocol is missing
         if url and not url.startswith(('http://', 'https://')):
             url = 'https://' + url
-            typer.secho(f"ℹ️ Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
+            typer.secho(f"Info: Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
         
         runner = WebSpyRunner(url=url)
     elif mobile:
@@ -553,14 +560,83 @@ def spy(web: bool = False, mobile: bool = False, url: str = typer.Option(None, "
     try:
         runner.start()
         typer.echo("[Orbs] Spy session started. Use Ctrl+` in the browser to capture. Press Ctrl+C here to stop.")
-        # Block until Ctrl+C
-        typer.echo("")  # just to move to a fresh line
-        typer.pause()   # waits until user hits Enter
+        
+        if daemon:
+            # Daemon mode: wait for stdin input (newline) or EOF to stop
+            typer.echo("")  # fresh line
+            try:
+                # Read from stdin until newline or EOF
+                sys.stdin.read(1)
+            except (EOFError, KeyboardInterrupt):
+                pass
+        else:
+            # Interactive mode: block until user hits Enter
+            typer.echo("")  # just to move to a fresh line
+            typer.pause()   # waits until user hits Enter
     except KeyboardInterrupt:
         pass
     finally:
         runner.stop()
         typer.echo("[Orbs] Spy session ended.")
+
+
+@app.command()
+def record(
+    web: bool = typer.Option(False, "--web", help="Record web interactions"),
+    mobile: bool = typer.Option(False, "--mobile", help="Record mobile interactions (coming soon)"),
+    url: str = typer.Option(None, "--url", help="URL to open for recording (e.g. https://example.com)"),
+    testcase: str = typer.Option(None, "--testcase", help="Name for the generated test case"),
+    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)")
+):
+    """
+    Record user interactions and generate test cases automatically.
+    
+    Example:
+        orbs record --web --url=https://example.com --testcase=login_test
+        orbs record --web --url=example.com    # Interactive mode
+    """
+    if not web and not mobile:
+        typer.echo("Error: Please specify a platform: --web or --mobile")
+        typer.echo("Example: orbs record --web --url=https://google.com --testcase=search_test")
+        raise typer.Exit(code=1)
+    
+    if mobile:
+        typer.echo("Error: Mobile recording is not yet implemented.")
+        typer.echo("Use --web for web recording.")
+        raise typer.Exit(code=1)
+    
+    if web:
+        if not url:
+            typer.echo("Error: URL is required for web recording")
+            typer.echo("Example: orbs record --web --url=https://google.com")
+            raise typer.Exit(code=1)
+        
+        # Fix URL format if protocol is missing
+        if url and not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+            typer.secho(f"Info: Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
+        
+        runner = WebRecordRunner(url=url, testcase_name=testcase)
+    
+    try:
+        runner.start()
+        typer.echo("")  # Fresh line for better output
+        
+        if daemon:
+            # Daemon mode: wait for stdin input (newline) or EOF to stop
+            try:
+                # Read from stdin until newline or EOF
+                sys.stdin.read(1)
+            except (EOFError, KeyboardInterrupt):
+                pass
+        else:
+            # Interactive mode: block until user hits Enter
+            typer.pause("Press Enter to stop recording and generate test case...")
+    except KeyboardInterrupt:
+        pass
+    finally:
+        runner.stop()
+
 
 @app.command()
 def serve(port: int = typer.Option(None, help="Port to run the server")):

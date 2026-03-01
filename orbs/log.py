@@ -4,6 +4,7 @@ import sys
 import os
 import threading
 from .thread_context import get_context
+from .config import config
 
 # Detect whether to use colors (disable in CI or non-TTY)
 USE_COLOR = sys.stdout.isatty() and not os.getenv("CI")
@@ -83,7 +84,15 @@ logging.setLoggerClass(OrbsLogger)
 
 # Create global logger
 log = logging.getLogger("orbs")
-log.setLevel(logging.DEBUG)
+
+# Read log level from execution.properties
+try:
+    log_level_str = config.get("log_level", "INFO").upper()
+    log_level = getattr(logging, log_level_str, logging.INFO)
+except Exception:
+    log_level = logging.INFO
+
+log.setLevel(log_level)
 
 if not log.handlers:
     # Console handler with colors
@@ -112,11 +121,13 @@ class TestIdFilter(logging.Filter):
 def add_test_file_handler(test_id):
     """Add file handler for specific test ID (thread-safe)"""
     with _file_handlers_lock:
-        # Create logs directory if not exists
-        os.makedirs("logs", exist_ok=True)
+        # Create logs directory structure: logs/{test_id}/
+        log_dir = os.path.join("logs", test_id)
+        os.makedirs(log_dir, exist_ok=True)
         
-        # Create new file handler for this test
-        file_handler = logging.FileHandler(f"logs/{test_id}.log", mode='w')
+        # Create new file handler for this test: logs/{test_id}/execution.log
+        log_file = os.path.join(log_dir, "execution.log")
+        file_handler = logging.FileHandler(log_file, mode='w')
         file_formatter = logging.Formatter(
             "[%(asctime)s][%(test_id)s] %(levelname)s: %(message)s"
         )
@@ -132,7 +143,6 @@ def add_test_file_handler(test_id):
 
 def remove_test_file_handler():
     """Remove file handler for current test ID (thread-safe)"""
-    from .thread_context import get_context
     test_id = get_context('test_id')
     
     if not test_id:

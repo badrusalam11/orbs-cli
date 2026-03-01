@@ -1,21 +1,22 @@
 from concurrent.futures import ThreadPoolExecutor
 import os
 import time
+from datetime import datetime
 from dotenv import load_dotenv
 import yaml
 import inspect
 from behave.__main__ import main as behave_main
 from orbs.guard import orbs_guard
-from orbs.thread_context import set_context
+from orbs.thread_context import set_context, get_context
 from orbs.log import log
 from orbs.dependency import check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
 from orbs.exception import FeatureException, RunnerException
-import sys
-
+from orbs.config import config
+from orbs.keyword.web import Web
 from orbs.utils import load_module_from_path
 from ._constant import PLATFORM_LIST
-
+import sys
 
 
 class Runner:
@@ -27,12 +28,39 @@ class Runner:
         return normalized_path
 
     def run_case(self, case_path):
+        # Ensure report is initialized (for standalone test case execution)
+        from orbs.report_listener import ensure_report_initialized
+        is_standalone = ensure_report_initialized(context_key=f"case:{case_path}")
+        
         log.info(f"Running test case: {case_path}")
-        mod = load_module_from_path(case_path)
-        if hasattr(mod, "run"):
-            mod.run()
-        else:
-            raise Exception(f"No 'run()' function found in {case_path}")
+        
+        # For standalone test case, manually call BeforeTestCase hooks
+        if is_standalone:
+            for hook in enabled_listeners.get('before_test_case', []):
+                self._invoke_hook(hook, case_path)
+        
+        # Run the test case
+        status = "passed"
+        exception = None
+        try:
+            mod = load_module_from_path(case_path)
+            if hasattr(mod, "run"):
+                mod.run()
+            else:
+                raise Exception(f"No 'run()' function found in {case_path}")
+        except Exception as e:
+            log.error(f"Error running test case {case_path}: {e}", exc_info=True)
+            status = "failed"
+            exception = e
+        
+        # For standalone test case, manually call AfterTestCase hooks
+        if is_standalone:
+            data = {"status": status, "name": case_path, "exception": exception}
+            for hook in enabled_listeners.get('after_test_case', []):
+                self._invoke_hook(hook, case_path, data)
+            
+            # Finalize report for standalone execution
+            self._finalize_standalone_report(case_path)
         
     def _invoke_hook(self, hook, *args):
         """
@@ -47,6 +75,51 @@ class Runner:
                 hook(*args)
         except Exception as e:
             log.error(f"Error invoking hook {hook.__name__}: {e}", exc_info=True)
+    
+    def _finalize_standalone_report(self, context_key):
+        """
+        Finalize report for standalone test case/feature execution.
+        This replicates AfterTestSuite behavior for standalone runs.
+        """
+        import time
+        import sys
+        from orbs.console_summary import ConsoleSummary
+        
+        rg = get_context("report")
+        if not rg:
+            return
+        
+        # Calculate duration from report creation time
+        end_time = time.time()
+        start_time = getattr(rg, 'start_time', end_time)
+        duration = end_time - start_time
+        
+        # Record overview
+        rg.record_overview(context_key, round(duration, 2), start_time, end_time)
+        run_dir = rg.finalize(context_key)
+        log.info(f"Report generated at: {run_dir}")
+        
+        # Print console summary
+        ConsoleSummary.print_summary(rg.overriew)
+        
+        # Flush output
+        sys.stdout.flush()
+        sys.stderr.flush()
+        
+        # Store exit code
+        exit_code = ConsoleSummary.get_exit_code(rg.overriew)
+        set_context('exit_code', exit_code)
+        
+        # Log execution finish to live logger
+        live_logger = get_context("live_logger")
+        if live_logger:
+            overall_status = "PASSED" if exit_code == 0 else "FAILED"
+            live_logger.execution_finished(status=overall_status, duration=duration)
+        
+        # Cleanup
+        from orbs.log import remove_test_file_handler
+        remove_test_file_handler()
+        set_context('test_id', None)
 
     @orbs_guard(RunnerException)
     def run_suite(self, suite_path):
@@ -84,21 +157,88 @@ class Runner:
             for hook in enabled_listeners.get('before_test_case', []):
                 self._invoke_hook(hook, case)
 
-            # Run the test case and capture status
+            # Run the test case and capture status with retry logic
+            retry_enabled = config.get_bool("retry_enabled", False)
+            retry_max_attempts = config.get_int("retry_max_attempts", 2)
+            screenshot_on_fail = config.get_bool("screenshot_on_fail", False)
+            screenshot_on_retry = config.get_bool("screenshot_on_retry", False)
+            
             status = "passed"
             exception = None
-            try:
-                self.run_case(case)
-            except Exception as e:
-                log.error(f"Error running test case {case}: {e}", exc_info=True)
-                status = "failed"
-                exception = e  # Store the exception
+            attempt = 1
+            max_attempts = retry_max_attempts if retry_enabled else 1
+            
+            while attempt <= max_attempts:
+                try:
+                    if attempt > 1:
+                        log.info(f"Retrying test case {case} (attempt {attempt}/{max_attempts})")
+                        # Increment retry counter in context
+                        retry_count = get_context("retry_count") or 0
+                        set_context("retry_count", retry_count + 1)
+                        
+                        # Reset drivers for clean state before retry
+                        try:
+                            Web.reset_driver()
+                        except ImportError:
+                            pass
+                        
+                        try:
+                            from orbs.keyword.mobile import Mobile
+                            Mobile.reset_driver()
+                        except ImportError:
+                            pass
+                    
+                    self.run_case(case)
+                    status = "passed"
+                    exception = None
+                    break  # Success, exit retry loop
+                except Exception as e:
+                    log.error(f"Error running test case {case} (attempt {attempt}/{max_attempts}): {e}", exc_info=True)
+                    status = "failed"
+                    exception = e
+                    
+                    # Take screenshot before cleanup/retry (capture failure state)
+                    if attempt < max_attempts and screenshot_on_retry:
+                        # Screenshot on retry - capture before reset driver
+                        try:
+                            driver = Web._get_driver()
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            screenshot_filename = f"retry_attempt_{attempt}_{os.path.basename(case)}_{timestamp}.png"
+                            driver.save_screenshot(screenshot_filename)
+                            log.info(f"Screenshot taken before retry: {screenshot_filename}")
+                        except Exception as screenshot_error:
+                            log.warning(f"Failed to take screenshot on retry: {screenshot_error}")
+                    elif attempt == max_attempts and screenshot_on_fail:
+                        # Screenshot on final fail - capture before cleanup
+                        try:
+                            driver = Web._get_driver()
+                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                            screenshot_filename = f"fail_{os.path.basename(case)}_{timestamp}.png"
+                            driver.save_screenshot(screenshot_filename)
+                            log.info(f"Screenshot taken on fail: {screenshot_filename}")
+                        except Exception as screenshot_error:
+                            log.warning(f"Failed to take screenshot on fail: {screenshot_error}")
+                    
+                    if attempt < max_attempts:
+                        log.info(f"Test case {case} failed, will retry...")
+                        attempt += 1
+                    else:
+                        log.error(f"Test case {case} failed after {max_attempts} attempts")
+                        break
 
+            # Check if test had CONTINUE_ON_FAILURE errors (should mark as failed)
+            has_continued_failures = get_context('test_has_continued_failures')
+            if has_continued_failures and status == "passed":
+                status = "failed"
+                log.warning(f"Test case {case} marked as FAILED due to CONTINUE_ON_FAILURE errors")
+            
+            # Clear the flag for next test
+            set_context('test_has_continued_failures', False)
+            
             data = {"status": status, "name": case, "exception": exception}
 
             # Reset drivers for clean state between test cases
             try:
-                from orbs.keyword.web import Web
                 Web.reset_driver()
             except ImportError:
                 pass
@@ -127,6 +267,10 @@ class Runner:
 
     @orbs_guard(FeatureException)
     def run_feature(self, feature_path, tags=None):
+        # Ensure report is initialized (for standalone feature execution)
+        from orbs.report_listener import ensure_report_initialized
+        is_standalone = ensure_report_initialized(context_key=f"feature:{feature_path}")
+        
         log.info(f"is feature {feature_path} exist: {os.path.exists(feature_path)}")
         log.info(f"Running feature: {feature_path} with tags: {tags}")
         args = []
@@ -135,6 +279,11 @@ class Runner:
         args.append(feature_path)
 
         result_code = behave_main(args)  # <--- Capture the result code
+        
+        # Finalize report for standalone execution
+        if is_standalone:
+            self._finalize_standalone_report(feature_path)
+        
         if result_code != 0:
             log.error(f"Feature run failed with code: {result_code}")
             raise FeatureException(f"Feature run failed with code: {result_code}")

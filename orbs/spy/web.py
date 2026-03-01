@@ -135,9 +135,19 @@ class WebSpyRunner(SpyRunner):
                         # Decode escape sequence dari Chrome logs
                         try:
                             unescaped = bytes(raw, "utf-8").decode("unicode_escape")
-                            print(f"[SPY] Unescaped: {unescaped}")
-                            data = json.loads(unescaped)
-                        except Exception as e:
+                        except Exception:
+                            unescaped = raw
+                        print(f"[SPY] Unescaped: {unescaped}")
+                        
+                        # Only try to parse JSON if it looks like JSON
+                        trimmed = unescaped.strip()
+                        if not (trimmed.startswith('{') or trimmed.startswith('[')):
+                            print("[SPY] Non-JSON message, skipping")
+                            continue
+                        
+                        try:
+                            data = json.loads(trimmed)
+                        except json.JSONDecodeError as e:
                             print(f"[SPY] JSON decode error: {e}")
                             continue
 
