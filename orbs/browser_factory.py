@@ -30,6 +30,7 @@ class BrowserFactory:
         
         # Load browser configuration from settings/browser.properties
         headless = config.get_bool("headless", False)
+        private_mode = config.get_bool("private_mode", False)
         window_size = config.get("window_size", None)
         driver_path = config.get("driver_path", None)
         
@@ -37,7 +38,7 @@ class BrowserFactory:
         # Framework handles browser-specific compatibility automatically
         args_list = config.get_list("args", sep=";")
         
-        log.debug(f"Creating {browser} driver (headless={headless}, window_size={window_size}, args={args_list})")
+        log.debug(f"Creating {browser} driver (headless={headless}, private_mode={private_mode}, window_size={window_size}, args={args_list})")
 
         if browser == "chrome":
             options = ChromeOptions()
@@ -45,6 +46,10 @@ class BrowserFactory:
             # Add headless mode
             if headless:
                 options.add_argument("--headless=new")
+            
+            # Add private/incognito mode
+            if private_mode:
+                options.add_argument("--incognito")
             
             # Add window size
             if window_size:
@@ -82,6 +87,10 @@ class BrowserFactory:
                 elif arg.startswith("--"):
                     options.add_argument(arg)
             
+            # Add private/incognito mode
+            if private_mode:
+                options.set_preference("browser.privatebrowsing.autostart", True)
+            
             # Create driver with optional custom driver path
             if driver_path:
                 service = FirefoxService(executable_path=driver_path)
@@ -103,6 +112,10 @@ class BrowserFactory:
             # Add browser arguments (Edge supports Chrome args)
             for arg in args_list:
                 options.add_argument(arg)
+            
+            # Add private/inprivate mode
+            if private_mode:
+                options.add_argument("--inprivate")
             
             # Create driver with optional custom driver path
             if driver_path:

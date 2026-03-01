@@ -105,6 +105,9 @@ headless=false
 # Window size (widthxheight)
 window_size=1920x1080
 
+# Private Mode
+private_mode=true
+
 # Additional Arguments (comma-separated)
 args=--disable-gpu,--no-sandbox
 
