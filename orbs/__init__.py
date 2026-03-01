@@ -83,5 +83,10 @@ def run(target=None, platform=None, device_id=None):
     
     # Get exit code from context and exit with it
     exit_code = get_context('exit_code') or 0
+    
+    # Flush stdout/stderr to ensure all output is sent before exit
+    sys.stdout.flush()
+    sys.stderr.flush()
+    
     sys.exit(exit_code)
 

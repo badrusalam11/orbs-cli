@@ -8,6 +8,7 @@ from orbs.exception import ReportListenerException
 from orbs.guard import orbs_guard
 from orbs.report_generator import ReportGenerator
 from orbs.console_summary import ConsoleSummary
+from orbs.live_logger import LiveLogger
 from orbs.listener_manager import (
     BeforeTestSuite, AfterTestSuite,
     BeforeScenario, AfterScenario,
@@ -26,20 +27,51 @@ _start_time = {}
 _scenario_screenshot_start_index = {}  # Track starting index of screenshots for each scenario
 _scenario_api_calls_start_index = {}   # Track starting index of API calls for each scenario
 
+def ensure_report_initialized(context_key="main"):
+    """
+    Ensure report and live logger are initialized.
+    Can be called from anywhere (BeforeTestSuite, run_case, run_feature).
+    Returns True if newly initialized, False if already initialized.
+    """
+    rg = get_context("report")
+    if rg:
+        # Already initialized
+        return False
+    
+    # Initialize reporting
+    rg = ReportGenerator(base_dir="reports")
+    set_context("report", rg)
+    set_context("retry_count", 0)
+    log.info(f"Initialized reporting (context: {context_key})")
+    
+    # Setup file logging
+    add_test_file_handler(rg.id_test)
+    set_context("test_id", rg.id_test)
+    
+    # Initialize live logger
+    live_logger = LiveLogger(log_dir="logs", execution_id=rg.id_test)
+    set_context("live_logger", live_logger)
+    
+    # Log execution start
+    environment = get_context("environment") or "default"
+    platform = get_context("platform") or None
+    live_logger.execution_started(environment=environment, platform=platform)
+    
+    log.info(f"Live logger initialized: logs/{rg.id_test}/live.ndjson")
+    
+    return True
+
 @BeforeTestSuite
 @orbs_guard(ReportListenerException)
 def init_report(suite_path):
+    # Ensure report is initialized (will skip if already done)
+    ensure_report_initialized(context_key=f"suite:{suite_path}")
+    
+    # Track suite timing
     _suite_start[suite_path] = time.time()
     _start_time[suite_path] = _suite_start[suite_path]
-
-    rg = ReportGenerator(base_dir="reports")
-    set_context("report", rg)
-    set_context("retry_count", 0)  # Initialize retry counter
+    
     log.info(f"Initialized reporting for suite: {suite_path}")
-
-    # Setup file logging for this test
-    add_test_file_handler(rg.id_test)
-    set_context("test_id", rg.id_test)
 
     user_properties_path = os.path.join("settings", "user.properties")
     if not os.path.exists(user_properties_path):
@@ -52,6 +84,12 @@ def before_test_case(case, data=None):
     _testcase_start[case] = time.time()
     # Store current test case name in context for scenario tracking
     set_context('current_testcase', case)
+    
+    # Log testcase start to live logger
+    live_logger = get_context("live_logger")
+    if live_logger:
+        testcase_id = case.replace("\\", "/").replace(".py", "")
+        live_logger.testcase_started(testcase_id=testcase_id, name=os.path.basename(case), file_path=case)
 
 @BeforeScenario
 def start_scenario_timer(context, scenario):
@@ -81,6 +119,21 @@ def start_scenario_timer(context, scenario):
 def start_step_timer(context, step):
     scenario_name = context.scenario.name
     _step_start[scenario_name] = time.time()
+    
+    # Log step start to live logger
+    live_logger = get_context("live_logger")
+    if live_logger:
+        current_testcase = get_context('current_testcase')
+        if current_testcase:
+            testcase_id = current_testcase.replace("\\", "/").replace(".py", "")
+            keyword = getattr(step, "keyword", "STEP")
+            step_id = live_logger.step_started(
+                testcase_id=testcase_id,
+                keyword=keyword,
+                object_name=step.name if step.name else None
+            )
+            # Store step_id for later use in AfterStep
+            set_context(f'step_id_{scenario_name}', step_id)
 
 @AfterStep
 def record_step_info(context, step):
@@ -95,6 +148,32 @@ def record_step_info(context, step):
             s['status'] = status
             s['duration'] = round(duration, 2)
             break
+    
+    # Log step result to live logger
+    live_logger = get_context("live_logger")
+    if live_logger:
+        current_testcase = get_context('current_testcase')
+        step_id = get_context(f'step_id_{scenario_name}')
+        if current_testcase and step_id:
+            testcase_id = current_testcase.replace("\\", "/").replace(".py", "")
+            
+            if status == 'PASSED':
+                live_logger.step_passed(testcase_id=testcase_id, step_id=step_id, duration=duration)
+            elif status == 'FAILED':
+                # Get error message from step exception
+                error_msg = str(getattr(step, 'exception', 'Step failed'))
+                # Check if screenshot was taken
+                screenshots = get_context("screenshots") or []
+                screenshot = screenshots[-1] if screenshots else None
+                live_logger.step_failed(
+                    testcase_id=testcase_id,
+                    step_id=step_id,
+                    error=error_msg,
+                    duration=duration,
+                    screenshot=screenshot
+                )
+            elif status == 'SKIPPED':
+                live_logger.step_skipped(testcase_id=testcase_id, step_id=step_id, reason="Step skipped")
 
 
 @AfterScenario
@@ -229,6 +308,12 @@ def after_test_case(case, data=None):
         rg.testcase_api_calls[case] = api_calls
 
     log.info(f"Recorded testcase: {case} - {status} - {duration:.2f}s - Total Screenshots: {len(screenshots)} - Total API calls: {len(api_calls)} - Cucumber scenarios: {len(cucumber_scenarios)}")
+    
+    # Log testcase finish to live logger
+    live_logger = get_context("live_logger")
+    if live_logger:
+        testcase_id = case.replace("\\", "/").replace(".py", "")
+        live_logger.testcase_finished(testcase_id=testcase_id, status=status, duration=duration)
 
     # cleanup
     set_context("screenshots", [])
@@ -254,9 +339,19 @@ def finalize_report(suite_path):
     # Print console summary
     ConsoleSummary.print_summary(rg.overriew)
     
+    # Flush output to ensure console summary is displayed before process exits
+    sys.stdout.flush()
+    sys.stderr.flush()
+    
     # Store exit code for CI/CD integration
     exit_code = ConsoleSummary.get_exit_code(rg.overriew)
     set_context('exit_code', exit_code)
+    
+    # Log execution finish to live logger
+    live_logger = get_context("live_logger")
+    if live_logger:
+        overall_status = "PASSED" if exit_code == 0 else "FAILED"
+        live_logger.execution_finished(status=overall_status, duration=duration)
     
     # Clear any remaining tracking data
     _scenario_screenshot_start_index.clear()

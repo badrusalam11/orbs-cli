@@ -11,6 +11,7 @@ concurrently with different browser configurations.
 
 import time
 import threading
+import functools
 from typing import Union, List, Optional
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
@@ -27,6 +28,111 @@ from ..log import log
 from .locator import WebElementEntity
 from .failure_handling import FailureHandling, handle_failure
 from ..config import config
+
+def track_keyword(func):
+    """Decorator to track keyword execution in live logger for non-BDD test cases"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        live_logger = get_context("live_logger")
+        testcase = get_context("current_testcase")
+        
+        if live_logger and testcase:
+            testcase_id = testcase.replace("\\", "/").replace(".py", "")
+            
+            # Build keyword description with arguments
+            keyword_name = func.__name__
+            
+            # Helper to extract locator string
+            def get_locator_str(locator):
+                """Extract human-readable string from locator"""
+                from .locator import WebElementEntity
+                
+                # Check if it's our WebElementEntity first (from object repository)
+                if isinstance(locator, WebElementEntity):
+                    return locator.name if locator.name else "object_repository_element"
+                elif isinstance(locator, str):
+                    # Plain string locator
+                    return locator[:80]
+                elif hasattr(locator, 'locator'):
+                    # Some wrapper object with locator attribute
+                    return str(locator.locator)
+                else:
+                    # Unknown type - try to get primary locator or use repr
+                    if hasattr(locator, 'get_primary_locator'):
+                        try:
+                            strategy, value = locator.get_primary_locator()
+                            return f"{strategy}={value[:60]}"
+                        except:
+                            pass
+                    return str(type(locator).__name__)
+            
+            # Extract meaningful object description from args
+            # args[0] is cls for classmethod, args[1:] are actual function arguments
+            object_parts = []
+            
+            # Handle different keywords with their specific arguments
+            if len(args) > 1:
+                if keyword_name == "set_text" and len(args) > 2:
+                    # set_text(locator, text, ...)
+                    locator = args[1]
+                    text = args[2] if len(args) > 2 else kwargs.get('text', '')
+                    locator_str = get_locator_str(locator)
+                    text_str = str(text)[:50]
+                    object_parts = [locator_str, f'"{text_str}"']
+                
+                elif keyword_name == "click":
+                    # click(locator, ...)
+                    locator = args[1]
+                    locator_str = get_locator_str(locator)
+                    object_parts = [locator_str]
+                
+                elif keyword_name == "verify_element_visible":
+                    # verify_element_visible(locator, ...)
+                    locator = args[1]
+                    locator_str = get_locator_str(locator)
+                    object_parts = [locator_str]
+                
+                elif keyword_name == "open":
+                    # open(url)
+                    url = args[1]
+                    object_parts = [str(url)]
+                
+                elif keyword_name == "take_screenshot":
+                    # take_screenshot(filename)
+                    filename = args[1] if len(args) > 1 else kwargs.get('filename', 'auto')
+                    object_parts = [str(filename)]
+                
+                else:
+                    # Generic handling
+                    first_arg = args[1]
+                    object_parts = [get_locator_str(first_arg) if not isinstance(first_arg, str) else first_arg[:80]]
+            
+            object_desc = " ".join(object_parts) if object_parts else None
+            
+            # Log step start - it returns the step_id
+            step_id = live_logger.step_started(
+                testcase_id=testcase_id,
+                keyword=keyword_name.upper(),
+                object_name=object_desc
+            )
+            
+            start_time = time.time()
+            
+            try:
+                result = func(*args, **kwargs)
+                duration = time.time() - start_time
+                live_logger.step_passed(testcase_id=testcase_id, step_id=step_id, duration=duration)
+                return result
+            except Exception as e:
+                duration = time.time() - start_time
+                error_msg = str(e)
+                live_logger.step_failed(testcase_id=testcase_id, step_id=step_id, duration=duration, error=error_msg)
+                raise
+        else:
+            # No live logger or testcase context, just execute normally
+            return func(*args, **kwargs)
+    
+    return wrapper
 
 
 # Standalone function for easier syntax
@@ -299,6 +405,7 @@ class Web:
     
     # Navigation methods
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         WebActionException,
@@ -338,6 +445,7 @@ class Web:
     
     # Element interaction methods
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         WebActionException,
@@ -429,6 +537,7 @@ class Web:
         log.action(f"Right clicked element: {locator}")
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         WebActionException,
@@ -696,6 +805,7 @@ class Web:
     
     # verify element visible
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         WebActionException,
@@ -757,6 +867,7 @@ class Web:
         return url
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         WebActionException,
         context_fn=lambda filename=None, **_: f"Take screenshot failed: {filename or 'auto-generated'}"
@@ -774,6 +885,7 @@ class Web:
         return filename
     
     @classmethod
+    @track_keyword
     def close(cls):
         """Close current browser window"""
         driver = get_context('web_driver')

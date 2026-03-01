@@ -2,6 +2,7 @@ import os
 import json
 import platform
 import textwrap
+import time
 from datetime import datetime
 from xml.etree.ElementTree import Element, SubElement, tostring
 from xml.dom import minidom
@@ -28,6 +29,7 @@ class ReportGenerator:
         os.makedirs(self.screenshots_dir, exist_ok=True)
 
         self.id_test = timestamp
+        self.start_time = time.time()  # Track start time for duration calculation
         self.json_path = os.path.join(self.run_dir, "cucumber.json")
         self.pdf_path = os.path.join(self.run_dir, f"{timestamp}.pdf")
         self.overview_path = os.path.join(self.run_dir, "result.json")

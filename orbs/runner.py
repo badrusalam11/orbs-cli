@@ -28,12 +28,39 @@ class Runner:
         return normalized_path
 
     def run_case(self, case_path):
+        # Ensure report is initialized (for standalone test case execution)
+        from orbs.report_listener import ensure_report_initialized
+        is_standalone = ensure_report_initialized(context_key=f"case:{case_path}")
+        
         log.info(f"Running test case: {case_path}")
-        mod = load_module_from_path(case_path)
-        if hasattr(mod, "run"):
-            mod.run()
-        else:
-            raise Exception(f"No 'run()' function found in {case_path}")
+        
+        # For standalone test case, manually call BeforeTestCase hooks
+        if is_standalone:
+            for hook in enabled_listeners.get('before_test_case', []):
+                self._invoke_hook(hook, case_path)
+        
+        # Run the test case
+        status = "passed"
+        exception = None
+        try:
+            mod = load_module_from_path(case_path)
+            if hasattr(mod, "run"):
+                mod.run()
+            else:
+                raise Exception(f"No 'run()' function found in {case_path}")
+        except Exception as e:
+            log.error(f"Error running test case {case_path}: {e}", exc_info=True)
+            status = "failed"
+            exception = e
+        
+        # For standalone test case, manually call AfterTestCase hooks
+        if is_standalone:
+            data = {"status": status, "name": case_path, "exception": exception}
+            for hook in enabled_listeners.get('after_test_case', []):
+                self._invoke_hook(hook, case_path, data)
+            
+            # Finalize report for standalone execution
+            self._finalize_standalone_report(case_path)
         
     def _invoke_hook(self, hook, *args):
         """
@@ -48,6 +75,51 @@ class Runner:
                 hook(*args)
         except Exception as e:
             log.error(f"Error invoking hook {hook.__name__}: {e}", exc_info=True)
+    
+    def _finalize_standalone_report(self, context_key):
+        """
+        Finalize report for standalone test case/feature execution.
+        This replicates AfterTestSuite behavior for standalone runs.
+        """
+        import time
+        import sys
+        from orbs.console_summary import ConsoleSummary
+        
+        rg = get_context("report")
+        if not rg:
+            return
+        
+        # Calculate duration from report creation time
+        end_time = time.time()
+        start_time = getattr(rg, 'start_time', end_time)
+        duration = end_time - start_time
+        
+        # Record overview
+        rg.record_overview(context_key, round(duration, 2), start_time, end_time)
+        run_dir = rg.finalize(context_key)
+        log.info(f"Report generated at: {run_dir}")
+        
+        # Print console summary
+        ConsoleSummary.print_summary(rg.overriew)
+        
+        # Flush output
+        sys.stdout.flush()
+        sys.stderr.flush()
+        
+        # Store exit code
+        exit_code = ConsoleSummary.get_exit_code(rg.overriew)
+        set_context('exit_code', exit_code)
+        
+        # Log execution finish to live logger
+        live_logger = get_context("live_logger")
+        if live_logger:
+            overall_status = "PASSED" if exit_code == 0 else "FAILED"
+            live_logger.execution_finished(status=overall_status, duration=duration)
+        
+        # Cleanup
+        from orbs.log import remove_test_file_handler
+        remove_test_file_handler()
+        set_context('test_id', None)
 
     @orbs_guard(RunnerException)
     def run_suite(self, suite_path):
@@ -195,6 +267,10 @@ class Runner:
 
     @orbs_guard(FeatureException)
     def run_feature(self, feature_path, tags=None):
+        # Ensure report is initialized (for standalone feature execution)
+        from orbs.report_listener import ensure_report_initialized
+        is_standalone = ensure_report_initialized(context_key=f"feature:{feature_path}")
+        
         log.info(f"is feature {feature_path} exist: {os.path.exists(feature_path)}")
         log.info(f"Running feature: {feature_path} with tags: {tags}")
         args = []
@@ -203,6 +279,11 @@ class Runner:
         args.append(feature_path)
 
         result_code = behave_main(args)  # <--- Capture the result code
+        
+        # Finalize report for standalone execution
+        if is_standalone:
+            self._finalize_standalone_report(feature_path)
+        
         if result_code != 0:
             log.error(f"Feature run failed with code: {result_code}")
             raise FeatureException(f"Feature run failed with code: {result_code}")

@@ -121,11 +121,13 @@ class TestIdFilter(logging.Filter):
 def add_test_file_handler(test_id):
     """Add file handler for specific test ID (thread-safe)"""
     with _file_handlers_lock:
-        # Create logs directory if not exists
-        os.makedirs("logs", exist_ok=True)
+        # Create logs directory structure: logs/{test_id}/
+        log_dir = os.path.join("logs", test_id)
+        os.makedirs(log_dir, exist_ok=True)
         
-        # Create new file handler for this test
-        file_handler = logging.FileHandler(f"logs/{test_id}.log", mode='w')
+        # Create new file handler for this test: logs/{test_id}/execution.log
+        log_file = os.path.join(log_dir, "execution.log")
+        file_handler = logging.FileHandler(log_file, mode='w')
         file_formatter = logging.Formatter(
             "[%(asctime)s][%(test_id)s] %(levelname)s: %(message)s"
         )
