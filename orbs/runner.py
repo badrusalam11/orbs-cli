@@ -7,7 +7,7 @@ import yaml
 import inspect
 from behave.__main__ import main as behave_main
 from orbs.guard import orbs_guard
-from orbs.thread_context import set_context
+from orbs.thread_context import set_context, get_context
 from orbs.log import log
 from orbs.dependency import check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
@@ -100,6 +100,10 @@ class Runner:
                 try:
                     if attempt > 1:
                         log.info(f"Retrying test case {case} (attempt {attempt}/{max_attempts})")
+                        # Increment retry counter in context
+                        retry_count = get_context("retry_count") or 0
+                        set_context("retry_count", retry_count + 1)
+                        
                         # Reset drivers for clean state before retry
                         try:
                             Web.reset_driver()
@@ -150,6 +154,15 @@ class Runner:
                         log.error(f"Test case {case} failed after {max_attempts} attempts")
                         break
 
+            # Check if test had CONTINUE_ON_FAILURE errors (should mark as failed)
+            has_continued_failures = get_context('test_has_continued_failures')
+            if has_continued_failures and status == "passed":
+                status = "failed"
+                log.warning(f"Test case {case} marked as FAILED due to CONTINUE_ON_FAILURE errors")
+            
+            # Clear the flag for next test
+            set_context('test_has_continued_failures', False)
+            
             data = {"status": status, "name": case, "exception": exception}
 
             # Reset drivers for clean state between test cases

@@ -7,6 +7,7 @@ import traceback
 from orbs.exception import ReportListenerException
 from orbs.guard import orbs_guard
 from orbs.report_generator import ReportGenerator
+from orbs.console_summary import ConsoleSummary
 from orbs.listener_manager import (
     BeforeTestSuite, AfterTestSuite,
     BeforeScenario, AfterScenario,
@@ -33,6 +34,7 @@ def init_report(suite_path):
 
     rg = ReportGenerator(base_dir="reports")
     set_context("report", rg)
+    set_context("retry_count", 0)  # Initialize retry counter
     log.info(f"Initialized reporting for suite: {suite_path}")
 
     # Setup file logging for this test
@@ -248,6 +250,13 @@ def finalize_report(suite_path):
     rg.record_overview(suite_path, round(duration, 2), start_time, end_time)
     run_dir = rg.finalize(suite_path)
     log.info(f"Report generated at: {run_dir}")
+    
+    # Print console summary
+    ConsoleSummary.print_summary(rg.overriew)
+    
+    # Store exit code for CI/CD integration
+    exit_code = ConsoleSummary.get_exit_code(rg.overriew)
+    set_context('exit_code', exit_code)
     
     # Clear any remaining tracking data
     _scenario_screenshot_start_index.clear()

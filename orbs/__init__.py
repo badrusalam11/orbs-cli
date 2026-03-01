@@ -15,7 +15,7 @@ from .runner import Runner
 from .log   import log
 from .dependency import check_dependencies
 from orbs.config import config
-from .thread_context import set_context
+from .thread_context import set_context, get_context
 
 def run(target=None, platform=None, device_id=None):    
     # Use platform from CLI if provided, otherwise use default_platform from config
@@ -28,6 +28,9 @@ def run(target=None, platform=None, device_id=None):
     set_context('platform', current_platform)
     if device_id:
         set_context('device_id', device_id)
+    
+    # Initialize exit code
+    set_context('exit_code', 0)
     
     # precondition for mobile testing
     if current_platform in PLATFORM_LIST["mobile"]:
@@ -77,4 +80,8 @@ def run(target=None, platform=None, device_id=None):
             " • a .feature file"
         )
         sys.exit(1)
+    
+    # Get exit code from context and exit with it
+    exit_code = get_context('exit_code') or 0
+    sys.exit(exit_code)
 

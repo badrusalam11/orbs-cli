@@ -26,6 +26,7 @@ from ..thread_context import get_context, set_context
 from ..log import log
 from ..guard import orbs_guard
 from ..exception import MobileActionException
+from .failure_handling import FailureHandling, handle_failure
 
 
 class Mobile:
@@ -289,12 +290,20 @@ class Mobile:
         return cls.tap(locator, timeout, retry_count)
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Tap failed on element: {locator}"
     )
-    def tap(cls, locator: str, timeout: Optional[int] = None, retry_count: int = 3):
-        """Tap on an element with retry logic"""
+    def tap(cls, locator: str, timeout: Optional[int] = None, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Tap on an element with retry logic
+        
+        Args:
+            locator: Element locator string
+            timeout: Wait timeout in seconds
+            retry_count: Number of retry attempts
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         wait_time = timeout or cls._wait_timeout
         
         for attempt in range(retry_count):
@@ -324,12 +333,20 @@ class Mobile:
                     raise
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Long press failed on element: {locator}"
     )
-    def long_press(cls, locator: str, duration: int = 1000, timeout: Optional[int] = None):
-        """Long press on an element"""
+    def long_press(cls, locator: str, duration: int = 1000, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Long press on an element
+        
+        Args:
+            locator: Element locator string
+            duration Duration in milliseconds
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         element = cls._find_element(locator, timeout)
         driver = cls._get_driver()
         
@@ -354,12 +371,19 @@ class Mobile:
                 raise
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Double tap failed on element: {locator}"
     )
-    def double_tap(cls, locator: str, timeout: Optional[int] = None):
-        """Double tap on an element"""
+    def double_tap(cls, locator: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Double tap on an element
+        
+        Args:
+            locator: Element locator string
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         element = cls._find_element(locator, timeout)
         driver = cls._get_driver()
         
@@ -382,12 +406,22 @@ class Mobile:
         return cls.set_text(locator, text, timeout, clear_first, retry_count)
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, text, **_: f"Set text '{text}' failed on element: {locator}"
     )
-    def set_text(cls, locator: str, text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3):
-        """Set text into an element with retry logic"""
+    def set_text(cls, locator: str, text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Set text into an element with retry logic
+        
+        Args:
+            locator: Element locator string
+            text: Text to input
+            timeout: Wait timeout in seconds
+            clear_first: Clear existing text before typing
+            retry_count: Number of retry attempts
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         wait_time = timeout or cls._wait_timeout
         
         for attempt in range(retry_count):
@@ -537,22 +571,36 @@ class Mobile:
     
     # Wait methods
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Wait for element failed: {locator}"
     )
-    def wait_for_element(cls, locator: str, timeout: Optional[int] = None):
-        """Wait for element to be present"""
+    def wait_for_element(cls, locator: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Wait for element to be present
+        
+        Args:
+            locator: Element locator string
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         cls._find_element(locator, timeout)
         log.action(f"Mobile element found: {locator}")
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Wait for visible failed: {locator}"
     )
-    def wait_for_visible(cls, locator: str, timeout: Optional[int] = None):
-        """Wait for element to be visible"""
+    def wait_for_visible(cls, locator: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Wait for element to be visible
+        
+        Args:
+            locator: Element locator string
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         driver = cls._get_driver()
         by, value = cls._parse_locator(locator)
         wait_time = timeout or cls._wait_timeout
@@ -590,24 +638,45 @@ class Mobile:
             return False
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Get text failed for element: {locator}"
     )
-    def get_text(cls, locator: str, timeout: Optional[int] = None) -> str:
-        """Get text content of element"""
+    def get_text(cls, locator: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE) -> str:
+        """Get text content of element
+        
+        Args:
+            locator: Element locator string
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        
+        Returns:
+            str: Text content of the element
+        """
         element = cls._find_element(locator, timeout)
         text = element.text
         log.action(f"Got text '{text}' from mobile element: {locator}")
         return text
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, attribute, **_: f"Get attribute '{attribute}' failed for element: {locator}"
     )
-    def get_attribute(cls, locator: str, attribute: str, timeout: Optional[int] = None) -> str:
-        """Get attribute value of element"""
+    def get_attribute(cls, locator: str, attribute: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE) -> str:
+        """Get attribute value of element
+        
+        Args:
+            locator: Element locator string
+            attribute: Attribute name
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        
+        Returns:
+            str: Attribute value
+        """
         element = cls._find_element(locator, timeout)
         value = element.get_attribute(attribute)
         log.action(f"Got attribute '{attribute}' = '{value}' from mobile element: {locator}")

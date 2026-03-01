@@ -25,6 +25,7 @@ from ..guard import orbs_guard
 from ..exception import WebActionException
 from ..log import log
 from .locator import WebElementEntity
+from .failure_handling import FailureHandling, handle_failure
 from ..config import config
 
 
@@ -298,12 +299,18 @@ class Web:
     
     # Navigation methods
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda url, **_: f"Failed to open URL: {url}"
     )
-    def open(cls, url: str):
-        """Open a URL in the browser"""
+    def open(cls, url: str, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Open a URL in the browser
+        
+        Args:
+            url: URL to navigate to
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         driver = cls._get_driver()
         driver.get(url)
         log.action(f"Opened URL: {url}")
@@ -331,17 +338,19 @@ class Web:
     
     # Element interaction methods
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Click failed on element: {locator}"
     )
-    def click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, retry_count: int = 3):
+    def click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Click on an element with retry logic for stale elements
         
         Args:
             locator: Element locator string (e.g., 'id=login') or WebElement object
             timeout: Wait timeout in seconds
             retry_count: Number of retry attempts for stale elements
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
         """
         wait_time = timeout or cls._wait_timeout
         
@@ -378,12 +387,19 @@ class Web:
                     raise
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Double click failed on element: {locator}"
     )
-    def double_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
-        """Double click on an element"""
+    def double_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Double click on an element
+        
+        Args:
+            locator: Element locator string or WebElement object
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         element = cls._resolve_element(locator, timeout)
         driver = cls._get_driver()
         
@@ -392,12 +408,19 @@ class Web:
         log.action(f"Double clicked element: {locator}")
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Right click failed on element: {locator}"
     )
-    def right_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
-        """Right click on an element"""
+    def right_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Right click on an element
+        
+        Args:
+            locator: Element locator string or WebElement object
+            timeout: Wait timeout in seconds
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
         element = cls._resolve_element(locator, timeout)
         driver = cls._get_driver()
         
@@ -406,11 +429,12 @@ class Web:
         log.action(f"Right clicked element: {locator}")
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, text, **_: f"Set text '{text}' failed on element: {locator}"
     )
-    def set_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3):
+    def set_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Set text into an element with retry logic
         
         Args:
@@ -419,6 +443,7 @@ class Web:
             timeout: Wait timeout in seconds
             clear_first: Clear existing text before typing
             retry_count: Number of retry attempts for stale elements
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
         """
         wait_time = timeout or cls._wait_timeout
         
@@ -485,11 +510,12 @@ class Web:
     
     # Selection methods
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, text, **_: f"Select by text '{text}' failed on element: {locator}"
     )
-    def select_by_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None):
+    def select_by_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Select option by visible text"""
         element = cls._resolve_element(locator, timeout)
         select = Select(element)
@@ -497,11 +523,12 @@ class Web:
         log.action(f"Selected option '{text}' from element: {locator}")
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, value, **_: f"Select by value '{value}' failed on element: {locator}"
     )
-    def select_by_value(cls, locator: Union[str, WebElement], value: str, timeout: Optional[int] = None):
+    def select_by_value(cls, locator: Union[str, WebElement], value: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Select option by value"""
         element = cls._resolve_element(locator, timeout)
         select = Select(element)
@@ -509,11 +536,12 @@ class Web:
         log.action(f"Selected option with value '{value}' from element: {locator}")
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, index, **_: f"Select by index {index} failed on element: {locator}"
     )
-    def select_by_index(cls, locator: Union[str, WebElement], index: int, timeout: Optional[int] = None):
+    def select_by_index(cls, locator: Union[str, WebElement], index: int, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Select option by index"""
         element = cls._resolve_element(locator, timeout)
         select = Select(element)
@@ -522,22 +550,24 @@ class Web:
     
     # Wait methods
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Wait for element failed: {locator}"
     )
-    def wait_for_element(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
+    def wait_for_element(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Wait for element to be present"""
         element = cls._resolve_element(locator, timeout)
         log.action(f"Element found: {locator}")
         return element
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Wait for visible failed: {locator}"
     )
-    def wait_for_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
+    def wait_for_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Wait for element to be visible"""
         driver = cls._get_driver()
         wait_time = timeout or cls._wait_timeout
@@ -560,11 +590,12 @@ class Web:
             raise TimeoutException(f"Element not visible: {locator} (timeout: {wait_time}s)")
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Wait for clickable failed: {locator}"
     )
-    def wait_for_clickable(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
+    def wait_for_clickable(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Wait for element to be clickable"""
         driver = cls._get_driver()
         wait_time = timeout or cls._wait_timeout
@@ -625,11 +656,12 @@ class Web:
             return False
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Get text failed on element: {locator}"
     )
-    def get_text(cls, locator: Union[str, WebElement], timeout: Optional[int] = None) -> str:
+    def get_text(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE) -> str:
         """Get text content of element"""
         element = cls._resolve_element(locator, timeout)
         text = element.text
@@ -637,11 +669,12 @@ class Web:
         return text
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, attribute, **_: f"Get attribute '{attribute}' failed on element: {locator}"
     )
-    def get_attribute(cls, locator: Union[str, WebElement], attribute: str, timeout: Optional[int] = None) -> str:
+    def get_attribute(cls, locator: Union[str, WebElement], attribute: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE) -> str:
         """Get attribute value of element"""
         element = cls._resolve_element(locator, timeout)
         value = element.get_attribute(attribute)
@@ -649,11 +682,12 @@ class Web:
         return value
     
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, expected_text, **_: f"Verify text '{expected_text}' failed on element: {locator}"
     )
-    def verify_text(cls, locator: Union[str, WebElement], expected_text: str, timeout: Optional[int] = None):
+    def verify_text(cls, locator: Union[str, WebElement], expected_text: str, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Verify element text matches expected"""
         actual_text = cls.get_text(locator, timeout)
         if actual_text != expected_text:
@@ -662,11 +696,12 @@ class Web:
     
     # verify element visible
     @classmethod
+    @handle_failure
     @orbs_guard(
         WebActionException,
         context_fn=lambda locator, **_: f"Verify element visible failed: {locator}"
     )
-    def verify_element_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None):
+    def verify_element_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Verify element is visible"""
         if not cls.element_visible(locator, timeout):
             raise AssertionError(f"Element not visible: {locator}")
