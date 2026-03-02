@@ -92,15 +92,21 @@ class ConsoleSummary:
         
         # Build summary
         separator = "=" * 60
+        
+        # Color codes (can't use backslash directly in f-string expressions)
+        green = '\033[92m'
+        red = '\033[91m'
+        yellow = '\033[93m'
+        
         lines = [
             "",
             separator,
             "ORBS TEST EXECUTION SUMMARY".center(60),
             separator,
             f"Total Tests     : {total}",
-            f"Passed          : {ConsoleSummary.colorize(str(passed), '\033[92m')}",  # Green
-            f"Failed          : {ConsoleSummary.colorize(str(failed), '\033[91m')}",  # Red
-            f"Skipped         : {ConsoleSummary.colorize(str(skipped), '\033[93m')}",  # Yellow
+            f"Passed          : {ConsoleSummary.colorize(str(passed), green)}",  # Green
+            f"Failed          : {ConsoleSummary.colorize(str(failed), red)}",  # Red
+            f"Skipped         : {ConsoleSummary.colorize(str(skipped), yellow)}",  # Yellow
             f"Retries         : {retries}",
             f"Duration        : {ConsoleSummary.format_duration(duration)}",
             f"Environment     : {environment}",
