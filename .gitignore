@@ -4,3 +4,4 @@ dist
 *.egg-info
 token.txt
 .venv
+.python-version
