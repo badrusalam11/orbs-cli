@@ -122,11 +122,35 @@ def track_keyword(func):
                 result = func(*args, **kwargs)
                 duration = time.time() - start_time
                 live_logger.step_passed(testcase_id=testcase_id, step_id=step_id, duration=duration)
+                
+                # Store step data for report (non-BDD test cases)
+                keyword_steps = get_context("keyword_steps") or []
+                keyword_steps.append({
+                    "keyword": keyword_name.upper(),
+                    "name": object_desc or "",
+                    "status": "PASSED",
+                    "duration": round(duration, 2),
+                    "error": None
+                })
+                set_context("keyword_steps", keyword_steps)
+                
                 return result
             except Exception as e:
                 duration = time.time() - start_time
                 error_msg = str(e)
                 live_logger.step_failed(testcase_id=testcase_id, step_id=step_id, duration=duration, error=error_msg)
+                
+                # Store failed step data for report (non-BDD test cases)
+                keyword_steps = get_context("keyword_steps") or []
+                keyword_steps.append({
+                    "keyword": keyword_name.upper(),
+                    "name": object_desc or "",
+                    "status": "FAILED",
+                    "duration": round(duration, 2),
+                    "error": error_msg
+                })
+                set_context("keyword_steps", keyword_steps)
+                
                 raise
         else:
             # No live logger or testcase context, just execute normally
