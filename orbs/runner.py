@@ -61,6 +61,10 @@ class Runner:
             
             # Finalize report for standalone execution
             self._finalize_standalone_report(case_path)
+        else:
+            # Re-raise so run_suite can capture the failure status
+            if exception:
+                raise exception
         
     def _invoke_hook(self, hook, *args):
         """

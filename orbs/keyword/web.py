@@ -12,6 +12,7 @@ concurrently with different browser configurations.
 import time
 import threading
 import functools
+import re
 from typing import Union, List, Optional
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
@@ -840,6 +841,32 @@ class Web:
         if not cls.element_visible(locator, timeout):
             raise AssertionError(f"Element not visible: {locator}")
         log.action(f"Element visibility verified: {locator}")
+
+    @classmethod
+    @track_keyword
+    @handle_failure
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda text, **_: f"Verify text present failed: '{text}'"
+    )
+    def verify_text_present(cls, text: str, is_regex: bool = False, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Verify that text is present anywhere on the page.
+        
+        Args:
+            text: Text to search for (plain string or regex pattern)
+            is_regex: If True, treat text as a regex pattern
+            timeout: Not used, kept for API consistency
+            failure_handling: How to handle failure (STOP_ON_FAILURE or CONTINUE_ON_FAILURE)
+        """
+        driver = cls._get_driver()
+        body_text = driver.find_element(By.TAG_NAME, "body").text
+        if is_regex:
+            if not re.search(text, body_text):
+                raise AssertionError(f"Text pattern '{text}' not found on page")
+        else:
+            if text not in body_text:
+                raise AssertionError(f"Text '{text}' not found on page")
+        log.action(f"Text present verified: '{text}' (regex={is_regex})")
 
     @classmethod
     @orbs_guard(

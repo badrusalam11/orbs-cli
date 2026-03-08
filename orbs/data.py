@@ -18,7 +18,10 @@ Resolution priority:
 
 from pathlib import Path
 import csv
+import functools
 import random
+import time
+import traceback
 
 from orbs.config import config
 
@@ -182,3 +185,103 @@ def load_data(path: str) -> CSVData:
         load_data("test-cases/login.csv").one(scenario="valid")
     """
     return CSVData(path)
+
+
+def ddt(path: str, scenario: str = None, where: dict = None):
+    """Data-Driven Testing decorator.
+
+    Loops through CSV rows and executes the decorated function for each row.
+    Each row becomes a scenario in the test report.
+
+    Args:
+        path: Path to CSV file (resolved via environment-aware path resolution)
+        scenario: Column name to use as scenario label (default: row1, row2, ...)
+        where: Dict of column=value conditions to filter rows before iteration
+
+    Examples:
+        @ddt("cred/login.csv")
+        def run(data):
+            Web.set_text("id=user", data["username"])
+
+        @ddt("cred/login.csv", scenario="scenario")
+        def run(data):
+            Web.set_text("id=user", data["username"])
+
+        @ddt("cred/login.csv", where={"type": "valid", "role": "admin"})
+        def run(data):
+            Web.set_text("id=user", data["username"])
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            from orbs.thread_context import get_context, set_context
+            from orbs.log import log
+
+            csv_data = CSVData(path)
+            total_rows = len(csv_data.all())
+            if where:
+                csv_data = csv_data.where(**where)
+            rows = csv_data.all()
+
+            if not rows:
+                if where and total_rows > 0:
+                    raise ValueError(
+                        f"DDT: No rows matched where={where} in {path} "
+                        f"({total_rows} rows loaded, 0 matched). "
+                        f"Available columns: {list(CSVData(path).first().keys())}"
+                    )
+                raise ValueError(f"DDT: No data found in {path}")
+
+            func_name = func.__name__
+            ddt_scenarios = []
+            has_failure = False
+
+            for idx, row in enumerate(rows, 1):
+                if scenario and scenario in row:
+                    scenario_name = row[scenario]
+                else:
+                    scenario_name = f"row{idx}"
+
+                log.info(f"DDT: Running {func_name}[{scenario_name}]")
+
+                # Reset web driver for fresh browser per scenario
+                try:
+                    from orbs.keyword.web import Web
+                    Web.reset_driver()
+                except Exception:
+                    pass
+
+                set_context("keyword_steps", [])
+
+                start = time.time()
+                error_message = None
+                status = "PASSED"
+
+                try:
+                    func(row)
+                except Exception as e:
+                    status = "FAILED"
+                    error_message = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+                    has_failure = True
+                    log.error(f"DDT: {func_name}[{scenario_name}] FAILED: {e}")
+
+                duration = time.time() - start
+                keyword_steps = get_context("keyword_steps") or []
+
+                ddt_scenarios.append({
+                    "scenario": scenario_name,
+                    "status": status,
+                    "duration": round(duration, 2),
+                    "keyword_steps": list(keyword_steps),
+                    "error_message": error_message
+                })
+
+            set_context("ddt_scenarios", ddt_scenarios)
+            set_context("keyword_steps", [])
+
+            if has_failure:
+                failed_count = sum(1 for s in ddt_scenarios if s['status'] == 'FAILED')
+                raise Exception(f"DDT: {failed_count}/{len(ddt_scenarios)} scenarios failed")
+
+        return wrapper
+    return decorator

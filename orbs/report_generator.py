@@ -71,14 +71,15 @@ class ReportGenerator:
         })
 
     @orbs_guard(ReportGenerationException)
-    def record_test_case_result(self, name, status, duration, error_message=None, cucumber=None, keyword_steps=None):
+    def record_test_case_result(self, name, status, duration, error_message=None, cucumber=None, keyword_steps=None, ddt_scenarios=None):
         self.testcase_result.append({
             "name": name,
             "status": status,
             "duration": duration,
             "error_message": error_message,  # Add stacktrace/error message
             "cucumber": cucumber or [],  # Add cucumber scenarios
-            "keyword_steps": keyword_steps or []  # Add keyword steps for non-BDD
+            "keyword_steps": keyword_steps or [],  # Add keyword steps for non-BDD
+            "ddt_scenarios": ddt_scenarios or []  # Add DDT scenarios for data-driven tests
         }) 
 
     @orbs_guard(ReportGenerationException)
@@ -1021,47 +1022,59 @@ class ReportGenerator:
             # If no cucumber scenarios, show keyword steps and screenshots (non-BDD)
             else:
                 keyword_steps = tc.get('keyword_steps', [])
-                
-                # Show keyword steps if available
-                if keyword_steps:
+                ddt_scenarios = tc.get('ddt_scenarios', [])
+
+                # DDT scenarios (data-driven test)
+                if ddt_scenarios:
+                    html += """                <div style="margin-top: 15px;">
+                    <strong style="font-size: 15px;">🔄 Data-Driven Scenarios</strong>
+"""
+                    for sc in ddt_scenarios:
+                        sc_name = sc['scenario']
+                        sc_status = sc['status'].lower()
+                        sc_duration = sc.get('duration', 0)
+                        sc_steps = sc.get('keyword_steps', [])
+                        sc_error = sc.get('error_message')
+
+                        sc_icon = '✔' if sc_status == 'passed' else '❌'
+                        sc_bg = '#d4edda' if sc_status == 'passed' else '#f8d7da'
+                        sc_icon_color = '#27ae60' if sc_status == 'passed' else '#e74c3c'
+
+                        html += f"""                    <div style="margin-top: 12px; border: 1px solid #dee2e6; border-radius: 6px; overflow: hidden;">
+                        <div style="background: {sc_bg}; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center;">
+                            <strong>{sc_name}</strong>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="duration">{sc_duration:.2f}s</span>
+                                <span style="color: {sc_icon_color}; font-weight: bold;">{sc_icon}</span>
+                            </div>
+                        </div>
+"""
+                        if sc_steps:
+                            html += """                        <div style="padding: 10px 15px;">
+"""
+                            html += self._render_keyword_steps_html(sc_steps)
+                            html += """                        </div>
+"""
+
+                        if sc_status == 'failed' and sc_error:
+                            error_escaped = sc_error.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                            html += f"""                        <div style="padding: 8px 15px; font-size: 12px; color: #721c24; background: #f8d7da; border-top: 1px solid #f5c6cb;">
+                            <strong>Error:</strong><pre style="margin: 5px 0 0; white-space: pre-wrap; font-size: 11px;">{error_escaped}</pre>
+                        </div>
+"""
+
+                        html += """                    </div>
+"""
+                    html += """                </div>
+"""
+
+                # Show keyword steps if available (non-DDT)
+                elif keyword_steps:
                     html += """                <div style="margin-top: 15px;">
                     <strong style="font-size: 15px;">🔧 Steps</strong>
                     <div style="margin-top: 10px;">
 """
-                    for step_idx, step in enumerate(keyword_steps, 1):
-                        step_status = step['status'].lower()
-                        step_keyword = step['keyword']
-                        step_name = step.get('name', '')
-                        step_duration = step.get('duration', 0)
-                        step_error = step.get('error')
-                        
-                        icon = '✔' if step_status == 'passed' else '❌' if step_status == 'failed' else '⏭'
-                        icon_color = '#27ae60' if step_status == 'passed' else '#e74c3c' if step_status == 'failed' else '#f39c12'
-                        
-                        step_desc = f"{step_keyword}"
-                        if step_name:
-                            step_desc += f" {step_name}"
-                        
-                        html += f"""                        <div class="step {step_status}" style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <span style="color: #7f8c8d; margin-right: 5px;">{step_idx}.</span>
-                                <span class="keyword">{step_keyword}</span>{' ' + step_name if step_name else ''}
-"""
-                        if step_status == 'failed' and step_error:
-                            error_escaped = step_error.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                            html += f"""                                <div style="margin-top: 8px; font-size: 12px; color: #721c24; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px;">
-                                    <strong>Error:</strong> {error_escaped}
-                                </div>
-"""
-                        
-                        html += f"""                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px; white-space: nowrap;">
-                                <span class="duration">{step_duration:.2f}s</span>
-                                <span style="color: {icon_color}; font-weight: bold;">{icon}</span>
-                            </div>
-                        </div>
-"""
-                    
+                    html += self._render_keyword_steps_html(keyword_steps)
                     html += """                    </div>
                 </div>
 """
@@ -1256,6 +1269,116 @@ class ReportGenerator:
         if current:
             lines.append(current)
         return lines
+
+    def _render_keyword_steps_pdf(self, keyword_steps, full_width, indent=0):
+        """Render keyword steps in PDF for both regular and DDT test cases."""
+        if not keyword_steps:
+            return
+
+        self.y -= 5
+        self.c.setFont("Helvetica-Bold", 10)
+        self.c.drawString(55 + indent, self.y - 12, "Steps:")
+        self.y -= 18
+
+        line_h = 14
+        left_margin = 50 + indent
+        box_width = full_width - indent
+        text_margin = 60 + indent
+        right_pad = 15
+
+        for step_idx, step in enumerate(keyword_steps, 1):
+            keyword = step['keyword']
+            name = step.get('name', '')
+            step_status = step['status'].upper()
+            dur_txt = f"{step['duration']:.2f}s"
+            error = step.get('error')
+
+            icon = "\u2714" if step_status == "PASSED" else "\u2716" if step_status == "FAILED" else "-"
+
+            step_text = f"{step_idx}. {keyword}"
+            if name:
+                step_text += f" {name}"
+
+            dur_w = self.c.stringWidth(dur_txt, "Helvetica", 9)
+            icon_w = self.c.stringWidth(f"  {icon}", "Helvetica-Bold", 10) + 10
+            avail_w = box_width - (text_margin - left_margin) - right_pad - dur_w - icon_w - 20
+            lines = self._wrap_text(step_text, avail_w, "Helvetica", 10)
+            step_h = max(22, len(lines) * line_h + 10)
+
+            error_lines = []
+            if step_status == "FAILED" and error:
+                error_lines = self._wrap_text(f"Error: {error}", avail_w + icon_w, "Helvetica", 8)
+                step_h += len(error_lines) * 10 + 5
+
+            self._new_page_if_needed(step_h + 5)
+
+            if step_status == "PASSED":
+                hex_bg = "#c7d98d"
+            elif step_status == "FAILED":
+                hex_bg = "#f5b0b0"
+            else:
+                hex_bg = "#e3dede"
+            self.c.setFillColor(HexColor(hex_bg))
+            self.c.rect(left_margin, self.y - step_h, box_width, step_h, stroke=0, fill=1)
+
+            y0 = self.y - 12
+            self.c.setFillColor(colors.black)
+            self.c.setFont("Helvetica", 10)
+            for i, line in enumerate(lines):
+                self.c.drawString(text_margin, y0 - i * line_h, line)
+
+            icon_color = colors.green if step_status == "PASSED" else colors.red if step_status == "FAILED" else colors.grey
+            self.c.setFillColor(icon_color)
+            self.c.setFont("Helvetica-Bold", 10)
+            self.c.drawString(left_margin + box_width - right_pad - dur_w - icon_w, y0, icon)
+
+            self.c.setFillColor(HexColor("#7f8c8d"))
+            self.c.setFont("Helvetica", 9)
+            self.c.drawString(left_margin + box_width - right_pad - dur_w, y0, dur_txt)
+
+            if error_lines:
+                error_y = y0 - len(lines) * line_h - 2
+                self.c.setFillColor(HexColor("#721c24"))
+                self.c.setFont("Helvetica", 8)
+                for i, line in enumerate(error_lines):
+                    self.c.drawString(text_margin + 5, error_y - i * 10, line)
+
+            self.c.setFillColor(colors.black)
+            self.y -= step_h
+
+    def _render_keyword_steps_html(self, keyword_steps):
+        """Render keyword steps as HTML string for both regular and DDT test cases."""
+        html = ""
+        for step_idx, step in enumerate(keyword_steps, 1):
+            step_status = step['status'].lower()
+            step_keyword = step['keyword']
+            step_name = step.get('name', '')
+            step_duration = step.get('duration', 0)
+            step_error = step.get('error')
+
+            icon = '✔' if step_status == 'passed' else '❌' if step_status == 'failed' else '⏭'
+            icon_color = '#27ae60' if step_status == 'passed' else '#e74c3c' if step_status == 'failed' else '#f39c12'
+
+            html += f"""                        <div class="step {step_status}" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <span style="color: #7f8c8d; margin-right: 5px;">{step_idx}.</span>
+                                <span class="keyword">{step_keyword}</span>{' ' + step_name if step_name else ''}
+"""
+            if step_status == 'failed' and step_error:
+                error_escaped = step_error.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                html += f"""                                <div style="margin-top: 8px; font-size: 12px; color: #721c24; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 4px;">
+                                    <strong>Error:</strong> {error_escaped}
+                                </div>
+"""
+
+            html += f"""                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; white-space: nowrap;">
+                                <span class="duration">{step_duration:.2f}s</span>
+                                <span style="color: {icon_color}; font-weight: bold;">{icon}</span>
+                            </div>
+                        </div>
+"""
+        return html
 
     def _calculate_row_height(self, texts, col_widths, font_name="Helvetica", font_size=10, min_height=20):
         """Calculate the height needed for a table row based on wrapped text"""
@@ -1920,6 +2043,7 @@ class ReportGenerator:
                 tc_status = tc['status'].upper()
                 tc_duration = tc['duration']
                 keyword_steps = tc.get('keyword_steps', [])
+                ddt_scenarios = tc.get('ddt_scenarios', [])
                 
                 # Find screenshots for this test case
                 tc_screenshots = []
@@ -1953,87 +2077,60 @@ class ReportGenerator:
                 self.c.setFillColor(colors.black)
                 self.y -= header_h
 
-                # Keyword Steps
-                if keyword_steps:
-                    self.y -= 5
-                    self.c.setFont("Helvetica-Bold", 10)
-                    self.c.drawString(55, self.y - 12, "Steps:")
-                    self.y -= 18
+                # DDT Scenarios (data-driven test)
+                if ddt_scenarios:
+                    for sc in ddt_scenarios:
+                        sc_name = sc['scenario']
+                        sc_status = sc['status'].upper()
+                        sc_duration = sc['duration']
+                        sc_steps = sc.get('keyword_steps', [])
+                        sc_error = sc.get('error_message')
 
-                    line_h = 14
-                    left_margin = 50
-                    box_width = full_width
-                    text_margin = 60
-                    right_pad = 15
+                        # Scenario sub-header
+                        self.y -= 8
+                        self._new_page_if_needed(30)
+                        sc_header_h = 22
+                        sc_hex = "#d4edda" if sc_status == "PASSED" else "#f8d7da"
+                        self.c.setFillColor(HexColor(sc_hex))
+                        self.c.rect(60, self.y - sc_header_h, full_width - 20, sc_header_h, stroke=0, fill=1)
 
-                    for step_idx, step in enumerate(keyword_steps, 1):
-                        keyword = step['keyword']
-                        name = step.get('name', '')
-                        step_status = step['status'].upper()
-                        dur_txt = f"{step['duration']:.2f}s"
-                        error = step.get('error')
-
-                        # Status icon
-                        icon = "\u2714" if step_status == "PASSED" else "\u2716" if step_status == "FAILED" else "-"
-
-                        # Build step text
-                        step_text = f"{step_idx}. {keyword}"
-                        if name:
-                            step_text += f" {name}"
-
-                        # Calculate width and wrap
-                        dur_w = self.c.stringWidth(dur_txt, "Helvetica", 9)
-                        icon_w = self.c.stringWidth(f"  {icon}", "Helvetica-Bold", 10) + 10
-                        avail_w = box_width - (text_margin - left_margin) - right_pad - dur_w - icon_w - 20
-                        lines = self._wrap_text(step_text, avail_w, "Helvetica", 10)
-                        step_h = max(22, len(lines) * line_h + 10)
-
-                        # Add error height if failed
-                        error_lines = []
-                        if step_status == "FAILED" and error:
-                            error_lines = self._wrap_text(f"Error: {error}", avail_w + icon_w, "Helvetica", 8)
-                            step_h += len(error_lines) * 10 + 5
-
-                        self._new_page_if_needed(step_h + 5)
-
-                        # Step background
-                        if step_status == "PASSED":
-                            hex_bg = "#c7d98d"
-                        elif step_status == "FAILED":
-                            hex_bg = "#f5b0b0"
-                        else:
-                            hex_bg = "#e3dede"
-                        self.c.setFillColor(HexColor(hex_bg))
-                        self.c.rect(left_margin, self.y - step_h, box_width, step_h, stroke=0, fill=1)
-
-                        # Draw step text
-                        y0 = self.y - 12
                         self.c.setFillColor(colors.black)
-                        self.c.setFont("Helvetica", 10)
-                        for i, line in enumerate(lines):
-                            self.c.drawString(text_margin, y0 - i * line_h, line)
-
-                        # Draw status icon
-                        icon_color = colors.green if step_status == "PASSED" else colors.red if step_status == "FAILED" else colors.grey
-                        self.c.setFillColor(icon_color)
                         self.c.setFont("Helvetica-Bold", 10)
-                        self.c.drawString(left_margin + box_width - right_pad - dur_w - icon_w, y0, icon)
+                        self.c.drawString(65, self.y - 16, f"Scenario: {sc_name}")
 
-                        # Draw duration
-                        self.c.setFillColor(HexColor("#7f8c8d"))
-                        self.c.setFont("Helvetica", 9)
-                        self.c.drawString(left_margin + box_width - right_pad - dur_w, y0, dur_txt)
-
-                        # Draw error message if failed
-                        if error_lines:
-                            error_y = y0 - len(lines) * line_h - 2
-                            self.c.setFillColor(HexColor("#721c24"))
-                            self.c.setFont("Helvetica", 8)
-                            for i, line in enumerate(error_lines):
-                                self.c.drawString(text_margin + 5, error_y - i * 10, line)
-
+                        sc_status_color = colors.green if sc_status == "PASSED" else colors.red
+                        self.c.setFillColor(sc_status_color)
+                        sc_dur_str = f"{sc_status} - {sc_duration:.2f}s"
+                        sc_dur_w = self.c.stringWidth(sc_dur_str, "Helvetica-Bold", 9)
+                        self.c.setFont("Helvetica-Bold", 9)
+                        self.c.drawString(60 + full_width - 20 - sc_dur_w - 10, self.y - 16, sc_dur_str)
                         self.c.setFillColor(colors.black)
-                        self.y -= step_h
+                        self.y -= sc_header_h
+
+                        # Scenario steps
+                        self._render_keyword_steps_pdf(sc_steps, full_width, indent=10)
+
+                        # Scenario error stacktrace
+                        if sc_status == 'FAILED' and sc_error:
+                            self.y -= 5
+                            self._new_page_if_needed(50)
+                            self.c.setFont("Helvetica-Bold", 8)
+                            self.c.setFillColor(colors.red)
+                            self.c.drawString(70, self.y - 10, "Error:")
+                            self.c.setFillColor(colors.black)
+                            self.y -= 14
+                            error_lines = self._wrap_text(sc_error, full_width - 40, "Helvetica", 7)
+                            for line in error_lines[:10]:
+                                self._new_page_if_needed(10)
+                                self.c.setFont("Helvetica", 7)
+                                self.c.setFillColor(HexColor("#721c24"))
+                                self.c.drawString(75, self.y - 8, line)
+                                self.y -= 10
+                            self.c.setFillColor(colors.black)
+
+                # Regular keyword steps (non-DDT)
+                elif keyword_steps:
+                    self._render_keyword_steps_pdf(keyword_steps, full_width)
 
                 # Screenshots
                 if tc_screenshots:

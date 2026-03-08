@@ -298,7 +298,10 @@ def after_test_case(case, data=None):
     # Get keyword steps for non-BDD test cases
     keyword_steps = get_context("keyword_steps") or []
 
-    rg.record_test_case_result(case, status, round(duration, 2), error_message=error_message, cucumber=cucumber_scenarios, keyword_steps=keyword_steps)
+    # Get DDT scenarios for data-driven test cases
+    ddt_scenarios = get_context("ddt_scenarios") or []
+
+    rg.record_test_case_result(case, status, round(duration, 2), error_message=error_message, cucumber=cucumber_scenarios, keyword_steps=keyword_steps, ddt_scenarios=ddt_scenarios)
 
     # Record all screenshots for the testcase (unchanged behavior)
     screenshots = get_context("screenshots") or []
@@ -310,7 +313,7 @@ def after_test_case(case, data=None):
     if api_calls:
         rg.testcase_api_calls[case] = api_calls
 
-    log.info(f"Recorded testcase: {case} - {status} - {duration:.2f}s - Total Screenshots: {len(screenshots)} - Total API calls: {len(api_calls)} - Cucumber scenarios: {len(cucumber_scenarios)} - Keyword steps: {len(keyword_steps)}")
+    log.info(f"Recorded testcase: {case} - {status} - {duration:.2f}s - Total Screenshots: {len(screenshots)} - Total API calls: {len(api_calls)} - Cucumber scenarios: {len(cucumber_scenarios)} - Keyword steps: {len(keyword_steps)} - DDT scenarios: {len(ddt_scenarios)}")
     
     # Log testcase finish to live logger
     live_logger = get_context("live_logger")
@@ -322,6 +325,7 @@ def after_test_case(case, data=None):
     set_context("screenshots", [])
     set_context("api_calls", [])
     set_context("keyword_steps", [])
+    set_context("ddt_scenarios", [])
     set_context('current_testcase', None)  # Clear current test case
 
 @AfterTestSuite
