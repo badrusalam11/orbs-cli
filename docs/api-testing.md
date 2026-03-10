@@ -25,20 +25,29 @@ from orbs.keyword.api import API
 def run():
     API.set_base_url("https://jsonplaceholder.typicode.com")
 
-    # GET request
+    # Implicit mode — response is stored automatically
+    API.get("/users")
+    API.verify_status_code(200)
+    API.verify_json_field_exists("[0].id")
+
+    # Explicit mode — capture response for direct control
     response = API.get("/users/1")
     API.verify_status_code(response, 200)
-    API.verify_json_field(response, "name", "Leanne Graham")
+    API.verify_json_equals(response, "name", "Leanne Graham")
 
     # POST request
-    response = API.post("/users", json={
+    API.post("/users", json={
         "name": "John Doe",
         "email": "john@example.com"
     })
-    API.verify_status_code(response, 201)
+    API.verify_status_code(201)
 
     API.close_session()
 ```
+
+> **Tip:** Every HTTP method stores the response internally. Verification keywords
+> can use it implicitly (no `response` argument) or you can pass the response
+> explicitly for full control. Both styles can be mixed freely.
 
 ---
 
@@ -154,26 +163,33 @@ response = API.request("POST", "/users", json={"name": "John"})
 
 ## Response Handling
 
-Every request returns a standard `requests.Response` object.
+Every request returns a standard `requests.Response` object **and** stores it
+internally for implicit use by subsequent verification/helper keywords.
 
 ### Get JSON Body
 
 ```python
+# Explicit
 response = API.get("/users/1")
 data = API.get_json(response)
-print(data["name"])
+
+# Implicit
+API.get("/users/1")
+data = API.get_json()
 ```
 
 ### Get Status Code
 
 ```python
-status = API.get_status_code(response)
+status = API.get_status_code(response)  # explicit
+status = API.get_status_code()          # implicit
 ```
 
 ### Get Header
 
 ```python
-content_type = API.get_header(response, "Content-Type")
+content_type = API.get_header(response, "Content-Type")  # explicit
+content_type = API.get_header("Content-Type")             # implicit
 ```
 
 ### Direct Access
@@ -200,54 +216,64 @@ Built-in assertions that integrate with Orbs reporting.
 ### Verify Status Code
 
 ```python
+# Explicit
 API.verify_status_code(response, 200)
-API.verify_status_code(response, 201)
-API.verify_status_code(response, 404)
+
+# Implicit
+API.get("/users")
+API.verify_status_code(200)
 ```
 
-### Verify JSON Field
+### Verify JSON Equals
 
 ```python
-API.verify_json_field(response, "name", "John Doe")
-API.verify_json_field(response, "status", "active")
-API.verify_json_field(response, "count", 10)
+# Explicit
+API.verify_json_equals(response, "name", "John Doe")
+API.verify_json_equals(response, "[0].id", 1)
+
+# Implicit
+API.verify_json_equals("name", "John Doe")
+API.verify_json_equals("[0].id", 1)
 ```
 
 ### Verify JSON Field Exists
 
 ```python
-API.verify_json_field_exists(response, "id")
-API.verify_json_field_exists(response, "created_at")
+API.verify_json_field_exists(response, "id")    # explicit
+API.verify_json_field_exists("[0].id")           # implicit
 ```
 
 ### Verify Response Contains Text
 
 ```python
-API.verify_response_contains(response, "success")
-API.verify_response_contains(response, "John")
+API.verify_response_contains(response, "success")  # explicit
+API.verify_response_contains("success")             # implicit
 ```
 
 ### Verify JSON Array Length
 
 ```python
 # Root array
-API.verify_json_array_length(response, 10)
+API.verify_json_array_length(response, 10)              # explicit
+API.verify_json_array_length(10)                         # implicit
 
 # Nested array
-API.verify_json_array_length(response, 3, field="items")
+API.verify_json_array_length(response, 3, field="items") # explicit
+API.verify_json_array_length(3, field="items")            # implicit
 ```
 
 ### Verify Response Time
 
 ```python
-API.verify_response_time(response, 2000)   # max 2 seconds
-API.verify_response_time(response, 500)    # max 500ms
+API.verify_response_time(response, 2000)   # explicit, max 2 seconds
+API.verify_response_time(2000)             # implicit
 ```
 
 ### Verify Response Header
 
 ```python
-API.verify_header(response, "Content-Type", "application/json")
+API.verify_header(response, "Content-Type", "application/json")  # explicit
+API.verify_header("Content-Type", "application/json")             # implicit
 ```
 
 ---
@@ -334,7 +360,7 @@ def run():
     # READ
     response = API.get(f"/users/{user_id}")
     API.verify_status_code(response, 200)
-    API.verify_json_field(response, "name", "Jane Doe")
+    API.verify_json_equals(response, "name", "Jane Doe")
 
     # UPDATE
     response = API.put(f"/users/{user_id}", json={
@@ -356,12 +382,11 @@ def run():
 ### Environment-based Configuration
 
 ```python
-import os
 from orbs.keyword.api import API
-
+from orbs.config import config
 def run():
-    API.set_base_url(os.getenv("API_BASE_URL", "https://api.staging.example.com"))
-    API.set_bearer_token(os.getenv("API_TOKEN"))
+    API.set_base_url(config.target("API_URL", "https://api.staging.example.com"))
+    API.set_bearer_token(config.target("API_TOKEN"))
 
     response = API.get("/health")
     API.verify_status_code(response, 200)
@@ -410,10 +435,14 @@ def run():
 | `API.get_status_code(response)` | Get response status code |
 | `API.get_header(response, name)` | Get a response header value |
 | `API.verify_status_code(response, code)` | Assert status code matches |
-| `API.verify_json_field(response, field, value)` | Assert JSON field value |
+| `API.verify_json_equals(response, field, value)` | Assert JSON field value |
 | `API.verify_json_field_exists(response, field)` | Assert JSON field exists |
 | `API.verify_response_contains(response, text)` | Assert body contains text |
 | `API.verify_json_array_length(response, len)` | Assert array length |
 | `API.verify_response_time(response, max_ms)` | Assert response time within limit |
 | `API.verify_header(response, name, value)` | Assert response header value |
 | `API.close_session()` | Close HTTP session and clean up |
+
+> **Note:** All verification and response helper keywords accept an optional
+> `response` parameter. When omitted, the last response from any HTTP method is
+> used automatically (implicit mode).
