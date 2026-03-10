@@ -360,7 +360,7 @@ def run_command(
     if platform:
         # Remove any spaces around the platform value
         platform = platform.strip()
-        valid_platforms = PLATFORM_LIST["mobile"] + PLATFORM_LIST["web"]
+        valid_platforms = PLATFORM_LIST["mobile"] + PLATFORM_LIST["web"] + PLATFORM_LIST["api"]
         
         if platform not in valid_platforms:
             # Show examples in the correct format

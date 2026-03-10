@@ -1,393 +1,253 @@
-# API Testing with Orbs
+﻿# API Testing with Orbs
 
-Complete guide to REST API testing using Orbs framework.
+Complete guide to REST API testing using the `API` keyword class.
 
 ---
 
 ## Table of Contents
 
-* [Introduction](#introduction)
 * [Quick Start](#quick-start)
-* [API Client](#api-client)
+* [Setup](#setup)
 * [Making Requests](#making-requests)
-* [Response Validation](#response-validation)
+* [Response Handling](#response-handling)
+* [Verification Keywords](#verification-keywords)
 * [Authentication](#authentication)
-* [Writing Test Cases](#writing-test-cases)
-* [Best Practices](#best-practices)
-* [Advanced Topics](#advanced-topics)
-* [Troubleshooting](#troubleshooting)
-
----
-
-## Introduction
-
-Orbs provides a powerful API testing client built on `requests` library with additional features:
-
-* **Automatic request/response logging** - All API calls are recorded for debugging
-* **Thread-safe execution** - Parallel API test support
-* **Session management** - Persistent headers and cookies
-* **Base URL configuration** - Centralized endpoint management
-* **Flexible authentication** - Support for various auth methods
-* **Response validation helpers** - Built-in assertion utilities
+* [Advanced Usage](#advanced-usage)
+* [Keyword Reference](#keyword-reference)
 
 ---
 
 ## Quick Start
 
-### 1. Initialize Project
-
-```bash
-orbs init api-testing
-cd api-testing
-```
-
-### 2. Configure Base URL
-
-Edit `.env`:
-
-```env
-API_BASE_URL=https://api.example.com
-API_KEY=your-api-key-here
-```
-
-### 3. Create API Test Case
-
-```bash
-orbs create-testcase user_api
-```
-
-Edit `testcases/user_api.py`:
-
 ```python
-import os
-from orbs.api_client import ApiClient
+from orbs.keyword.api import API
 
-def test_get_user():
-    """Test GET /users/{id} endpoint"""
-    
-    # Initialize client
-    base_url = os.getenv("API_BASE_URL")
-    api = ApiClient(base_url)
-    
-    # Send GET request
-    response = api.get("/users/1")
-    
-    # Verify response
-    assert response.status_code == 200
-    
-    # Parse JSON
-    user = response.json()
-    
-    # Validate response structure
-    assert "id" in user
-    assert "name" in user
-    assert "email" in user
-    
-    # Validate data
-    assert user["id"] == 1
-    assert isinstance(user["name"], str)
-    assert "@" in user["email"]
-    
-    print(f"✅ Retrieved user: {user['name']}")
+def run():
+    API.set_base_url("https://jsonplaceholder.typicode.com")
 
-def test_create_user():
-    """Test POST /users endpoint"""
-    
-    api = ApiClient(os.getenv("API_BASE_URL"))
-    
-    # Request payload
-    new_user = {
+    # GET request
+    response = API.get("/users/1")
+    API.verify_status_code(response, 200)
+    API.verify_json_field(response, "name", "Leanne Graham")
+
+    # POST request
+    response = API.post("/users", json={
         "name": "John Doe",
-        "email": "john@example.com",
-        "age": 30
-    }
-    
-    # Send POST request
-    response = api.post("/users", json=new_user)
-    
-    # Verify created
-    assert response.status_code == 201
-    
-    # Verify response
-    created_user = response.json()
-    assert created_user["name"] == new_user["name"]
-    assert created_user["email"] == new_user["email"]
-    assert "id" in created_user
-    
-    print(f"✅ Created user with ID: {created_user['id']}")
-```
+        "email": "john@example.com"
+    })
+    API.verify_status_code(response, 201)
 
-### 4. Run Tests
-
-```bash
-orbs run testcases/user_api.py
+    API.close_session()
 ```
 
 ---
 
-## API Client
+## Setup
 
-### Initialization
+### Set Base URL
 
-```python
-from orbs.api_client import ApiClient
-
-# Basic initialization
-api = ApiClient(base_url="https://api.example.com")
-
-# With default headers
-api = ApiClient(
-    base_url="https://api.example.com",
-    default_headers={
-        "Content-Type": "application/json",
-        "Authorization": "Bearer your-token"
-    }
-)
-```
-
-### Base URL
-
-The base URL is automatically prepended to all requests:
+All request paths are appended to the base URL. You can also pass full URLs directly.
 
 ```python
-api = ApiClient(base_url="https://api.example.com")
+API.set_base_url("https://api.example.com")
 
 # These are equivalent:
-api.get("/users/1")
-api.get("users/1")
-
-# Both send request to: https://api.example.com/users/1
+API.get("/users/1")                          # uses base URL
+API.get("https://api.example.com/users/1")   # full URL
 ```
 
-### Session Management
+### Set Default Headers
 
-ApiClient uses `requests.Session` internally, which:
-
-* Persists headers across requests
-* Manages cookies automatically
-* Connection pooling for performance
+Headers set here are sent with every request in the session.
 
 ```python
-api = ApiClient(base_url="https://api.example.com")
-
-# Set headers for all subsequent requests
-api.session.headers.update({
+API.set_default_headers({
+    "Content-Type": "application/json",
+    "Accept": "application/json",
     "X-API-Key": "your-api-key"
 })
+```
 
-# All requests now include X-API-Key header
-response1 = api.get("/endpoint1")
-response2 = api.get("/endpoint2")
+### Set Timeout
+
+Default request timeout (in seconds). Default is 30s.
+
+```python
+API.set_timeout(60)  # 60 second timeout
 ```
 
 ---
 
 ## Making Requests
 
-### HTTP Methods
-
-#### GET Request
+### GET
 
 ```python
 # Simple GET
-response = api.get("/users")
+response = API.get("/users")
 
 # With query parameters
-response = api.get("/users", params={"page": 1, "limit": 10})
+response = API.get("/users", params={"page": 1, "limit": 10})
 
-# With headers
-response = api.get("/users", headers={"Accept": "application/json"})
+# With custom headers
+response = API.get("/users", headers={"Accept": "application/xml"})
 ```
 
-#### POST Request
+### POST
 
 ```python
-# JSON payload
-response = api.post("/users", json={"name": "John", "email": "john@example.com"})
+# JSON body
+response = API.post("/users", json={
+    "name": "John Doe",
+    "email": "john@example.com"
+})
 
 # Form data
-response = api.post("/login", data={"username": "admin", "password": "secret"})
-
-# With headers
-response = api.post("/users", json=payload, headers={"X-Custom": "value"})
-```
-
-#### PUT Request
-
-```python
-# Update resource
-response = api.put("/users/1", json={"name": "John Updated"})
-```
-
-#### PATCH Request
-
-```python
-# Partial update
-response = api.patch("/users/1", json={"email": "newemail@example.com"})
-```
-
-#### DELETE Request
-
-```python
-# Delete resource
-response = api.delete("/users/1")
-```
-
-#### HEAD Request
-
-```python
-# Get headers only
-response = api.head("/users/1")
-```
-
-#### OPTIONS Request
-
-```python
-# Get allowed methods
-response = api.options("/users")
-```
-
-### Request Parameters
-
-#### Query Parameters
-
-```python
-# Using params
-response = api.get("/search", params={
-    "q": "automation",
-    "page": 1,
-    "limit": 20
-})
-# Sends: GET /search?q=automation&page=1&limit=20
-```
-
-#### JSON Body
-
-```python
-payload = {
-    "name": "John Doe",
-    "email": "john@example.com",
-    "roles": ["admin", "user"]
-}
-
-response = api.post("/users", json=payload)
-```
-
-#### Form Data
-
-```python
-form_data = {
+response = API.post("/login", data={
     "username": "admin",
-    "password": "secret123"
-}
+    "password": "secret"
+})
 
-response = api.post("/login", data=form_data)
+# File upload
+with open("file.pdf", "rb") as f:
+    response = API.post("/upload", files={"file": f})
 ```
 
-#### Custom Headers
+### PUT
 
 ```python
-response = api.get("/users", headers={
-    "Authorization": "Bearer token123",
-    "X-Request-ID": "abc-123",
-    "Accept": "application/json"
+response = API.put("/users/1", json={
+    "name": "Updated Name",
+    "email": "updated@example.com"
 })
 ```
 
-#### File Upload
+### PATCH
 
 ```python
-files = {
-    "file": open("document.pdf", "rb"),
-    "type": "application/pdf"
-}
-
-response = api.post("/upload", files=files)
+response = API.patch("/users/1", json={
+    "email": "newemail@example.com"
+})
 ```
 
-#### Timeout
+### DELETE
 
 ```python
-# Timeout in seconds
-response = api.get("/users", timeout=5)
+response = API.delete("/users/1")
+```
+
+### HEAD / OPTIONS
+
+```python
+response = API.head("/users/1")
+response = API.options("/users")
+```
+
+### Generic Request
+
+```python
+response = API.request("GET", "/users/1")
+response = API.request("POST", "/users", json={"name": "John"})
 ```
 
 ---
 
-## Response Validation
+## Response Handling
 
-### Status Code
+Every request returns a standard `requests.Response` object.
+
+### Get JSON Body
 
 ```python
-response = api.get("/users/1")
-
-# Exact match
-assert response.status_code == 200
-
-# Range check
-assert 200 <= response.status_code < 300
-
-# raise_for_status (raises exception for 4xx/5xx)
-response.raise_for_status()
+response = API.get("/users/1")
+data = API.get_json(response)
+print(data["name"])
 ```
 
-### Response Body
-
-#### JSON Response
+### Get Status Code
 
 ```python
-response = api.get("/users/1")
-data = response.json()
-
-# Validate structure
-assert "id" in data
-assert "name" in data
-assert "email" in data
-
-# Validate values
-assert data["id"] == 1
-assert isinstance(data["name"], str)
-assert "@" in data["email"]
+status = API.get_status_code(response)
 ```
 
-#### Text Response
+### Get Header
 
 ```python
-response = api.get("/health")
-assert response.text == "OK"
+content_type = API.get_header(response, "Content-Type")
 ```
 
-#### Binary Response
+### Direct Access
+
+Since it's a standard `requests.Response`, you can also access directly:
 
 ```python
-response = api.get("/download/file.pdf")
-with open("downloaded.pdf", "wb") as f:
-    f.write(response.content)
+response = API.get("/users/1")
+
+response.status_code      # 200
+response.json()           # {"id": 1, "name": "..."}
+response.text             # raw body
+response.headers          # response headers
+response.elapsed          # response time
+response.cookies          # cookies
 ```
 
-### Response Headers
+---
+
+## Verification Keywords
+
+Built-in assertions that integrate with Orbs reporting.
+
+### Verify Status Code
 
 ```python
-response = api.get("/users")
-
-# Check specific header
-assert response.headers["Content-Type"] == "application/json"
-
-# Case-insensitive access
-assert "application/json" in response.headers.get("content-type")
+API.verify_status_code(response, 200)
+API.verify_status_code(response, 201)
+API.verify_status_code(response, 404)
 ```
 
-### Response Time
+### Verify JSON Field
 
 ```python
-import time
+API.verify_json_field(response, "name", "John Doe")
+API.verify_json_field(response, "status", "active")
+API.verify_json_field(response, "count", 10)
+```
 
-start = time.time()
-response = api.get("/users")
-elapsed = time.time() - start
+### Verify JSON Field Exists
 
-# Validate performance
-assert elapsed < 2.0, f"API too slow: {elapsed}s"
+```python
+API.verify_json_field_exists(response, "id")
+API.verify_json_field_exists(response, "created_at")
+```
+
+### Verify Response Contains Text
+
+```python
+API.verify_response_contains(response, "success")
+API.verify_response_contains(response, "John")
+```
+
+### Verify JSON Array Length
+
+```python
+# Root array
+API.verify_json_array_length(response, 10)
+
+# Nested array
+API.verify_json_array_length(response, 3, field="items")
+```
+
+### Verify Response Time
+
+```python
+API.verify_response_time(response, 2000)   # max 2 seconds
+API.verify_response_time(response, 500)    # max 500ms
+```
+
+### Verify Response Header
+
+```python
+API.verify_header(response, "Content-Type", "application/json")
 ```
 
 ---
@@ -397,485 +257,163 @@ assert elapsed < 2.0, f"API too slow: {elapsed}s"
 ### Bearer Token
 
 ```python
-api = ApiClient(
-    base_url="https://api.example.com",
-    default_headers={
-        "Authorization": f"Bearer {os.getenv('API_TOKEN')}"
-    }
-)
-
-response = api.get("/protected")
+API.set_bearer_token("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
 ```
 
-### API Key
-
-#### Header-based
+### Basic Auth
 
 ```python
-api = ApiClient(
-    base_url="https://api.example.com",
-    default_headers={
-        "X-API-Key": os.getenv("API_KEY")
-    }
-)
+API.set_basic_auth("admin", "password123")
 ```
 
-#### Query parameter
+### API Key Header
 
 ```python
-api_key = os.getenv("API_KEY")
-response = api.get("/users", params={"api_key": api_key})
+API.set_default_headers({"X-API-Key": "your-api-key"})
 ```
 
-### Basic Authentication
+### OAuth / Custom Auth Flow
 
 ```python
-from requests.auth import HTTPBasicAuth
+def run():
+    API.set_base_url("https://api.example.com")
 
-response = api.get(
-    "/users",
-    auth=HTTPBasicAuth("username", "password")
-)
-```
-
-### OAuth 2.0
-
-```python
-def get_access_token():
-    """Obtain OAuth token"""
-    auth_api = ApiClient(base_url="https://auth.example.com")
-    response = auth_api.post("/oauth/token", json={
+    # Get token
+    token_response = API.post("/auth/token", data={
         "grant_type": "client_credentials",
-        "client_id": os.getenv("CLIENT_ID"),
-        "client_secret": os.getenv("CLIENT_SECRET")
+        "client_id": "my-client",
+        "client_secret": "my-secret"
     })
-    return response.json()["access_token"]
 
-# Use token
-token = get_access_token()
-api = ApiClient(
-    base_url="https://api.example.com",
-    default_headers={
-        "Authorization": f"Bearer {token}"
-    }
-)
+    token = API.get_json(token_response)["access_token"]
+    API.set_bearer_token(token)
+
+    # Now all requests are authenticated
+    response = API.get("/protected/resource")
+    API.verify_status_code(response, 200)
 ```
 
 ---
 
-## Writing Test Cases
+## Advanced Usage
 
-### Simple API Test
+### Failure Handling
+
+Control what happens when a keyword fails:
 
 ```python
-from orbs.api_client import ApiClient
-import os
+from orbs.keyword.failure_handling import FailureHandling
 
-def test_list_users():
-    """Test GET /users endpoint"""
-    api = ApiClient(base_url=os.getenv("API_BASE_URL"))
-    
-    response = api.get("/users")
-    
-    assert response.status_code == 200
-    users = response.json()
-    
-    assert isinstance(users, list)
-    assert len(users) > 0
-    
-    # Validate first user structure
-    user = users[0]
-    assert "id" in user
-    assert "name" in user
-    assert "email" in user
+# Stop test on failure (default)
+API.verify_status_code(response, 200, failure_handling=FailureHandling.STOP_ON_FAILURE)
+
+# Log error but continue test
+API.verify_status_code(response, 200, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+
+# Ignore failure completely
+API.verify_status_code(response, 200, failure_handling=FailureHandling.OPTIONAL)
 ```
 
-### CRUD Test Flow
+### CRUD Flow Example
 
 ```python
-from orbs.api_client import ApiClient
-import os
+from orbs.keyword.api import API
 
-def test_user_crud():
-    """Test complete CRUD operations"""
-    api = ApiClient(base_url=os.getenv("API_BASE_URL"))
-    
+def run():
+    API.set_base_url("https://api.example.com")
+    API.set_bearer_token("your-token")
+
     # CREATE
-    new_user = {
-        "name": "Test User",
-        "email": "test@example.com"
-    }
-    
-    create_response = api.post("/users", json=new_user)
-    assert create_response.status_code == 201
-    
-    user = create_response.json()
-    user_id = user["id"]
-    
-    # READ
-    get_response = api.get(f"/users/{user_id}")
-    assert get_response.status_code == 200
-    assert get_response.json()["name"] == new_user["name"]
-    
-    # UPDATE
-    update_data = {"name": "Updated Name"}
-    update_response = api.put(f"/users/{user_id}", json=update_data)
-    assert update_response.status_code == 200
-    assert update_response.json()["name"] == "Updated Name"
-    
-    # DELETE
-    delete_response = api.delete(f"/users/{user_id}")
-    assert delete_response.status_code == 204
-    
-    # Verify deletion
-    verify_response = api.get(f"/users/{user_id}")
-    assert verify_response.status_code == 404
-    
-    print("✅ CRUD test passed")
-```
-
-### Error Handling
-
-```python
-def test_not_found():
-    """Test 404 error handling"""
-    api = ApiClient(base_url=os.getenv("API_BASE_URL"))
-    
-    response = api.get("/users/999999")
-    
-    assert response.status_code == 404
-    
-    error = response.json()
-    assert "error" in error or "message" in error
-
-def test_validation_error():
-    """Test 400 validation error"""
-    api = ApiClient(base_url=os.getenv("API_BASE_URL"))
-    
-    invalid_user = {
-        "name": "",  # Invalid: empty name
-        "email": "not-an-email"  # Invalid format
-    }
-    
-    response = api.post("/users", json=invalid_user)
-    
-    assert response.status_code == 400
-    
-    error = response.json()
-    assert "errors" in error or "message" in error
-```
-
-### Test Suite
-
-`testsuites/api_regression.yml`:
-
-```yaml
-name: API Regression Suite
-description: Complete API endpoint testing
-
-testcases:
-  - testcases.user_api.test_list_users
-  - testcases.user_api.test_get_user
-  - testcases.user_api.test_create_user
-  - testcases.user_api.test_update_user
-  - testcases.user_api.test_delete_user
-  - testcases.user_api.test_not_found
-  - testcases.user_api.test_validation_error
-
-platform: chrome  # Platform not used for API tests
-```
-
----
-
-## Best Practices
-
-### 1. Environment Variables
-
-Store sensitive data in `.env`:
-
-```env
-API_BASE_URL=https://staging.api.example.com
-API_KEY=sk_test_abc123
-API_USERNAME=testuser
-API_PASSWORD=testpass
-```
-
-Use in tests:
-
-```python
-import os
-api = ApiClient(
-    base_url=os.getenv("API_BASE_URL"),
-    default_headers={"X-API-Key": os.getenv("API_KEY")}
-)
-```
-
-### 2. Reusable API Helper
-
-Create `helpers/api_helper.py`:
-
-```python
-import os
-from orbs.api_client import ApiClient
-
-def get_api_client():
-    """Get configured API client"""
-    return ApiClient(
-        base_url=os.getenv("API_BASE_URL"),
-        default_headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {os.getenv('API_TOKEN')}"
-        }
-    )
-
-def create_test_user(name="Test User"):
-    """Helper to create test user"""
-    api = get_api_client()
-    response = api.post("/users", json={
-        "name": name,
-        "email": f"{name.lower().replace(' ', '.')}@test.com"
+    response = API.post("/users", json={
+        "name": "Jane Doe",
+        "email": "jane@example.com"
     })
-    return response.json()
+    API.verify_status_code(response, 201)
+    user_id = API.get_json(response)["id"]
 
-def cleanup_user(user_id):
-    """Helper to delete test user"""
-    api = get_api_client()
-    api.delete(f"/users/{user_id}")
+    # READ
+    response = API.get(f"/users/{user_id}")
+    API.verify_status_code(response, 200)
+    API.verify_json_field(response, "name", "Jane Doe")
+
+    # UPDATE
+    response = API.put(f"/users/{user_id}", json={
+        "name": "Jane Smith"
+    })
+    API.verify_status_code(response, 200)
+
+    # DELETE
+    response = API.delete(f"/users/{user_id}")
+    API.verify_status_code(response, 200)
+
+    # Verify deleted
+    response = API.get(f"/users/{user_id}")
+    API.verify_status_code(response, 404)
+
+    API.close_session()
 ```
 
-Use in tests:
+### Environment-based Configuration
 
 ```python
-from helpers.api_helper import get_api_client, create_test_user, cleanup_user
+import os
+from orbs.keyword.api import API
 
-def test_with_helper():
-    api = get_api_client()
-    
-    # Create test data
-    user = create_test_user("John Doe")
-    user_id = user["id"]
-    
-    try:
-        # Test logic
-        response = api.get(f"/users/{user_id}")
-        assert response.status_code == 200
-    finally:
-        # Cleanup
-        cleanup_user(user_id)
+def run():
+    API.set_base_url(os.getenv("API_BASE_URL", "https://api.staging.example.com"))
+    API.set_bearer_token(os.getenv("API_TOKEN"))
+
+    response = API.get("/health")
+    API.verify_status_code(response, 200)
 ```
 
-### 3. Schema Validation
-
-Use JSON Schema for validation:
+### Combining with Web Keywords
 
 ```python
-from jsonschema import validate
+from orbs.keyword.web import Web
+from orbs.keyword.api import API
 
-user_schema = {
-    "type": "object",
-    "properties": {
-        "id": {"type": "integer"},
-        "name": {"type": "string"},
-        "email": {"type": "string", "format": "email"},
-        "created_at": {"type": "string", "format": "date-time"}
-    },
-    "required": ["id", "name", "email"]
-}
+def run():
+    # API: Create test data
+    API.set_base_url("https://api.example.com")
+    response = API.post("/users", json={"name": "Test User", "email": "test@example.com"})
+    user = API.get_json(response)
 
-def test_user_schema():
-    api = get_api_client()
-    response = api.get("/users/1")
-    
-    user = response.json()
-    validate(instance=user, schema=user_schema)
-```
+    # Web: Verify in UI
+    Web.open("https://example.com/users")
+    Web.verify_text_present(f"css=.user-list", user["name"])
 
-### 4. Parameterized Tests
-
-```python
-import pytest
-
-@pytest.mark.parametrize("user_id,expected_status", [
-    (1, 200),
-    (2, 200),
-    (999, 404),
-])
-def test_get_user_status(user_id, expected_status):
-    api = get_api_client()
-    response = api.get(f"/users/{user_id}")
-    assert response.status_code == expected_status
-```
-
-### 5. Request Logging
-
-API calls are automatically logged in thread context:
-
-```python
-from orbs.thread_context import get_context
-
-def test_with_logging():
-    api = get_api_client()
-    
-    api.get("/users")
-    api.post("/users", json={"name": "Test"})
-    
-    # Get all API calls made in this thread
-    api_calls = get_context("api_calls")
-    
-    for call in api_calls:
-        print(f"{call['method']} {call['url']}")
-        print(f"Status: {call['status_code']}")
-        print(f"Response: {call['response_body']}")
+    API.close_session()
+    Web.quit()
 ```
 
 ---
 
-## Advanced Topics
+## Keyword Reference
 
-### Custom Assertions
-
-```python
-def assert_valid_user(user_dict):
-    """Custom assertion for user object"""
-    assert "id" in user_dict, "User missing ID"
-    assert "name" in user_dict, "User missing name"
-    assert "email" in user_dict, "User missing email"
-    assert "@" in user_dict["email"], "Invalid email format"
-    assert user_dict["id"] > 0, "Invalid user ID"
-
-def test_user_validation():
-    api = get_api_client()
-    response = api.get("/users/1")
-    user = response.json()
-    
-    assert_valid_user(user)
-```
-
-### Retry Logic
-
-```python
-import time
-
-def api_call_with_retry(api, method, path, max_retries=3, **kwargs):
-    """Retry API call on failure"""
-    for attempt in range(max_retries):
-        try:
-            response = getattr(api, method)(path, **kwargs)
-            response.raise_for_status()
-            return response
-        except Exception as e:
-            if attempt == max_retries - 1:
-                raise
-            print(f"Retry {attempt + 1}/{max_retries}")
-            time.sleep(2 ** attempt)  # Exponential backoff
-```
-
-### Mock API Responses
-
-```python
-from unittest.mock import patch
-
-def test_with_mock():
-    """Test with mocked API response"""
-    mock_response = {
-        "id": 1,
-        "name": "Mock User",
-        "email": "mock@example.com"
-    }
-    
-    with patch.object(ApiClient, 'get') as mock_get:
-        mock_get.return_value.json.return_value = mock_response
-        mock_get.return_value.status_code = 200
-        
-        api = ApiClient(base_url="http://mock.api")
-        response = api.get("/users/1")
-        
-        assert response.json() == mock_response
-```
-
-### Performance Testing
-
-```python
-import time
-
-def test_api_performance():
-    """Test API response time"""
-    api = get_api_client()
-    
-    response_times = []
-    
-    for _ in range(10):
-        start = time.time()
-        api.get("/users")
-        elapsed = time.time() - start
-        response_times.append(elapsed)
-    
-    avg_time = sum(response_times) / len(response_times)
-    
-    assert avg_time < 0.5, f"Average response time too slow: {avg_time}s"
-    print(f"Average response time: {avg_time:.3f}s")
-```
-
----
-
-## Troubleshooting
-
-### Connection Errors
-
-```python
-import requests
-
-try:
-    response = api.get("/users")
-except requests.exceptions.ConnectionError:
-    print("❌ Cannot connect to API server")
-except requests.exceptions.Timeout:
-    print("❌ Request timed out")
-except requests.exceptions.RequestException as e:
-    print(f"❌ Request failed: {e}")
-```
-
-### SSL Verification
-
-```python
-# Disable SSL verification (not recommended for production)
-api.session.verify = False
-
-# Or specify custom CA bundle
-api.session.verify = "/path/to/ca-bundle.crt"
-```
-
-### Debug Requests
-
-```python
-import logging
-
-# Enable requests logging
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("urllib3").setLevel(logging.DEBUG)
-
-# Now all requests will be logged
-api.get("/users")
-```
-
-### Inspect Request
-
-```python
-# Use PreparedRequest to inspect before sending
-from requests import Request
-
-req = Request('GET', 'https://api.example.com/users')
-prepared = api.session.prepare_request(req)
-
-print(f"URL: {prepared.url}")
-print(f"Headers: {prepared.headers}")
-```
-
----
-
-## Next Steps
-
-* [Web Testing Guide](web-testing.md)
-* [Mobile Testing Guide](mobile-testing.md)
-* [Architecture Overview](architecture.md)
-* [CLI Reference](cli-reference.md)
+| Keyword | Description |
+|---------|-------------|
+| `API.set_base_url(url)` | Set base URL for all requests |
+| `API.set_default_headers(headers)` | Set default headers for the session |
+| `API.set_bearer_token(token)` | Set Bearer token authentication |
+| `API.set_basic_auth(user, pass)` | Set Basic authentication |
+| `API.set_timeout(seconds)` | Set default request timeout |
+| `API.request(method, path, **kwargs)` | Send generic HTTP request |
+| `API.get(path, **kwargs)` | Send GET request |
+| `API.post(path, **kwargs)` | Send POST request |
+| `API.put(path, **kwargs)` | Send PUT request |
+| `API.patch(path, **kwargs)` | Send PATCH request |
+| `API.delete(path, **kwargs)` | Send DELETE request |
+| `API.head(path, **kwargs)` | Send HEAD request |
+| `API.options(path, **kwargs)` | Send OPTIONS request |
+| `API.get_json(response)` | Parse response as JSON |
+| `API.get_status_code(response)` | Get response status code |
+| `API.get_header(response, name)` | Get a response header value |
+| `API.verify_status_code(response, code)` | Assert status code matches |
+| `API.verify_json_field(response, field, value)` | Assert JSON field value |
+| `API.verify_json_field_exists(response, field)` | Assert JSON field exists |
+| `API.verify_response_contains(response, text)` | Assert body contains text |
+| `API.verify_json_array_length(response, len)` | Assert array length |
+| `API.verify_response_time(response, max_ms)` | Assert response time within limit |
+| `API.verify_header(response, name, value)` | Assert response header value |
+| `API.close_session()` | Close HTTP session and clean up |
