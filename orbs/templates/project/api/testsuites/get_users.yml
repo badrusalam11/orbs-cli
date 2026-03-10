@@ -1,0 +1,3 @@
+test_cases:
+  - path: testcases/get_users.py
+    enabled: true

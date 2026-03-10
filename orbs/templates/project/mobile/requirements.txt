@@ -1,0 +1,11 @@
+orbs
+selenium
+Appium-Python-Client
+python-dotenv
+pyyaml
+behave
+reportlab
+flask
+requests
+apscheduler
+InquirerPy

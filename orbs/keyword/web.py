@@ -12,6 +12,7 @@ concurrently with different browser configurations.
 import time
 import threading
 import functools
+import re
 from typing import Union, List, Optional
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
@@ -122,11 +123,35 @@ def track_keyword(func):
                 result = func(*args, **kwargs)
                 duration = time.time() - start_time
                 live_logger.step_passed(testcase_id=testcase_id, step_id=step_id, duration=duration)
+                
+                # Store step data for report (non-BDD test cases)
+                keyword_steps = get_context("keyword_steps") or []
+                keyword_steps.append({
+                    "keyword": keyword_name.upper(),
+                    "name": object_desc or "",
+                    "status": "PASSED",
+                    "duration": round(duration, 2),
+                    "error": None
+                })
+                set_context("keyword_steps", keyword_steps)
+                
                 return result
             except Exception as e:
                 duration = time.time() - start_time
                 error_msg = str(e)
                 live_logger.step_failed(testcase_id=testcase_id, step_id=step_id, duration=duration, error=error_msg)
+                
+                # Store failed step data for report (non-BDD test cases)
+                keyword_steps = get_context("keyword_steps") or []
+                keyword_steps.append({
+                    "keyword": keyword_name.upper(),
+                    "name": object_desc or "",
+                    "status": "FAILED",
+                    "duration": round(duration, 2),
+                    "error": error_msg
+                })
+                set_context("keyword_steps", keyword_steps)
+                
                 raise
         else:
             # No live logger or testcase context, just execute normally
@@ -816,6 +841,32 @@ class Web:
         if not cls.element_visible(locator, timeout):
             raise AssertionError(f"Element not visible: {locator}")
         log.action(f"Element visibility verified: {locator}")
+
+    @classmethod
+    @track_keyword
+    @handle_failure
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda text, **_: f"Verify text present failed: '{text}'"
+    )
+    def verify_text_present(cls, text: str, is_regex: bool = False, timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Verify that text is present anywhere on the page.
+        
+        Args:
+            text: Text to search for (plain string or regex pattern)
+            is_regex: If True, treat text as a regex pattern
+            timeout: Not used, kept for API consistency
+            failure_handling: How to handle failure (STOP_ON_FAILURE or CONTINUE_ON_FAILURE)
+        """
+        driver = cls._get_driver()
+        body_text = driver.find_element(By.TAG_NAME, "body").text
+        if is_regex:
+            if not re.search(text, body_text):
+                raise AssertionError(f"Text pattern '{text}' not found on page")
+        else:
+            if text not in body_text:
+                raise AssertionError(f"Text '{text}' not found on page")
+        log.action(f"Text present verified: '{text}' (regex={is_regex})")
 
     @classmethod
     @orbs_guard(

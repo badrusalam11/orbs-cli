@@ -1,0 +1,9 @@
+# UAT (User Acceptance Testing) Environment Configuration
+
+# Application URLs
+url: "https://uat.example.com"
+api_url: "https://api-uat.example.com"
+
+# Credentials
+username: "standard_user"
+password: "secret_sauce"

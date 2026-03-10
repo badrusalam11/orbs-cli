@@ -83,3 +83,10 @@ class MobileActionException(OrbsException):
         if message is None:
             message = "Mobile action error occurred"
         super().__init__(message, error_code="MOBILE_ACTION_ERROR")
+
+class ApiActionException(OrbsException):
+    """Exception for API action failures."""
+    def __init__(self, message=None):
+        if message is None:
+            message = "API action error occurred"
+        super().__init__(message, error_code="API_ACTION_ERROR")

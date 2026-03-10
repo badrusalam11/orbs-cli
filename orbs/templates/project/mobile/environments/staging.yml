@@ -1,0 +1,9 @@
+# Staging Environment Configuration
+
+# Application URLs
+url: "https://staging.example.com"
+api_url: "https://api-staging.example.com"
+
+# Credentials
+username: "standard_user"
+password: "secret_sauce"

@@ -7,20 +7,26 @@ import requests
 import typer
 import shutil
 from pathlib import Path
-from orbs._constant import PLATFORM_LIST
-from orbs.spy.mobile import MobileSpyRunner
-from orbs.spy.web import WebSpyRunner
-from orbs.record.web import WebRecordRunner
-from orbs.utils import render_template
-from orbs import run
+from ._constant import PLATFORM_LIST, __version__
+from .utils import render_template
 import subprocess
 from InquirerPy import inquirer
-from orbs.config import config
+
+
+def version_callback(value: bool):
+    if value:
+        typer.echo(f"orbs {__version__}")
+        raise typer.Exit()
 
 
 app = typer.Typer()
 setup_app = typer.Typer()
 app.add_typer(setup_app, name="setup")
+
+
+@app.callback()
+def main(version: bool = typer.Option(False, "--version", "-v", help="Show version and exit.", callback=version_callback, is_eager=True)):
+    pass
 
 # Directories for templates
 BASE_DIR = Path(__file__).parent
@@ -29,7 +35,6 @@ TEMPLATE_JINJA_DIR = BASE_DIR / "templates" / "jinja"
 
 # Settings directory within user's project
 SETTINGS_DIR = Path.cwd() / "settings"
-APPIUM_PROPS = SETTINGS_DIR / "appium.properties"
 
 
 def get_connected_devices():
@@ -89,27 +94,9 @@ def choose_environment() -> str:
     return choice
 
 
-def write_device_property(device_name: str):
-    """Update only the deviceName in appium.properties"""
-    SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
-    props = []
-    if APPIUM_PROPS.exists():
-        props = APPIUM_PROPS.read_text().splitlines()
-    updated = False
-    new_lines = []
-    for line in props:
-        if line.strip().startswith('deviceName='):
-            new_lines.append(f'deviceName={device_name}')
-            updated = True
-        else:
-            new_lines.append(line)
-    if not updated:
-        new_lines.append(f'deviceName={device_name}')
-    APPIUM_PROPS.write_text("\n".join(new_lines) + "\n")
-    typer.secho(f"✅ Updated deviceName={device_name} in {APPIUM_PROPS}", fg=typer.colors.GREEN)
-
 def ensure_appium_server():
     """Ensure an Appium server is running, otherwise start one"""
+    from orbs.config import config
     url = config.get("appium_url", "http://localhost:4723/wd/hub")
     status_url = url.rstrip('/') + '/status'
     try:
@@ -150,10 +137,34 @@ def ensure_appium_server():
     raise typer.Exit(1)
 
 
+VALID_TEMPLATES = ["blank", "web", "mobile", "api"]
+
+
+def _copy_tree(src: Path, dest: Path):
+    """Recursively copy all files from src into dest."""
+    for item in src.rglob("*"):
+        rel_path = item.relative_to(src)
+        dest_path = dest / rel_path
+        if item.is_dir():
+            dest_path.mkdir(parents=True, exist_ok=True)
+        else:
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(item, dest_path)
+
+
 @app.command()
-def init(project_name: str):
+def init(
+    project_name: str,
+    template: str = typer.Option("blank", help="Project template: blank, web, mobile, or api"),
+):
     """Initialize a new orbs project structure"""
-    src = TEMPLATE_PROJECT_DIR
+    template = template.lower()
+    if template not in VALID_TEMPLATES:
+        typer.secho(
+            f"❌ Invalid template '{template}'. Choose from: {', '.join(VALID_TEMPLATES)}",
+            fg=typer.colors.RED,
+        )
+        raise typer.Exit(1)
 
     if project_name in [".", "./"]:
         dest = Path.cwd()
@@ -166,16 +177,11 @@ def init(project_name: str):
 
         dest.mkdir(parents=True, exist_ok=True)
 
-    for item in src.rglob("*"):
-        rel_path = item.relative_to(src)
-        dest_path = dest / rel_path
-        if item.is_dir():
-            dest_path.mkdir(parents=True, exist_ok=True)
-        else:
-            dest_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(item, dest_path)
+    base_src = TEMPLATE_PROJECT_DIR / template
 
-    typer.secho(f"✅ Project initialized at {dest}", fg=typer.colors.GREEN)
+    _copy_tree(base_src, dest)
+
+    typer.secho(f"✅ Project initialized at {dest} (template: {template})", fg=typer.colors.GREEN)
 
 
 @app.command()
@@ -360,7 +366,7 @@ def run_command(
     if platform:
         # Remove any spaces around the platform value
         platform = platform.strip()
-        valid_platforms = PLATFORM_LIST["mobile"] + PLATFORM_LIST["web"]
+        valid_platforms = PLATFORM_LIST["mobile"] + PLATFORM_LIST["web"] + PLATFORM_LIST["api"]
         
         if platform not in valid_platforms:
             # Show examples in the correct format
@@ -406,13 +412,13 @@ def run_command(
     os.environ["ORBS_ENV"] = selected_env
     
     # Execute the run with platform and device_id parameters
+    from orbs import run
     run(target, platform, device_id)
 
 @app.command()
 def select_device():
     devices = get_connected_devices()
     device_name = choose_device(devices)
-    write_device_property(device_name)    
 
 @setup_app.command("android")
 def setup_android():
@@ -549,8 +555,10 @@ def spy(
             url = 'https://' + url
             typer.secho(f"Info: Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
         
+        from orbs.spy.web import WebSpyRunner
         runner = WebSpyRunner(url=url)
     elif mobile:
+        from orbs.spy.mobile import MobileSpyRunner
         runner = MobileSpyRunner()  # not yet implemented
     else:
         typer.echo("Please specify a platform: --web or --mobile")
@@ -616,6 +624,7 @@ def record(
             url = 'https://' + url
             typer.secho(f"Info: Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
         
+        from orbs.record.web import WebRecordRunner
         runner = WebRecordRunner(url=url, testcase_name=testcase)
     
     try:

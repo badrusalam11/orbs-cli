@@ -28,7 +28,8 @@ class MobileFactory:
         app_package: str = None,
         app_activity: str = None,
         capabilities: dict = None,
-        retry_count: int = 2
+        retry_count: int = 2,
+        skip_app_launch: bool = False
     ):
         server_url = config.get("appium_url", "http://localhost:4723/wd/hub")
         platform = config.get("platformName", "Android")
@@ -50,18 +51,24 @@ class MobileFactory:
                 # Add session stability capabilities
                 options.set_capability("newCommandTimeout", 300)  # 5 minutes timeout
                 options.set_capability("noReset", True)  # Don't reset app state
-                options.set_capability("autoLaunch", True)  # Auto launch app
                 options.set_capability("automationName", "UiAutomator2")
                 options.set_capability("uiautomator2ServerLaunchTimeout", 60000)  # 60 seconds
                 options.set_capability("uiautomator2ServerInstallTimeout", 60000)  # 60 seconds
 
                 # Injected appPackage and appActivity override config
-                final_app_package = app_package or config.get("appPackage", None)
-                final_app_activity = app_activity or config.get("appActivity", None)
+                # skip_app_launch=True forces a bare session (for launch_and_install: install first, launch later)
+                if skip_app_launch:
+                    options.set_capability("autoLaunch", False)
+                else:
+                    final_app_package = app_package or config.get("appPackage", None)
+                    final_app_activity = app_activity or config.get("appActivity", None)
 
-                if final_app_package and final_app_activity:
-                    options.set_capability("appPackage", final_app_package)
-                    options.set_capability("appActivity", final_app_activity)
+                    if final_app_package and final_app_activity:
+                        options.set_capability("appPackage", final_app_package)
+                        options.set_capability("appActivity", final_app_activity)
+                        options.set_capability("autoLaunch", True)
+                    else:
+                        options.set_capability("autoLaunch", False)
 
                 for key, value in extra_caps.items():
                     options.set_capability(key, value)

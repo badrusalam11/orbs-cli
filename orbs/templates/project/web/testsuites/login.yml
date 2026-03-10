@@ -1,0 +1,3 @@
+test_cases:
+  - path: testcases/login.py
+    enabled: true

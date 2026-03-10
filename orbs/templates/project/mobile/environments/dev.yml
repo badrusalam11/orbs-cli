@@ -1,0 +1,9 @@
+# Development Environment Configuration
+
+# Application URLs
+url: "https://dev.example.com"
+api_url: "https://api-dev.example.com"
+
+# Credentials
+username: "standard_user"
+password: "secret_sauce"
