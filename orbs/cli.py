@@ -35,7 +35,6 @@ TEMPLATE_JINJA_DIR = BASE_DIR / "templates" / "jinja"
 
 # Settings directory within user's project
 SETTINGS_DIR = Path.cwd() / "settings"
-APPIUM_PROPS = SETTINGS_DIR / "appium.properties"
 
 
 def get_connected_devices():
@@ -94,25 +93,6 @@ def choose_environment() -> str:
     ).execute()
     return choice
 
-
-def write_device_property(device_name: str):
-    """Update only the deviceName in appium.properties"""
-    SETTINGS_DIR.mkdir(parents=True, exist_ok=True)
-    props = []
-    if APPIUM_PROPS.exists():
-        props = APPIUM_PROPS.read_text().splitlines()
-    updated = False
-    new_lines = []
-    for line in props:
-        if line.strip().startswith('deviceName='):
-            new_lines.append(f'deviceName={device_name}')
-            updated = True
-        else:
-            new_lines.append(line)
-    if not updated:
-        new_lines.append(f'deviceName={device_name}')
-    APPIUM_PROPS.write_text("\n".join(new_lines) + "\n")
-    typer.secho(f"✅ Updated deviceName={device_name} in {APPIUM_PROPS}", fg=typer.colors.GREEN)
 
 def ensure_appium_server():
     """Ensure an Appium server is running, otherwise start one"""
@@ -439,7 +419,6 @@ def run_command(
 def select_device():
     devices = get_connected_devices()
     device_name = choose_device(devices)
-    write_device_property(device_name)    
 
 @setup_app.command("android")
 def setup_android():
