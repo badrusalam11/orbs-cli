@@ -11,6 +11,7 @@ concurrently with different mobile platform configurations.
 
 import time
 import threading
+import functools
 from typing import Union, List, Optional, Dict, Any
 from appium.webdriver.common.appiumby import AppiumBy
 from selenium.webdriver.common.actions import interaction
@@ -27,6 +28,103 @@ from ..log import log
 from ..guard import orbs_guard
 from ..exception import MobileActionException
 from .failure_handling import FailureHandling, handle_failure
+
+
+def track_keyword(func):
+    """Decorator to track mobile keyword execution in live logger"""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        live_logger = get_context("live_logger")
+        testcase = get_context("current_testcase")
+
+        if live_logger and testcase:
+            testcase_id = testcase.replace("\\", "/").replace(".py", "")
+            keyword_name = func.__name__
+
+            # Build object description from args
+            object_parts = []
+            if len(args) > 1:
+                if keyword_name in ("tap", "click", "long_press", "double_tap",
+                                    "wait_for_element", "wait_for_visible",
+                                    "verify_element_exists", "verify_element_visible",
+                                    "clear_text", "get_text"):
+                    object_parts = [str(args[1])[:80]]
+                elif keyword_name in ("set_text", "type_text") and len(args) > 2:
+                    object_parts = [str(args[1])[:80], f'"{str(args[2])[:50]}"']
+                elif keyword_name in ("verify_text", "verify_text_contains") and len(args) > 2:
+                    object_parts = [str(args[1])[:80], f'expected="{str(args[2])[:50]}"']
+                elif keyword_name == "launch":
+                    app_id = args[1] if len(args) > 1 else kwargs.get("id")
+                    if app_id:
+                        object_parts = [str(app_id)[:80]]
+                elif keyword_name == "launch_and_install":
+                    object_parts = [str(args[1])[:80]]
+                elif keyword_name in ("activate_app", "terminate_app"):
+                    object_parts = [str(args[1])[:80]]
+                elif keyword_name == "take_screenshot":
+                    filename = args[1] if len(args) > 1 else kwargs.get("filename", "auto")
+                    object_parts = [str(filename)]
+                elif keyword_name == "swipe" and len(args) > 4:
+                    object_parts = [f"({args[1]},{args[2]}) → ({args[3]},{args[4]})"]
+                elif keyword_name in ("swipe_up", "swipe_down", "swipe_left", "swipe_right"):
+                    pass  # no extra info needed, keyword name is descriptive
+                elif keyword_name == "scroll_to_element":
+                    object_parts = [str(args[1])[:80]]
+                elif keyword_name == "get_attribute" and len(args) > 2:
+                    object_parts = [str(args[1])[:80], f'attr="{args[2]}"']
+                elif keyword_name == "set_orientation":
+                    object_parts = [str(args[1]).upper()]
+                elif keyword_name == "sleep":
+                    object_parts = [f"{args[1]}s"]
+                else:
+                    object_parts = [str(args[1])[:80]]
+
+            object_desc = " ".join(object_parts) if object_parts else None
+
+            step_id = live_logger.step_started(
+                testcase_id=testcase_id,
+                keyword=f"Mobile.{keyword_name.upper()}",
+                object_name=object_desc
+            )
+
+            start_time = time.time()
+
+            try:
+                result = func(*args, **kwargs)
+                duration = time.time() - start_time
+                live_logger.step_passed(testcase_id=testcase_id, step_id=step_id, duration=duration)
+
+                keyword_steps = get_context("keyword_steps") or []
+                keyword_steps.append({
+                    "keyword": f"Mobile.{keyword_name.upper()}",
+                    "name": object_desc or "",
+                    "status": "PASSED",
+                    "duration": round(duration, 2),
+                    "error": None
+                })
+                set_context("keyword_steps", keyword_steps)
+
+                return result
+            except Exception as e:
+                duration = time.time() - start_time
+                error_msg = str(e)
+                live_logger.step_failed(testcase_id=testcase_id, step_id=step_id, duration=duration, error=error_msg)
+
+                keyword_steps = get_context("keyword_steps") or []
+                keyword_steps.append({
+                    "keyword": f"Mobile.{keyword_name.upper()}",
+                    "name": object_desc or "",
+                    "status": "FAILED",
+                    "duration": round(duration, 2),
+                    "error": error_msg
+                })
+                set_context("keyword_steps", keyword_steps)
+
+                raise
+        else:
+            return func(*args, **kwargs)
+
+    return wrapper
 
 
 class Mobile:
@@ -47,6 +145,14 @@ class Mobile:
                 if driver is None:
                     driver = MobileFactory.create_driver()
                     set_context('mobile_driver', driver)
+        return driver
+
+    @classmethod
+    def _get_bare_driver(cls):
+        """Create a bare Appium session without launching any app (for install-then-launch flow)"""
+        with cls._lock:
+            driver = MobileFactory.create_driver(skip_app_launch=True)
+            set_context('mobile_driver', driver)
         return driver
     
     @classmethod
@@ -133,6 +239,7 @@ class Mobile:
     
     # App management methods
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda id=None, activity=None, **_: f"Launch app failed: {id or 'default'}/{activity or 'default'}"
@@ -205,6 +312,7 @@ class Mobile:
             log.action("App launched (from config)")
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda apk, **_: f"Launch and install failed: {apk}"
@@ -215,12 +323,15 @@ class Mobile:
         
         Args:
             apk: Path to APK file (absolute or relative)
-            id: App package ID (optional, will auto-detect from APK if not provided)
-            activity: App main activity (optional)
+            id: App package ID (optional, will read from mobile.properties if not provided)
+            activity: App main activity (optional, will read from mobile.properties if not provided)
             reset: Whether to reset app state after installation
         
         Example:
-            Mobile.launch_and_install(apk="/apps/myapp.apk")
+            # Auto-read from config
+            Mobile.launch_and_install("apk/sauce_labs.apk")
+            
+            # Explicit app details
             Mobile.launch_and_install(
                 apk="/apps/chrome.apk",
                 id="com.android.chrome",
@@ -228,40 +339,39 @@ class Mobile:
                 reset=True
             )
         """
-        driver = cls._get_driver()
-        
-        # Install the app
         import os
         apk_path = os.path.abspath(apk) if not os.path.isabs(apk) else apk
-        
+
         if not os.path.exists(apk_path):
             raise FileNotFoundError(f"APK file not found: {apk_path}")
-        
+
+        # Reset any existing session, then create a BARE session (no app launch)
+        # This prevents Appium from trying to launch an app that isn't installed yet
+        cls.reset_driver()
+        driver = cls._get_bare_driver()
+
         driver.install_app(apk_path)
         log.action(f"App installed: {apk_path}")
-        
-        # Launch the app
+
+        # If id/activity not provided, read from config
+        if not id and not activity:
+            from ..config import config as mobile_config
+            id = mobile_config.get("appPackage", None)
+            activity = mobile_config.get("appActivity", None)
+            if id:
+                log.debug(f"Read from config - appPackage: {id}, appActivity: {activity or 'none'}")
+
+        # Launch the app (app is now installed, this will succeed)
         if id and activity:
             cls.launch(id=id, activity=activity, reset=reset)
         elif id:
-            # Try to launch with just package id
             driver.activate_app(id)
             log.action(f"Activated app: {id}")
         else:
-            log.info("App installed. Use Mobile.launch() to start it.")
+            log.warning("App installed but no app package/activity provided or found in config. Call Mobile.launch() manually.")
     
     @classmethod
-    def reset_app(cls):
-        """Reset the application"""
-        driver = cls._get_driver()
-        try:
-            driver.reset_app()
-            log.action("App reset")
-        except AttributeError:
-            # Fallback for versions without reset_app
-            log.warning("reset_app not supported, use terminate + activate instead")
-    
-    @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda bundle_id, **_: f"Activate app failed: {bundle_id}"
@@ -273,6 +383,7 @@ class Mobile:
         log.action(f"Activated app: {bundle_id}")
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda bundle_id, **_: f"Terminate app failed: {bundle_id}"
@@ -290,6 +401,7 @@ class Mobile:
         return cls.tap(locator, timeout, retry_count)
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -333,6 +445,7 @@ class Mobile:
                     raise
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -371,6 +484,7 @@ class Mobile:
                 raise
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -406,6 +520,7 @@ class Mobile:
         return cls.set_text(locator, text, timeout, clear_first, retry_count)
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -455,6 +570,7 @@ class Mobile:
                     raise
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Clear text failed on element: {locator}"
@@ -467,6 +583,7 @@ class Mobile:
     
     # Gesture methods
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda start_x, start_y, end_x, end_y, **_: f"Swipe failed from ({start_x}, {start_y}) to ({end_x}, {end_y})"
@@ -547,6 +664,7 @@ class Mobile:
         cls.swipe(start_x, start_y, end_x, start_y, duration)
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Scroll to element failed: {locator}"
@@ -571,6 +689,7 @@ class Mobile:
     
     # Wait methods
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -588,6 +707,7 @@ class Mobile:
         log.action(f"Mobile element found: {locator}")
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -613,6 +733,7 @@ class Mobile:
             raise TimeoutException(f"Mobile element not visible: {locator} (timeout: {wait_time}s)")
     
     @classmethod
+    @track_keyword
     def sleep(cls, seconds: float):
         """Sleep for specified seconds"""
         time.sleep(seconds)
@@ -638,6 +759,7 @@ class Mobile:
             return False
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -660,6 +782,7 @@ class Mobile:
         return text
     
     @classmethod
+    @track_keyword
     @handle_failure
     @orbs_guard(
         MobileActionException,
@@ -683,6 +806,7 @@ class Mobile:
         return value
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, expected, **_: f"Verify text '{expected}' failed for element: {locator}"
@@ -695,6 +819,7 @@ class Mobile:
         log.action(f"Text verified: '{expected_text}' in mobile element: {locator}")
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, expected, **_: f"Verify text contains '{expected}' failed for element: {locator}"
@@ -707,6 +832,7 @@ class Mobile:
         log.action(f"Text contains verified: '{expected_text}' in mobile element: {locator}")
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Verify element exists failed for: {locator}"
@@ -718,6 +844,7 @@ class Mobile:
         log.action(f"Element existence verified: {locator}")
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda locator, **_: f"Verify element visible failed for: {locator}"
@@ -752,6 +879,7 @@ class Mobile:
         return orientation
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda orientation, **_: f"Set orientation failed: {orientation}"
@@ -763,6 +891,7 @@ class Mobile:
         log.action(f"Set device orientation to: {orientation}")
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda filename=None, **_: f"Take screenshot failed: {filename or 'auto'}"
@@ -780,6 +909,7 @@ class Mobile:
         return filename
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda **_: "Press back button failed"
@@ -791,6 +921,7 @@ class Mobile:
         log.action("Pressed back button")
     
     @classmethod
+    @track_keyword
     @orbs_guard(
         MobileActionException,
         context_fn=lambda **_: "Hide keyboard failed"
@@ -829,6 +960,7 @@ class Mobile:
                     log.info("Mobile driver reset for next test case")
     
     @classmethod
+    @track_keyword
     def quit(cls):
         """Quit mobile driver and end session (thread-safe)"""
         with cls._lock:
