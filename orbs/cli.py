@@ -197,11 +197,9 @@ def init(
 
         dest.mkdir(parents=True, exist_ok=True)
 
-    base_src = TEMPLATE_PROJECT_DIR / "base"
-    template_src = TEMPLATE_PROJECT_DIR / template
+    base_src = TEMPLATE_PROJECT_DIR / template
 
     _copy_tree(base_src, dest)
-    _copy_tree(template_src, dest)
 
     typer.secho(f"✅ Project initialized at {dest} (template: {template})", fg=typer.colors.GREEN)
 
