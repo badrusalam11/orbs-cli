@@ -1,4 +1,3 @@
-# tests/include/environment.py
 from orbs.listener_manager import enabled_listeners
 
 def before_feature(context, feature):

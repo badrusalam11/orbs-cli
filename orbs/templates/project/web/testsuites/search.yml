@@ -1,0 +1,3 @@
+test_cases:
+  - path: testcases/search.py
+    enabled: true

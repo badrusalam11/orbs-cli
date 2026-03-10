@@ -99,40 +99,62 @@ Initialize a new Orbs project with proper directory structure and template files
 
 **Usage:**
 ```bash
-orbs init <project_name>
+orbs init <project_name> [--template=<template>]
 
 # Or initialize in current directory
-orbs init .
+orbs init . --template=web
 ```
 
 **Arguments:**
 * `project_name` - Name of the project (creates a new folder) or `.` for current directory
 
-**Example:**
+**Options:**
+* `--template` - Project template to use (default: `blank`). Available templates:
+
+| Template | Description |
+|----------|-------------|
+| `blank`  | Empty project structure with no sample tests. Good for starting from scratch. |
+| `web`    | Web testing project with sample Chrome/Selenium test using `Web` keyword. Immediately runnable. |
+| `mobile` | Mobile testing project with sample Appium test using `Mobile` keyword. Immediately runnable (requires Appium setup). |
+| `api`    | API testing project with sample HTTP test using `API` keyword. Immediately runnable. |
+
+**Examples:**
 ```bash
-orbs init my-automation-project
-cd my-automation-project
+# Create a blank project (default)
+orbs init my-project
+
+# Create a web testing project
+orbs init my-web-project --template=web
+
+# Create an API testing project
+orbs init my-api-project --template=api
+
+# Create a mobile testing project
+orbs init my-mobile-project --template=mobile
 ```
 
-**Generated structure:**
+**Generated structure (base — shared across all templates):**
 ```
-my-automation-project/
-├── include/
-│   ├── environment.py
-│   ├── features/
-│   └── steps/
+my-project/
+├── data/
+├── environments/
+│   ├── default.yml
+│   ├── dev.yml
+│   ├── prod.yml
+│   ├── staging.yml
+│   └── uat.yml
 ├── listeners/
 ├── settings/
 │   ├── browser.properties
+│   ├── execution.properties
 │   ├── mobile.properties
 │   ├── platform.properties
 │   └── server.properties
 ├── testcases/
-│   └── login.py
 ├── testsuites/
-│   ├── login.py
-│   └── login.yml
 ├── testsuite_collections/
+├── .vscode/
+│   └── launch.json
 ├── __init__.py
 ├── Dockerfile
 ├── main.py
@@ -141,10 +163,46 @@ my-automation-project/
 └── requirements.txt
 ```
 
+**Template-specific files:**
+
+**`web` template** adds:
+```
+├── testcases/
+│   └── search.py          # Web test using Web keyword
+├── testsuites/
+│   ├── search.yml         # Test suite config
+│   └── search.py          # Suite listeners
+├── include/
+│   ├── environment.py
+│   ├── features/
+│   │   └── search.feature # BDD feature file
+│   └── steps/
+│       └── search_steps.py
+```
+
+**`mobile` template** adds:
+```
+├── testcases/
+│   └── login.py           # Mobile test using Mobile keyword
+├── testsuites/
+│   ├── login.yml          # Test suite config
+│   └── login.py           # Suite listeners
+```
+
+**`api` template** adds:
+```
+├── testcases/
+│   └── get_users.py       # API test using API keyword
+├── testsuites/
+│   ├── get_users.yml      # Test suite config
+│   └── get_users.py       # Suite listeners
+```
+
 **Notes:**
 * Will not overwrite existing folders
-* Creates a ready-to-run project with sample login test
+* Non-blank templates create ready-to-run projects with sample tests
 * Includes Docker configuration for containerized execution
+* All templates include environment configs (default, dev, staging, uat, prod)
 
 ---
 
