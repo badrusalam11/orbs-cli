@@ -44,6 +44,7 @@ class ReportGenerator:
         self.testcase_result = []  # Track test case results
         self.overview = {}
         self.testcase_screenshots = []  # Track screenshots per test case
+        self.screenshot_captions = {}  # Track captions: {path: caption_string}
         self.current_page = 1  # Track current page number
         self.testcase_api_calls = {}
         self.testcase_scenarios = {}  # Track scenarios per test case: {testcase_name: [scenarios]}  
@@ -56,7 +57,7 @@ class ReportGenerator:
         return ts_sec
 
     @orbs_guard(ReportGenerationException)
-    def record(self, feature, scenario, status, duration, screenshot_paths=None, steps_info=None, category="positive", api_calls=None, error_message=None):
+    def record(self, feature, scenario, status, duration, screenshot_paths=None, steps_info=None, category="positive", api_calls=None, error_message=None, screenshot_captions=None):
         """Record scenario with screenshots, steps, API calls, and error message/stacktrace"""
         self.results.append({
             "feature": feature,
@@ -64,6 +65,7 @@ class ReportGenerator:
             "status": status,
             "duration": duration,
             "screenshot": screenshot_paths or [],
+            "screenshot_captions": screenshot_captions or {},
             "steps": steps_info or [],
             "category": category,
             "api_calls": api_calls or [],  # Add API calls to scenario record
@@ -90,7 +92,10 @@ class ReportGenerator:
         self.testcase_scenarios[testcase_name].append(scenario_data)
     
     @orbs_guard(ReportGenerationException)
-    def record_screenshot(self, testcase_name, screenshot_path):
+    def record_screenshot(self, testcase_name, screenshot_path, caption=""):
+        # Store caption globally
+        if caption:
+            self.screenshot_captions[screenshot_path] = caption
         # Check if testcase entry exists
         for entry in self.testcase_screenshots:
             if entry["testcase_name"] == testcase_name:
@@ -575,6 +580,17 @@ class ReportGenerator:
             display: block;
         }}
         
+        .screenshot-caption {{
+            padding: 6px 8px;
+            font-size: 11px;
+            color: #555;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            text-align: center;
+            word-break: break-word;
+            line-height: 1.3;
+        }}
+        
         .api-call {{
             margin: 15px 0;
             border: 1px solid #e0e0e0;
@@ -1004,9 +1020,16 @@ class ReportGenerator:
                         for img_idx, img_path in enumerate(screenshots_list):
                             img_data = encode_image(img_path)
                             if img_data:
+                                sc_captions = scenario.get('screenshot_captions', {})
+                                caption = sc_captions.get(img_path, self.screenshot_captions.get(img_path, ""))
+                                caption_escaped = caption.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') if caption else ""
                                 html += f"""                                    <div class="screenshot-item" onclick="showModal('{img_data}')">
                                         <img src="{img_data}" alt="Screenshot {img_idx + 1}">
-                                    </div>
+"""
+                                if caption_escaped:
+                                    html += f"""                                        <div class="screenshot-caption">{caption_escaped}</div>
+"""
+                                html += """                                    </div>
 """
                         
                         html += """                                </div>
@@ -1089,9 +1112,15 @@ class ReportGenerator:
                     for img_idx, img_path in enumerate(tc_screenshots):
                         img_data = encode_image(img_path)
                         if img_data:
+                            caption = self.screenshot_captions.get(img_path, "")
+                            caption_escaped = caption.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') if caption else ""
                             html += f"""                        <div class="screenshot-item" onclick="showModal('{img_data}')">
                             <img src="{img_data}" alt="Screenshot {img_idx + 1}">
-                        </div>
+"""
+                            if caption_escaped:
+                                html += f"""                            <div class="screenshot-caption">{caption_escaped}</div>
+"""
+                            html += """                        </div>
 """
                     
                     html += """                    </div>
@@ -1780,6 +1809,7 @@ class ReportGenerator:
             
         # 7) Screenshots: Display AFTER steps and API calls
         screenshots = scenario_data.get('screenshot', [])
+        screenshot_captions = scenario_data.get('screenshot_captions', {})
         if screenshots:
             self.y -= 10
             margin_left = 50
@@ -1795,13 +1825,26 @@ class ReportGenerator:
 
                 if ratio > 1.5:  # treat as web screenshot
                     # full‑width layout
-                    self._new_page_if_needed(ih + gap)
+                    caption = screenshot_captions.get(img_file, self.screenshot_captions.get(img_file, ""))
+                    caption_lines = self._wrap_text(caption, full_width, "Helvetica", 7) if caption else []
+                    caption_h = (len(caption_lines) * 9) + 2 if caption_lines else 0
+                    self._new_page_if_needed(ih + gap + caption_h)
                     max_w = full_width
                     scale = max_w / iw
                     w, h = iw * scale, ih * scale
                     y_pos = self.y - h
                     self.c.drawImage(img_reader, margin_left, y_pos, width=w, height=h)
                     self.y = y_pos - gap
+                    if caption_lines:
+                        self.c.setFont("Helvetica", 7)
+                        self.c.setFillColor(HexColor("#555555"))
+                        for line in caption_lines:
+                            line_w = self.c.stringWidth(line, "Helvetica", 7)
+                            line_x = margin_left + max((w - line_w) / 2, 0)
+                            self.c.drawString(line_x, self.y - 7, line)
+                            self.y -= 9
+                        self.c.setFillColor(colors.black)
+                        self.y -= 2
                     # reset grid cursors
                     x_cursor = margin_left
                     max_row_h = 0
@@ -1820,8 +1863,23 @@ class ReportGenerator:
 
                     y_pos = self.y - h
                     self.c.drawImage(img_reader, x_cursor, y_pos, width=w, height=h)
+                    caption = screenshot_captions.get(img_file, self.screenshot_captions.get(img_file, ""))
+                    if caption:
+                        max_caption_w = max(w, 60)
+                        caption_lines = self._wrap_text(caption, max_caption_w, "Helvetica", 6)
+                        caption_start_y = y_pos - 8
+                        self.c.setFont("Helvetica", 6)
+                        self.c.setFillColor(HexColor("#555555"))
+                        for idx, line in enumerate(caption_lines[:3]):
+                            line_w = self.c.stringWidth(line, "Helvetica", 6)
+                            line_x = x_cursor + max((w - line_w) / 2, 0)
+                            self.c.drawString(line_x, caption_start_y - (idx * 8), line)
+                        self.c.setFillColor(colors.black)
+                        caption_extra_h = len(caption_lines[:3]) * 8
+                    else:
+                        caption_extra_h = 0
                     x_cursor += w + gap
-                    max_row_h = max(max_row_h, h)
+                    max_row_h = max(max_row_h, h + caption_extra_h)
 
             # setelah loop, baris terakhir:
             self.y -= (max_row_h + gap)
@@ -2141,20 +2199,34 @@ class ReportGenerator:
                     max_row_h = 0
                     gap = 10
                     
-                    for img_file in tc_screenshots:
+                    for i, img_file in enumerate(tc_screenshots):
                         try:
                             img_reader = ImageReader(img_file)
                             iw, ih = img_reader.getSize()
                             ratio = iw / ih
-
+                            caption = self.screenshot_captions.get(img_file, "")
+                            caption = f"STEP {i+1}: {caption}" if caption else f"STEP {i+1}"
                             if ratio > 1.5:
                                 max_w = full_width
                                 scale = max_w / iw
                                 w, h = iw * scale, ih * scale
-                                self._new_page_if_needed(h + gap)
+                                caption_lines = self._wrap_text(caption, full_width, "Helvetica", 7) if caption else []
+                                caption_h = (len(caption_lines) * 9) + 2 if caption_lines else 0
+                                self._new_page_if_needed(h + gap + caption_h)
                                 y_pos = self.y - h
                                 self.c.drawImage(img_reader, margin_left, y_pos, width=w, height=h)
                                 self.y = y_pos - gap
+                                if caption_lines:
+                                    self.c.setFont("Helvetica-Bold", 7)
+                                    self.c.setFillColor(HexColor("#555555"))
+                                    
+                                    for line in caption_lines:
+                                        line_w = self.c.stringWidth(line, "Helvetica-Bold", 7)
+                                        line_x = margin_left + max((w - line_w) / 2, 0)
+                                        self.c.drawString(line_x, self.y - 7, line)
+                                        self.y -= 9
+                                    self.c.setFillColor(colors.black)
+                                    self.y -= 2
                                 x_cursor = margin_left
                                 max_row_h = 0
                             else:
@@ -2169,8 +2241,22 @@ class ReportGenerator:
                                     max_row_h = 0
                                 y_pos = self.y - h
                                 self.c.drawImage(img_reader, x_cursor, y_pos, width=w, height=h)
+                                if caption:
+                                    max_caption_w = max(w, 60)
+                                    caption_lines = self._wrap_text(caption, max_caption_w, "Helvetica", 6)
+                                    caption_start_y = y_pos - 8
+                                    self.c.setFont("Helvetica", 6)
+                                    self.c.setFillColor(HexColor("#555555"))
+                                    for idx, line in enumerate(caption_lines[:3]):
+                                        line_w = self.c.stringWidth(line, "Helvetica", 6)
+                                        line_x = x_cursor + max((w - line_w) / 2, 0)
+                                        self.c.drawString(line_x, caption_start_y - (idx * 8), line)
+                                    self.c.setFillColor(colors.black)
+                                    caption_extra_h = len(caption_lines[:3]) * 8
+                                else:
+                                    caption_extra_h = 0
                                 x_cursor += w + gap
-                                max_row_h = max(max_row_h, h)
+                                max_row_h = max(max_row_h, h + caption_extra_h)
                         except Exception:
                             pass
                     
