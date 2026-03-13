@@ -222,6 +222,10 @@ def record_scenario_result(context, scenario):
     screenshot_start_index = _scenario_screenshot_start_index.pop(scenario_name, 0)
     scenario_screenshots = all_screenshots[screenshot_start_index:]
     
+    # Get screenshot captions for this scenario
+    all_captions = get_context("screenshot_captions") or {}
+    scenario_captions = {p: all_captions[p] for p in scenario_screenshots if p in all_captions}
+    
     # Get API calls that were made during this scenario
     all_api_calls = get_context("api_calls") or []
     api_calls_start_index = _scenario_api_calls_start_index.pop(scenario_name, 0)
@@ -236,6 +240,7 @@ def record_scenario_result(context, scenario):
         "status": status,
         "duration": round(duration, 2),
         "screenshot": scenario_screenshots,
+        "screenshot_captions": scenario_captions,
         "steps": steps,
         "category": category,
         "api_calls": scenario_api_calls,
@@ -252,7 +257,8 @@ def record_scenario_result(context, scenario):
         steps,
         category=category,
         api_calls=scenario_api_calls,  # API calls from this scenario
-        error_message=error_message  # Stacktrace if failed
+        error_message=error_message,  # Stacktrace if failed
+        screenshot_captions=scenario_captions  # Captions for screenshots
     )
     
     # Also record scenario for current test case
@@ -305,8 +311,10 @@ def after_test_case(case, data=None):
 
     # Record all screenshots for the testcase (unchanged behavior)
     screenshots = get_context("screenshots") or []
+    all_captions = get_context("screenshot_captions") or {}
     for path in screenshots:
-        rg.record_screenshot(case, path)
+        caption = all_captions.get(path, "")
+        rg.record_screenshot(case, path, caption=caption)
 
     # Record all API calls for the testcase (unchanged behavior)
     api_calls = get_context("api_calls") or []

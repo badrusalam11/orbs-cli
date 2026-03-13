@@ -124,6 +124,25 @@ def track_keyword(func):
                 duration = time.time() - start_time
                 live_logger.step_passed(testcase_id=testcase_id, step_id=step_id, duration=duration)
                 
+                # Auto-screenshot after action (if enabled)
+                if keyword_name != "take_screenshot" and config.get_bool("screenshot_after_action", False):
+                    try:
+                        driver = get_context('web_driver')
+                        if driver:
+                            import datetime
+                            ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                            ss_name = f"after_{keyword_name}_{ts}.png"
+                            driver.save_screenshot(ss_name)
+                            # Store caption for this screenshot
+                            screenshots = get_context("screenshots") or []
+                            if screenshots:
+                                captions = get_context("screenshot_captions") or {}
+                                caption = f"{keyword_name.upper()} {object_desc or ''}".strip()
+                                captions[screenshots[-1]] = caption
+                                set_context("screenshot_captions", captions)
+                    except Exception:
+                        pass  # Don't fail the test for screenshot issues
+                
                 # Store step data for report (non-BDD test cases)
                 keyword_steps = get_context("keyword_steps") or []
                 keyword_steps.append({
@@ -155,7 +174,18 @@ def track_keyword(func):
                 raise
         else:
             # No live logger or testcase context, just execute normally
-            return func(*args, **kwargs)
+            result = func(*args, **kwargs)
+            if func.__name__ != "take_screenshot" and config.get_bool("screenshot_after_action", False):
+                try:
+                    driver = get_context('web_driver')
+                    if driver:
+                        import datetime
+                        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                        ss_name = f"after_{func.__name__}_{ts}.png"
+                        driver.save_screenshot(ss_name)
+                except Exception:
+                    pass
+            return result
     
     return wrapper
 

@@ -28,6 +28,7 @@ from ..log import log
 from ..guard import orbs_guard
 from ..exception import MobileActionException
 from .failure_handling import FailureHandling, handle_failure
+from ..config import config
 
 
 def track_keyword(func):
@@ -94,6 +95,24 @@ def track_keyword(func):
                 duration = time.time() - start_time
                 live_logger.step_passed(testcase_id=testcase_id, step_id=step_id, duration=duration)
 
+                # Auto-screenshot after action (if enabled)
+                if keyword_name != "take_screenshot" and config.get_bool("screenshot_after_action", False):
+                    try:
+                        driver = get_context('mobile_driver')
+                        if driver:
+                            import datetime
+                            ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                            ss_name = f"after_{keyword_name}_{ts}.png"
+                            driver.save_screenshot(ss_name)
+                            screenshots = get_context("screenshots") or []
+                            if screenshots:
+                                captions = get_context("screenshot_captions") or {}
+                                caption = f"Mobile.{keyword_name.upper()} {object_desc or ''}".strip()
+                                captions[screenshots[-1]] = caption
+                                set_context("screenshot_captions", captions)
+                    except Exception:
+                        pass
+
                 keyword_steps = get_context("keyword_steps") or []
                 keyword_steps.append({
                     "keyword": f"Mobile.{keyword_name.upper()}",
@@ -122,7 +141,18 @@ def track_keyword(func):
 
                 raise
         else:
-            return func(*args, **kwargs)
+            result = func(*args, **kwargs)
+            if func.__name__ != "take_screenshot" and config.get_bool("screenshot_after_action", False):
+                try:
+                    driver = get_context('mobile_driver')
+                    if driver:
+                        import datetime
+                        ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+                        ss_name = f"after_{func.__name__}_{ts}.png"
+                        driver.save_screenshot(ss_name)
+                except Exception:
+                    pass
+            return result
 
     return wrapper
 
