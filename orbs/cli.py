@@ -659,9 +659,26 @@ def keywords():
     """Print all available keywords as JSON grouped by platform (web, api, mobile)."""
     import inspect
     import json
+    import typing
     from .keyword.web import Web
     from .keyword.api import API
     from .keyword.mobile import Mobile
+
+    def get_type_name(annotation):
+        """Extract a simple type name from a potentially complex annotation."""
+        if annotation is inspect.Parameter.empty:
+            return None
+        origin = getattr(annotation, '__origin__', None)
+        if origin is typing.Union:
+            args = [a for a in annotation.__args__ if a is not type(None)]
+            if len(args) == 1:
+                return getattr(args[0], '__name__', str(args[0]))
+            # Union[str, SomeClass] → prefer 'str' if present
+            str_args = [a for a in args if a is str]
+            if str_args:
+                return 'str'
+            return getattr(args[0], '__name__', str(args[0]))
+        return getattr(annotation, '__name__', str(annotation))
 
     def get_keywords_for_class(cls, platform):
         result = []
@@ -683,7 +700,8 @@ def keywords():
                     params.append({
                         'name': pname,
                         'required': param.default is inspect.Parameter.empty,
-                        'default': None if param.default is inspect.Parameter.empty else repr(param.default)
+                        'default': None if param.default is inspect.Parameter.empty else repr(param.default),
+                        'type_hint': get_type_name(param.annotation)
                     })
                 raw_doc = (getattr(member, '__doc__', None) or '').strip()
                 doc = raw_doc.split('\n')[0] if raw_doc else ''
@@ -695,6 +713,7 @@ def keywords():
                 })
             except (ValueError, TypeError):
                 continue
+        result.sort(key=lambda k: k['name'])
         return result
 
     data = {
