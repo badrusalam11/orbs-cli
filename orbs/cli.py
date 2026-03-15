@@ -653,5 +653,76 @@ def serve(port: int = typer.Option(None, help="Port to run the server")):
     from orbs.api_server import start_server
     start_server(port)
 
+
+@app.command("keywords")
+def keywords():
+    """Print all available keywords as JSON grouped by platform (web, api, mobile)."""
+    import inspect
+    import json
+    import typing
+    from .keyword.web import Web
+    from .keyword.api import API
+    from .keyword.mobile import Mobile
+
+    def get_type_name(annotation):
+        """Extract a simple type name from a potentially complex annotation."""
+        if annotation is inspect.Parameter.empty:
+            return None
+        origin = getattr(annotation, '__origin__', None)
+        if origin is typing.Union:
+            args = [a for a in annotation.__args__ if a is not type(None)]
+            if len(args) == 1:
+                return getattr(args[0], '__name__', str(args[0]))
+            # Union[str, SomeClass] → prefer 'str' if present
+            str_args = [a for a in args if a is str]
+            if str_args:
+                return 'str'
+            return getattr(args[0], '__name__', str(args[0]))
+        return getattr(annotation, '__name__', str(annotation))
+
+    def get_keywords_for_class(cls, platform):
+        result = []
+        for name, member in inspect.getmembers(cls):
+            if name.startswith('_'):
+                continue
+            if not (inspect.ismethod(member) or inspect.isfunction(member)):
+                continue
+            try:
+                # Follow __wrapped__ to get original signature through decorators
+                target = member
+                while hasattr(target, '__wrapped__'):
+                    target = target.__wrapped__
+                sig = inspect.signature(target)
+                params = []
+                for pname, param in sig.parameters.items():
+                    if pname in ('cls', 'self'):
+                        continue
+                    params.append({
+                        'name': pname,
+                        'required': param.default is inspect.Parameter.empty,
+                        'default': None if param.default is inspect.Parameter.empty else repr(param.default),
+                        'type_hint': get_type_name(param.annotation)
+                    })
+                raw_doc = (getattr(member, '__doc__', None) or '').strip()
+                doc = raw_doc.split('\n')[0] if raw_doc else ''
+                result.append({
+                    'name': name,
+                    'platform': platform,
+                    'params': params,
+                    'doc': doc
+                })
+            except (ValueError, TypeError):
+                continue
+        result.sort(key=lambda k: k['name'])
+        return result
+
+    data = {
+        'web': get_keywords_for_class(Web, 'web'),
+        'api': get_keywords_for_class(API, 'api'),
+        'mobile': get_keywords_for_class(Mobile, 'mobile'),
+    }
+    typer.echo(json.dumps(data, ensure_ascii=False))
+
+
 if __name__ == "__main__":
     app()

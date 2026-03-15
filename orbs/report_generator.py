@@ -1021,7 +1021,7 @@ class ReportGenerator:
                             img_data = encode_image(img_path)
                             if img_data:
                                 sc_captions = scenario.get('screenshot_captions', {})
-                                caption = sc_captions.get(img_path, self.screenshot_captions.get(img_path, ""))
+                                caption = sc_captions.get(img_path, self.screenshot_captions.get(img_path, "")) or os.path.basename(img_path)
                                 caption_escaped = caption.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') if caption else ""
                                 html += f"""                                    <div class="screenshot-item" onclick="showModal('{img_data}')">
                                         <img src="{img_data}" alt="Screenshot {img_idx + 1}">
@@ -1112,7 +1112,7 @@ class ReportGenerator:
                     for img_idx, img_path in enumerate(tc_screenshots):
                         img_data = encode_image(img_path)
                         if img_data:
-                            caption = self.screenshot_captions.get(img_path, "")
+                            caption = self.screenshot_captions.get(img_path, "") or os.path.basename(img_path)
                             caption_escaped = caption.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;') if caption else ""
                             html += f"""                        <div class="screenshot-item" onclick="showModal('{img_data}')">
                             <img src="{img_data}" alt="Screenshot {img_idx + 1}">
@@ -1825,7 +1825,7 @@ class ReportGenerator:
 
                 if ratio > 1.5:  # treat as web screenshot
                     # full‑width layout
-                    caption = screenshot_captions.get(img_file, self.screenshot_captions.get(img_file, ""))
+                    caption = screenshot_captions.get(img_file, self.screenshot_captions.get(img_file, "")) or os.path.basename(img_file)
                     caption_lines = self._wrap_text(caption, full_width, "Helvetica", 7) if caption else []
                     caption_h = (len(caption_lines) * 9) + 2 if caption_lines else 0
                     self._new_page_if_needed(ih + gap + caption_h)
@@ -1863,7 +1863,7 @@ class ReportGenerator:
 
                     y_pos = self.y - h
                     self.c.drawImage(img_reader, x_cursor, y_pos, width=w, height=h)
-                    caption = screenshot_captions.get(img_file, self.screenshot_captions.get(img_file, ""))
+                    caption = screenshot_captions.get(img_file, self.screenshot_captions.get(img_file, "")) or os.path.basename(img_file)
                     if caption:
                         max_caption_w = max(w, 60)
                         caption_lines = self._wrap_text(caption, max_caption_w, "Helvetica", 6)
@@ -2204,8 +2204,7 @@ class ReportGenerator:
                             img_reader = ImageReader(img_file)
                             iw, ih = img_reader.getSize()
                             ratio = iw / ih
-                            caption = self.screenshot_captions.get(img_file, "")
-                            caption = f"STEP {i+1}: {caption}" if caption else f"STEP {i+1}"
+                            caption = self.screenshot_captions.get(img_file, "") or os.path.basename(img_file)
                             if ratio > 1.5:
                                 max_w = full_width
                                 scale = max_w / iw

@@ -283,7 +283,7 @@ class WebElementEntity:
                 f"   Working directory: {Path.cwd()}\n"
                 f"\n"
                 f"   Use forward slashes for cross-platform compatibility:\n"
-                f"   find_test_obj(\"object_repository/your_file.xml\")"
+                f"   find_test_obj(\"your_file.xml\")"
             )
             raise FileNotFoundError(f"Object repository file not found: {normalized_path}{hint}")
         
