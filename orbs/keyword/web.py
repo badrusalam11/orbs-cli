@@ -218,7 +218,13 @@ def find_test_obj(xml_path: str, timeout: Optional[int] = None):
         Web.set_text(find_test_obj("object_repository\\input_username.xml"), "admin")
         Web.click(find_test_obj("object_repository\\button_login.xml"))
     """
-    return Web.find_test_obj(xml_path, timeout)
+    # Accept either full relative path (e.g. "object_repository/input.xml")
+    # or just a filename (e.g. "input.xml"). If a bare filename is provided,
+    # resolve it inside the project's `object_repository/` folder for convenience.
+    adj = xml_path
+    if '/' not in xml_path and '\\' not in xml_path:
+        adj = f"object_repository/{xml_path}"
+    return Web.find_test_obj(adj, timeout)
 
 
 class Web:
@@ -431,8 +437,14 @@ class Web:
             element = Web.find_test_obj("object_repository/input_login-button.xml")
             element.click()
         """
+        # Allow shorthand filenames like "input_username.xml" by resolving
+        # them under the project's `object_repository/` directory.
+        adj_path = xml_path
+        if '/' not in xml_path and '\\' not in xml_path:
+            adj_path = f"object_repository/{xml_path}"
+
         # Parse the XML file
-        web_element = WebElementEntity(xml_path)
+        web_element = WebElementEntity(adj_path)
         
         # Get all locators (primary + alternatives)
         locators = web_element.get_all_locators()
@@ -455,7 +467,7 @@ class Web:
             return element
             
         except NoSuchElementException as e:
-            log.error(f"Failed to find '{web_element.name}' from {xml_path}")
+            log.error(f"Failed to find '{web_element.name}' from {adj_path}")
             raise
     
     # Navigation methods

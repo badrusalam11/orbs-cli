@@ -47,14 +47,14 @@ from orbs.keyword.web import Web
 from orbs.keyword import find_test_obj
 
 Web.open("https://example.com")
-Web.set_text(find_test_obj("object_repository/input_username.xml"), "admin")
-Web.set_text(find_test_obj("object_repository/input_password.xml"), "password123")
-Web.click(find_test_obj("object_repository/button_login.xml"))
+Web.set_text(find_test_obj("input_username.xml"), "admin")
+Web.set_text(find_test_obj("input_password.xml"), "password123")
+Web.click(find_test_obj("button_login.xml"))
 ```
 
 Supported path formats (the project normalizes paths):
 
-- Forward slash (recommended, cross-platform): `object_repository/button_login.xml`
+- Forward slash (recommended, cross-platform): `button_login.xml` (or `object_repository/button_login.xml`)
 - Double backslash (Windows): `object_repository\\button_login.xml`
 - Raw string with single backslash: `r"object_repository\button_login.xml"`
 
@@ -62,12 +62,12 @@ Alternative usage patterns:
 
 ```python
 # Assign to a variable for reuse
-username = find_test_obj("object_repository/input_username.xml")
+username = find_test_obj("input_username.xml")
 username.clear()
 username.send_keys("admin")
 
 # Direct method call
-find_test_obj("object_repository/button_login.xml").click()
+find_test_obj("button_login.xml").click()
 ```
 
 ## Self-healing strategy
@@ -100,7 +100,7 @@ The built-in spy writes captured elements as `WebElementEntity` XML files into y
 
 1. Run the spy and capture an element.
 2. Save the generated XML as `object_repository/<element_name>.xml`.
-3. Use `find_test_obj("object_repository/<element_name>.xml")` in tests or inline with `Web` keywords.
+3. Use `find_test_obj("<element_name>.xml")` in tests or inline with `Web` keywords.
 
 This workflow produces maintainable element definitions and enables automatic fallback when locators change.
 
@@ -112,9 +112,9 @@ from orbs.keyword import find_test_obj
 
 def test_login():
     Web.open("https://www.saucedemo.com/")
-    Web.set_text(find_test_obj("object_repository/input_username.xml"), "standard_user")
-    Web.set_text(find_test_obj("object_repository/input_password.xml"), "secret_sauce")
-    Web.click(find_test_obj("object_repository/input_login-button.xml"))
+    Web.set_text(find_test_obj("input_username.xml"), "standard_user")
+    Web.set_text(find_test_obj("input_password.xml"), "secret_sauce")
+    Web.click(find_test_obj("input_login-button.xml"))
     Web.wait_for_element("css=.inventory_list")
     Web.close()
 ```
@@ -129,7 +129,7 @@ def test_login():
 
 ```python
 from orbs.keyword.locator import WebElementEntity
-el = WebElementEntity("object_repository/input_login-button.xml")
+el = WebElementEntity("input_login-button.xml")
 print(el.name, el.tag)
 print(el.get_primary_locator())
 print(el.get_alternative_locators())
@@ -141,7 +141,7 @@ You can mix object-repository references with classic locators:
 
 ```python
 Web.click("id=old-style-locator")
-Web.click(find_test_obj("object_repository/new-element.xml"))
+Web.click(find_test_obj("new-element.xml"))
 ```
 
 ## See Also
