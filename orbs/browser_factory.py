@@ -11,7 +11,7 @@ from selenium.webdriver.safari.options import Options as SafariOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.edge.service import Service as EdgeService
-from orbs.config import config
+from orbs.config import setting, env
 from orbs.thread_context import get_context, set_context
 from orbs.log import log
 class BrowserFactory:
@@ -26,17 +26,17 @@ class BrowserFactory:
             browser = platform_from_context.lower()
         else:
             # Fallback to browser config from settings/browser.properties
-            browser = config.get("browser", "chrome").lower()
+            browser = setting.get("browser", "chrome").lower()
         
         # Load browser configuration from settings/browser.properties
-        headless = config.get_bool("headless", False)
-        private_mode = config.get_bool("private_mode", False)
-        window_size = config.get("window_size", None)
-        driver_path = config.get("driver_path", None)
+        headless = setting.get_bool("headless", False)
+        private_mode = setting.get_bool("private_mode", False)
+        window_size = setting.get("window_size", None)
+        driver_path = setting.get("driver_path", None)
         
         # Get browser arguments from settings (semicolon-separated)
         # Framework handles browser-specific compatibility automatically
-        args_list = config.get_list("args", sep=";")
+        args_list = setting.get_list("args", sep=";")
         
         log.debug(f"Creating {browser} driver (headless={headless}, private_mode={private_mode}, window_size={window_size}, args={args_list})")
 
@@ -141,8 +141,8 @@ class BrowserFactory:
             raise Exception(f"Unsupported browser: {browser}")
         
         # Apply timeout configurations from execution.properties
-        implicit_timeout = config.get_int("implicit_timeout", 5)
-        page_load_timeout = config.get_int("page_load_timeout", 30)
+        implicit_timeout = setting.get_int("implicit_timeout", 5)
+        page_load_timeout = setting.get_int("page_load_timeout", 30)
         
         driver.implicitly_wait(implicit_timeout)
         driver.set_page_load_timeout(page_load_timeout)
@@ -164,7 +164,7 @@ class BrowserFactory:
         original_save = driver.save_screenshot
         
         # Get screenshot_full_page config
-        screenshot_full_page = config.get_bool("screenshot_full_page", False)
+        screenshot_full_page = setting.get_bool("screenshot_full_page", False)
 
         def save_to_report(path, *a, **kw):
             # Determine full path to save into

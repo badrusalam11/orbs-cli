@@ -96,8 +96,8 @@ def choose_environment() -> str:
 
 def ensure_appium_server():
     """Ensure an Appium server is running, otherwise start one"""
-    from orbs.config import config
-    url = config.get("appium_url", "http://localhost:4723/wd/hub")
+    from orbs.config import setting
+    url = setting.get("appium_url", "http://localhost:4723/wd/hub")
     status_url = url.rstrip('/') + '/status'
     try:
         if requests.get(status_url, timeout=2).status_code == 200:

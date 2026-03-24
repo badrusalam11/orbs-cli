@@ -175,6 +175,20 @@ class Config:
                 return default
         
         return value
-        
+
+
+class EnvironmentConfig:
+    """Wrapper for environment-specific configuration values."""
+
+    def __init__(self, config_instance: Config):
+        self._config = config_instance
+
+    def get(self, key: str, default=None):
+        if key is None or key == "":
+            return default
+        return self._config.target(key, default)
+
 
 config = Config()   # 👈 singleton DI SINI
+setting = config
+env = EnvironmentConfig(config)

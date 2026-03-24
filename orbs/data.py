@@ -23,14 +23,14 @@ import random
 import time
 import traceback
 
-from orbs.config import config
+from orbs.config import setting
 
 
 def _get_env():
     """
     Retrieve active environment from Orbs config layer.
     """
-    return config.get("ORBS_ENV")
+    return setting.get("ORBS_ENV")
 
 
 def _resolve_path(relative_path: str) -> Path:

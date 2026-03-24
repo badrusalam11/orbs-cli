@@ -3,7 +3,7 @@ import subprocess
 import time
 from appium import webdriver
 from appium.options.common.base import AppiumOptions
-from orbs.config import config
+from orbs.config import setting
 from orbs.exception import MobileDriverException
 from orbs.guard import orbs_guard
 from orbs.thread_context import get_context, set_context
@@ -31,16 +31,16 @@ class MobileFactory:
         retry_count: int = 2,
         skip_app_launch: bool = False
     ):
-        server_url = config.get("appium_url", "http://localhost:4723/wd/hub")
-        platform = config.get("platformName", "Android")
+        server_url = setting.get("appium_url", "http://localhost:4723/wd/hub")
+        platform = setting.get("platformName", "Android")
         
         # Use context to determine device name or fallback to config
         device_name = get_context("platform", "")
         if not device_name:
-            device_name = config.get("deviceName", "")
+            device_name = setting.get("deviceName", "")
 
         # Use user-provided or config-based capabilities
-        extra_caps = capabilities or config.get_dict("capabilities") or {}
+        extra_caps = capabilities or setting.get_dict("capabilities") or {}
 
         for attempt in range(retry_count + 1):
             try:
@@ -60,8 +60,8 @@ class MobileFactory:
                 if skip_app_launch:
                     options.set_capability("autoLaunch", False)
                 else:
-                    final_app_package = app_package or config.get("appPackage", None)
-                    final_app_activity = app_activity or config.get("appActivity", None)
+                    final_app_package = app_package or setting.get("appPackage", None)
+                    final_app_activity = app_activity or setting.get("appActivity", None)
 
                     if final_app_package and final_app_activity:
                         options.set_capability("appPackage", final_app_package)

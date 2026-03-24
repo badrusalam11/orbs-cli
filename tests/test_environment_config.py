@@ -128,6 +128,42 @@ def test_environment_variable_replacement():
         os.environ.pop("TEST_DOMAIN", None)
 
 
+def test_setting_and_env_wrappers():
+    """Test new orbs.config.setting and orbs.config.env wrappers"""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("config_module", "orbs/config.py")
+    config_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(config_module)
+
+    Config = config_module.Config
+    EnvironmentConfig = config_module.EnvironmentConfig
+    setting = config_module.setting
+    env = config_module.env
+
+    # Force environment file to default for this test
+    os.environ.pop("ORBS_ENV", None)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        env_dir = Path(tmpdir) / "environments"
+        env_dir.mkdir()
+        with open(env_dir / "default.yml", "w") as f:
+            f.write("url: https://default.com\n")
+            f.write("custom_config:\n  timeout: 30\n")
+
+        settings_dir = Path(tmpdir) / "settings"
+        settings_dir.mkdir()
+
+        cfg = Config(properties_dir=str(settings_dir), environments_dir=str(env_dir))
+        env_cfg = EnvironmentConfig(cfg)
+
+        assert setting.get("ORBS_ENV") in (None, "default")
+        assert env_cfg.get("url") == "https://default.com"
+        assert env_cfg.get("custom_config.timeout") == 30
+
+        # Global env wrapper should resolve from the module singleton and could be different
+        assert hasattr(env, "get")
+
+
 if __name__ == "__main__":
     test_environment_loading()
     test_environment_variable_replacement()
