@@ -114,6 +114,7 @@ function recordAction(type, element, value = null, additionalData = {}) {
             tagName: element.tagName.toLowerCase(),
             id: element.id || '',
             className: element.className || '',
+            type: element.type || '',
             text: (element.innerText || '').trim().substring(0, 50), // Limit text length
             selector: selector,
             xpath: xpath
@@ -145,8 +146,7 @@ function handleClick(e) {
 function handleInput(e) {
     const element = e.target;
     if (element.type === 'password') {
-        // Don't record actual password values
-        recordAction('input', element, '***PASSWORD***');
+        recordAction('input', element, element.value); // record actual password, mask in output
     } else {
         recordAction('input', element, element.value);
     }
@@ -155,9 +155,11 @@ function handleInput(e) {
 // Change event listener (for selects, checkboxes, etc.)
 function handleChange(e) {
     const element = e.target;
-    let value = element.value;
-    
-    if (element.type === 'checkbox' || element.type === 'radio') {
+    let value;
+
+    if (element.type === 'password') {
+        value = element.value; // record actual password, mask in output
+    } else if (element.type === 'checkbox' || element.type === 'radio') {
         value = element.checked;
     } else if (element.tagName.toLowerCase() === 'select') {
         value = {
@@ -165,6 +167,8 @@ function handleChange(e) {
             text: element.options[element.selectedIndex]?.text || '',
             index: element.selectedIndex
         };
+    } else {
+        value = element.value;
     }
     
     recordAction('change', element, value);

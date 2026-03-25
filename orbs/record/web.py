@@ -27,6 +27,7 @@ class WebRecordRunner(RecordRunner):
         self._listeners_injected = False
         self.recorded_actions = []
         self.recording_active = False
+        self._seen_action_keys = set()  # for deduping actions across page navigations
         
         # Template setup
         tpl_dir = os.path.join(os.path.dirname(__file__), "..", "templates", "jinja")
@@ -61,15 +62,27 @@ class WebRecordRunner(RecordRunner):
         print(f"[RECORD] 🌐 Opened: {self.url}")
         
         self._inject_recording_listeners()
-        
-        # Start log polling
+
+        # Start log polling after listener injection
         self._poll_logs = True
         self.recording_active = True
         self.poll_thread = threading.Thread(target=self._poll_browser_logs, daemon=True)
         self.poll_thread.start()
-        
+
         print(f"[RECORD] ✅ Recording started! Interact with the page normally.")
         print(f"[RECORD] 🛑 Click 'Stop Recording' button in the page or press Ctrl+C to stop.")
+
+    def _ensure_listeners_on_navigation(self):
+        """Re-inject listeners when the browser navigates to a new URL."""
+        try:
+            current_url = self.driver.current_url
+        except Exception:
+            return
+
+        if current_url != self._current_url:
+            self._current_url = current_url
+            print(f"[RECORD] 🔄 Navigation detected: {current_url}. Re-injecting listeners...")
+            self._inject_recording_listeners()
 
     def stop(self):
         """Stop recording and generate test case"""
@@ -145,6 +158,9 @@ class WebRecordRunner(RecordRunner):
         """Poll browser console logs for recorded actions"""
         while self._poll_logs:
             try:
+                # Re-inject listeners on full page navigations (new document)
+                self._ensure_listeners_on_navigation()
+
                 logs = self.driver.get_log('browser')
                 for log_entry in logs:
                     message = log_entry.get('message', '')
@@ -196,8 +212,10 @@ class WebRecordRunner(RecordRunner):
                                         json_str = json_str.replace('\\"', '"').replace('\\\\', '\\')
                                         action_data = json.loads(json_str)
                                         
-                                        # Avoid duplicates
-                                        if not any(a.get('id') == action_data.get('id') for a in self.recorded_actions):
+                                        # Avoid duplicates (id can reset after full navigation load)
+                                        action_key = (action_data.get('id'), action_data.get('url'))
+                                        if action_key not in self._seen_action_keys:
+                                            self._seen_action_keys.add(action_key)
                                             self.recorded_actions.append(action_data)
                                             self._print_action_summary(action_data)
                         except (json.JSONDecodeError, Exception) as e:
@@ -212,7 +230,9 @@ class WebRecordRunner(RecordRunner):
                                 if match:
                                     json_str = match.group(1)
                                     action_data = json.loads(json_str)
-                                    if not any(a.get('id') == action_data.get('id') for a in self.recorded_actions):
+                                    action_key = (action_data.get('id'), action_data.get('url'))
+                                    if action_key not in self._seen_action_keys:
+                                        self._seen_action_keys.add(action_key)
                                         self.recorded_actions.append(action_data)
                                         self._print_action_summary(action_data)
                             except:
@@ -239,10 +259,10 @@ class WebRecordRunner(RecordRunner):
             target = element.get('text', '') or element.get('id', '') or element.get('tagName', '')
             print(f"  🖱️  Click: {target[:30]}")
             
-        elif action_type == 'input':
+        elif action_type == 'input' or action_type == 'change':
             target = element.get('id', '') or element.get('tagName', '')
-            if value == '***PASSWORD***':
-                print(f"  ⌨️  Type: {target} (password)")
+            if element.get('type') == 'password':
+                print(f"  ⌨️  Type: {target} = '***PASSWORD***'")
             else:
                 display_value = str(value)[:20] + "..." if len(str(value)) > 20 else str(value)
                 print(f"  ⌨️  Type: {target} = '{display_value}'")
@@ -319,30 +339,36 @@ class WebRecordRunner(RecordRunner):
     def _optimize_actions(self, actions):
         """Optimize recorded actions (remove duplicates, combine sequences)"""
         optimized = []
-        
+        last_field_index = {}
+
         for action in actions:
             action_type = action.get('type')
             element = action.get('element', {})
-            
+            xpath = element.get('xpath')
+
             # Skip certain action types
             if action_type in ['page_load', 'summary']:
                 continue
-            
+
             # Skip interactions with recording UI elements
             element_id = element.get('id', '')
             if element_id in ['record-stop-btn', 'record-info-box', 'action-count']:
                 continue
-                
-            # Skip rapid duplicate inputs on same element
-            if (action_type == 'input' and optimized and 
-                optimized[-1].get('type') == 'input' and
-                optimized[-1].get('element', {}).get('xpath') == action.get('element', {}).get('xpath')):
-                # Replace the last input with current (final value)
-                optimized[-1] = action
-                continue
-            
+
+            # Prefer input events only once per form field (last value wins)
+            if action_type in ['input', 'change'] and xpath:
+                # For non-form value change events (dropdown/checkbox), we still keep final state
+                if xpath in last_field_index:
+                    optimized[last_field_index[xpath]] = action
+                    continue
+                else:
+                    last_field_index[xpath] = len(optimized)
+                    optimized.append(action)
+                    continue
+
+            # Keep clicks and navigation actions
             optimized.append(action)
-        
+
         return optimized
 
     def _action_to_python(self, action):
@@ -360,7 +386,7 @@ class WebRecordRunner(RecordRunner):
             return f'Web.click("{locator}")'
             
         elif action_type == 'input':
-            if value == '***PASSWORD***':
+            if element.get('type') == 'password':
                 return f'Web.set_text("{locator}", "your_password_here")  # TODO: Replace with actual password'
             else:
                 escaped_value = str(value).replace('"', '\\"')
