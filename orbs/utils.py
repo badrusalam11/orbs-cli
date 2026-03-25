@@ -19,6 +19,31 @@ def render_template(template_name: str, context: dict, dest: Path, base_template
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(content)
 
+def mask_sensitive_text(text):
+    """Mask sensitive user input in strings (e.g. passwords) for reports and logs."""
+    import re
+
+    if not isinstance(text, str) or not text:
+        return text
+
+    lower_text = text.lower()
+    if 'password' not in lower_text and 'pwd' not in lower_text:
+        return text
+
+    # Mask any quoted values so locator+value strings keep structure
+    def _mask_match(m):
+        quote = m.group(1)
+        return f'{quote}***PASSWORD***{quote}'
+
+    masked = re.sub(r'(["\'])([^"\']*)(["\'])', _mask_match, text)
+
+    # If there were no quotes, just return generic masked label
+    if masked == text:
+        return '***PASSWORD***'
+
+    return masked
+
+
 def load_module_from_path(path):
         spec = importlib.util.spec_from_file_location("module.name", path)
         mod = importlib.util.module_from_spec(spec)

@@ -48,7 +48,47 @@ class ReportGenerator:
         self.current_page = 1  # Track current page number
         self.testcase_api_calls = {}
         self.testcase_scenarios = {}  # Track scenarios per test case: {testcase_name: [scenarios]}  
-    
+
+    def _mask_sensitive_string(self, text):
+        if not isinstance(text, str) or not text:
+            return text
+
+        low = text.lower()
+        # Only apply aggressive masking when password/pwd appears in text
+        if 'password' not in low and 'pwd' not in low:
+            return text
+
+        # Mask quoted values, preserve locator context if present
+        import re
+        def _mask_match(m):
+            quote = m.group(1)
+            return f'{quote}***PASSWORD***{quote}'
+
+        result = re.sub(r'(["\'])(.*?)(["\'])', _mask_match, text)
+        # If no quoted value to degrade, keep locator + password indicator preserved
+        if result == text:
+            return text
+        return result
+
+    def _mask_keyword_steps(self, steps):
+        masked_list = []
+        for step in (steps or []):
+            step_copy = dict(step)
+            name = step_copy.get('name', '')
+            keyword = step_copy.get('keyword', '').lower()
+
+            if keyword == 'set_text' or 'password' in str(name).lower() or 'pwd' in str(name).lower():
+                if isinstance(name, str):
+                    step_copy['name'] = self._mask_sensitive_string(name)
+
+            # ensure error message doesn't leak secrets
+            error = step_copy.get('error')
+            if isinstance(error, str) and ('password' in error.lower() or 'pwd' in error.lower()):
+                step_copy['error'] = self._mask_sensitive_string(error)
+
+            masked_list.append(step_copy)
+
+        return masked_list    
     def generate_report_name(self, timestamp):
         now = timestamp
         ts_sec = now.strftime("%Y%m%d_%H%M%S")          # e.g. "20250707_221530"
@@ -59,6 +99,8 @@ class ReportGenerator:
     @orbs_guard(ReportGenerationException)
     def record(self, feature, scenario, status, duration, screenshot_paths=None, steps_info=None, category="positive", api_calls=None, error_message=None, screenshot_captions=None):
         """Record scenario with screenshots, steps, API calls, and error message/stacktrace"""
+        masked_steps = self._mask_keyword_steps(steps_info or [])
+        
         self.results.append({
             "feature": feature,
             "scenario": scenario,
@@ -66,22 +108,30 @@ class ReportGenerator:
             "duration": duration,
             "screenshot": screenshot_paths or [],
             "screenshot_captions": screenshot_captions or {},
-            "steps": steps_info or [],
+            "steps": masked_steps,
             "category": category,
             "api_calls": api_calls or [],  # Add API calls to scenario record
-            "error_message": error_message  # Add stacktrace/error message
+            "error_message": self._mask_sensitive_string(error_message) if error_message else error_message
         })
 
     @orbs_guard(ReportGenerationException)
     def record_test_case_result(self, name, status, duration, error_message=None, cucumber=None, keyword_steps=None, ddt_scenarios=None):
+        sanitized_keyword_steps = self._mask_keyword_steps(keyword_steps or [])
+        sanitized_ddt_scenarios = []
+        for sc in (ddt_scenarios or []):
+            sc_copy = dict(sc)
+            sc_copy['keyword_steps'] = self._mask_keyword_steps(sc.get('keyword_steps', []))
+            sc_copy['error_message'] = self._mask_sensitive_string(sc.get('error_message')) if sc.get('error_message') else None
+            sanitized_ddt_scenarios.append(sc_copy)
+
         self.testcase_result.append({
             "name": name,
             "status": status,
             "duration": duration,
-            "error_message": error_message,  # Add stacktrace/error message
+            "error_message": self._mask_sensitive_string(error_message) if error_message else error_message,
             "cucumber": cucumber or [],  # Add cucumber scenarios
-            "keyword_steps": keyword_steps or [],  # Add keyword steps for non-BDD
-            "ddt_scenarios": ddt_scenarios or []  # Add DDT scenarios for data-driven tests
+            "keyword_steps": sanitized_keyword_steps,  # Add keyword steps for non-BDD
+            "ddt_scenarios": sanitized_ddt_scenarios  # Add DDT scenarios for data-driven tests
         }) 
 
     @orbs_guard(ReportGenerationException)
@@ -1352,10 +1402,10 @@ class ReportGenerator:
 
         for step_idx, step in enumerate(keyword_steps, 1):
             keyword = step['keyword']
-            name = step.get('name', '')
+            name = self._mask_sensitive_string(step.get('name', ''))
             step_status = step['status'].upper()
             dur_txt = f"{step['duration']:.2f}s"
-            error = step.get('error')
+            error = self._mask_sensitive_string(step.get('error'))
 
             icon = "\u2714" if step_status == "PASSED" else "\u2716" if step_status == "FAILED" else "-"
 
@@ -1416,9 +1466,9 @@ class ReportGenerator:
         for step_idx, step in enumerate(keyword_steps, 1):
             step_status = step['status'].lower()
             step_keyword = step['keyword']
-            step_name = step.get('name', '')
+            step_name = self._mask_sensitive_string(step.get('name', ''))
             step_duration = step.get('duration', 0)
-            step_error = step.get('error')
+            step_error = self._mask_sensitive_string(step.get('error'))
 
             icon = '✔' if step_status == 'passed' else '❌' if step_status == 'failed' else '⏭'
             icon_color = '#27ae60' if step_status == 'passed' else '#e74c3c' if step_status == 'failed' else '#f39c12'

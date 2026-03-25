@@ -79,6 +79,11 @@ def track_keyword(func):
                     text = args[2] if len(args) > 2 else kwargs.get('text', '')
                     locator_str = get_locator_str(locator)
                     text_str = str(text)[:50]
+
+                    if 'password' in locator_str.lower() or 'password' in text_str.lower() or 'pwd' in locator_str.lower():
+                        # Mask password values in logs/reporting, but keep locator
+                        text_str = '***PASSWORD***'
+
                     object_parts = [locator_str, f'"{text_str}"']
                 
                 elif keyword_name == "click":

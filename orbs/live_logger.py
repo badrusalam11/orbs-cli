@@ -35,8 +35,42 @@ class LiveLogger:
         with open(self.log_file, 'w', encoding='utf-8') as f:
             pass
     
+    def _sanitize_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize event payload to mask sensitive values before writing."""
+        def mask_string(value):
+            if not isinstance(value, str):
+                return value
+            lower = value.lower()
+            if 'password' in lower or 'pwd' in lower:
+                import re
+                def _mask_match(m):
+                    quote = m.group(1)
+                    return f'{quote}***PASSWORD***{quote}'
+                masked = re.sub(r'(["\'])(.*?)(["\'])', _mask_match, value)
+                return masked if masked != value else value
+            return value
+
+        event_copy = dict(event)
+
+        if event_copy.get('type') == 'step_started':
+            object_name = event_copy.get('object')
+            if object_name:
+                event_copy['object'] = mask_string(object_name)
+
+            args = event_copy.get('args')
+            if isinstance(args, list):
+                event_copy['args'] = [mask_string(a) if isinstance(a, str) else a for a in args]
+
+        elif event_copy.get('type') in ['step_failed', 'step_skipped']:
+            error = event_copy.get('error')
+            if error:
+                event_copy['error'] = mask_string(error)
+
+        return event_copy
+
     def _write_event(self, event: Dict[str, Any]) -> None:
         """Write a single event to the NDJSON file and print to stdout for Studio."""
+        event = self._sanitize_event(event)
         line = json.dumps(event, ensure_ascii=False)
         
         # Write to file (for persistence/reports)

@@ -147,6 +147,16 @@ class TestReportGeneratorJUnit(unittest.TestCase):
         self.assertIsNotNone(failed_testcase)
         failure = failed_testcase.find('failure')
         self.assertIsNotNone(failure, "Failed scenario MUST have <failure> element")
+
+    def test_mask_password_in_keyword_steps(self):
+        # Ensure password values are masked in report data
+        keyword_steps = [
+            {"keyword": "SET_TEXT", "name": "xpath=//input[@type='password'] \"admin123\"", "status": "PASSED", "duration": 0.1}
+        ]
+        self.rg.record_test_case_result("testcases/web/login.py", "PASSED", 5.0, keyword_steps=keyword_steps)
+
+        masked = self.rg.testcase_result[0]["keyword_steps"][0]["name"]
+        self.assertIn("***PASSWORD***", masked)
     
     def test_junit_with_mixed_results(self):
         """Test JUnit with multiple test cases - passed, failed, skipped"""
