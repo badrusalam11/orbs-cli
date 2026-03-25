@@ -798,7 +798,8 @@ class Web:
         """Sleep for specified seconds"""
         time.sleep(seconds)
         log.action(f"Slept for {seconds} seconds")
-    
+
+
     # Verification methods
     @classmethod
     def element_exists(cls, locator: Union[str, WebElement], timeout: Optional[int] = None) -> bool:
@@ -1058,3 +1059,16 @@ class Web:
                     from ..thread_context import delete_context
                     delete_context('web_driver')
                     log.info("Driver reset for next test case")
+
+
+def __getattr__(name):
+    """Proxy module-level function calls to Web class methods."""
+    if hasattr(Web, name):
+        def wrapper(*args, **kwargs):
+            return getattr(Web, name)(*args, **kwargs)
+        return wrapper
+    raise AttributeError(f"module {__name__} has no attribute {name}")
+
+
+def __dir__():
+    return sorted(list(globals().keys()) + [m for m in dir(Web) if not m.startswith("_")])

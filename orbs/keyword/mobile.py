@@ -1017,7 +1017,19 @@ class Mobile:
             return True
         except Exception:
             return False
-    
+
+
+def __getattr__(name):
+    """Proxy module-level function calls to Mobile class methods."""
+    if hasattr(Mobile, name):
+        def wrapper(*args, **kwargs):
+            return getattr(Mobile, name)(*args, **kwargs)
+        return wrapper
+    raise AttributeError(f"module {__name__} has no attribute {name}")
+
+
+def __dir__():
+    return sorted(list(globals().keys()) + [m for m in dir(Mobile) if not m.startswith("_")])    
     @classmethod
     def get_driver_status(cls) -> dict:
         """Get mobile driver status for debugging"""

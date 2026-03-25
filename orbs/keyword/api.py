@@ -983,3 +983,16 @@ class API:
         set_context("api_calls", None)
         set_context("api_last_response", None)
         log.info("API session closed")
+
+
+def __getattr__(name):
+    """Proxy module-level function calls to API class methods."""
+    if hasattr(API, name):
+        def wrapper(*args, **kwargs):
+            return getattr(API, name)(*args, **kwargs)
+        return wrapper
+    raise AttributeError(f"module {__name__} has no attribute {name}")
+
+
+def __dir__():
+    return sorted(list(globals().keys()) + [m for m in dir(API) if not m.startswith("_")])

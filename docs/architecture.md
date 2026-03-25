@@ -405,7 +405,7 @@ Create custom keyword libraries:
 
 ```python
 # keywords/custom_web.py
-from orbs.keyword.web import Web
+from orbs.keyword import web
 
 class CustomWeb(Web):
     @classmethod
@@ -656,9 +656,9 @@ Subclasses override specific steps.
 
 ```python
 # User specifies strategy
-Web.click("id=button")
-Web.click("css=.submit")
-Web.click("xpath=//button")
+web.click("id=button")
+web.click("css=.submit")
+web.click("xpath=//button")
 
 # Framework selects appropriate locator
 ```

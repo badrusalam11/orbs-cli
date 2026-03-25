@@ -147,10 +147,16 @@ class ReportGenerator:
     @orbs_guard(ReportGenerationException)
     def generate_junit_xml(self):
         """Generate JUnit XML report for CI/CD integration"""
-        # Use testcase_result as primary source (from result.json)
-        total_tests = len(self.testcase_result)
-        total_failures = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'failed')
-        total_skipped = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'skipped')
+        # Use testcase_result as primary source for counts if available.
+        # For cucumber-only reports, fallback to self.results.
+        if self.testcase_result:
+            total_tests = len(self.testcase_result)
+            total_failures = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'failed')
+            total_skipped = sum(1 for r in self.testcase_result if r.get('status', '').lower() == 'skipped')
+        else:
+            total_tests = len(self.results)
+            total_failures = sum(1 for r in self.results if r.get('status', '').lower() == 'failed')
+            total_skipped = sum(1 for r in self.results if r.get('status', '').lower() == 'skipped')
         total_errors = 0  # Orbs doesn't distinguish errors from failures
         total_time = self.overriew.get('duration', 0)
         
@@ -174,61 +180,85 @@ class ReportGenerator:
         testsuite.set('time', f"{total_time:.3f}")
         
         # Add each test case as <testcase>
-        for tc in self.testcase_result:
-            testcase = SubElement(testsuite, 'testcase')
-            testcase.set('name', tc['name'])
-            testcase.set('classname', tc['name'])
-            testcase.set('time', f"{tc['duration']:.3f}")
-            
-            status = tc['status'].lower()
-            
-            # Add failure info if failed
-            if status == 'failed':
-                failure = SubElement(testcase, 'failure')
-                failure.set('message', f"Test case '{tc['name']}' failed")
-                failure.set('type', 'AssertionError')
-                
-                # Build failure text with cucumber scenarios if available
-                failure_text = []
-                
-                # Add cucumber scenario details if available
+        # If there are cucumber scenarios recorded, render those as test case entries.
+        # If testcase_result is provided, use counts from it (priority source for totals).
+        if self.results:
+            for scenario in self.results:
+                testcase = SubElement(testsuite, 'testcase')
+                name = f"{scenario.get('feature', 'Unknown Feature')} - {scenario.get('scenario', 'Unnamed Scenario')}"
+                testcase.set('name', name)
+                testcase.set('classname', name)
+                testcase.set('time', f"{scenario.get('duration', 0):.3f}")
+                status = scenario.get('status', '').lower()
+
+                if status == 'failed':
+                    failure = SubElement(testcase, 'failure')
+                    failure.set('message', f"Scenario '{name}' failed")
+                    failure.set('type', 'AssertionError')
+                    failure_text = []
+
+                    if scenario.get('steps'):
+                        for step in scenario['steps']:
+                            step_status = step.get('status', 'UNKNOWN')
+                            failure_text.append(f"{step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
+
+                    if scenario.get('error_message'):
+                        failure_text.append('\n--- Scenario Stacktrace ---')
+                        failure_text.append(scenario['error_message'])
+
+                    if failure_text:
+                        failure.text = '\n'.join(failure_text)
+
+                elif status == 'skipped':
+                    skipped = SubElement(testcase, 'skipped')
+                    skipped.set('message', 'Scenario skipped')
+
+        else:
+            for tc in self.testcase_result:
+                testcase = SubElement(testsuite, 'testcase')
+                testcase.set('name', tc['name'])
+                testcase.set('classname', tc['name'])
+                testcase.set('time', f"{tc['duration']:.3f}")
+
+                status = tc['status'].lower()
+
+                if status == 'failed':
+                    failure = SubElement(testcase, 'failure')
+                    failure.set('message', f"Test case '{tc['name']}' failed")
+                    failure.set('type', 'AssertionError')
+
+                    failure_text = []
+                    cucumber_scenarios = tc.get('cucumber', [])
+                    if cucumber_scenarios:
+                        for scenario in cucumber_scenarios:
+                            failure_text.append(f"\n--- Scenario: {scenario['scenario']} ---")
+                            failure_text.append(f"Status: {scenario['status']}")
+                            failure_text.append(f"Duration: {scenario['duration']:.2f}s")
+                            for step in scenario.get('steps', []):
+                                step_status = step.get('status', 'UNKNOWN')
+                                failure_text.append(f"  {step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
+                            if scenario.get('error_message'):
+                                failure_text.append('\n--- Scenario Stacktrace ---')
+                                failure_text.append(scenario['error_message'])
+
+                    if tc.get('error_message'):
+                        failure_text.append('\n--- Test Case Stacktrace ---')
+                        failure_text.append(tc['error_message'])
+
+                    if failure_text:
+                        failure.text = '\n'.join(failure_text)
+
+                elif status == 'skipped':
+                    skipped = SubElement(testcase, 'skipped')
+                    skipped.set('message', 'Test skipped')
+
                 cucumber_scenarios = tc.get('cucumber', [])
                 if cucumber_scenarios:
-                    for scenario in cucumber_scenarios:
-                        failure_text.append(f"\n--- Scenario: {scenario['scenario']} ---")
-                        failure_text.append(f"Status: {scenario['status']}")
-                        failure_text.append(f"Duration: {scenario['duration']:.2f}s")
-                        
-                        # Add step details
-                        for step in scenario.get('steps', []):
-                            step_status = step.get('status', 'UNKNOWN')
-                            failure_text.append(f"  {step['keyword']} {step['name']} - {step_status} ({step['duration']}s)")
-                        
-                        # Add scenario stacktrace if available
-                        if scenario.get('error_message'):
-                            failure_text.append('\n--- Scenario Stacktrace ---')
-                            failure_text.append(scenario['error_message'])
-                
-                # Add test case stacktrace if available
-                if tc.get('error_message'):
-                    failure_text.append('\n--- Test Case Stacktrace ---')
-                    failure_text.append(tc['error_message'])
-                
-                if failure_text:
-                    failure.text = '\n'.join(failure_text)
-            
-            elif status == 'skipped':
-                skipped = SubElement(testcase, 'skipped')
-                skipped.set('message', 'Test skipped')
-            
-            # Add properties for cucumber scenarios (optional metadata)
-            cucumber_scenarios = tc.get('cucumber', [])
-            if cucumber_scenarios:
-                properties = SubElement(testcase, 'properties')
-                for idx, scenario in enumerate(cucumber_scenarios, 1):
-                    prop = SubElement(properties, 'property')
-                    prop.set('name', f'cucumber_scenario_{idx}')
-                    prop.set('value', f"{scenario['scenario']} - {scenario['status']} ({scenario['duration']:.2f}s)")
+                    properties = SubElement(testcase, 'properties')
+                    for idx, scenario in enumerate(cucumber_scenarios, 1):
+                        prop = SubElement(properties, 'property')
+                        prop.set('name', f'cucumber_scenario_{idx}')
+                        prop.set('value', f"{scenario['scenario']} - {scenario['status']} ({scenario['duration']:.2f}s)")
         
         # Pretty print XML
         xml_string = minidom.parseString(tostring(testsuites, encoding='utf-8')).toprettyxml(indent="  ")
@@ -894,7 +924,8 @@ class ReportGenerator:
                 
                 html += f"""                <div class="error-alert">
                     <div>
-                        <strong>Test case failed with error:</strong>
+                        <strong>Failed Test Cases - Error Details</strong>
+                        <p style='margin: 6px 0; color: #721c24; font-weight: 600;'>Stacktrace</p>
                         <div class="stacktrace" style="margin-top: 10px;">{error_msg}</div>
                     </div>
                 </div>
@@ -902,6 +933,9 @@ class ReportGenerator:
             
             # Get cucumber scenarios for this specific test case
             tc_cucumber_scenarios = tc.get('cucumber', [])
+            if not tc_cucumber_scenarios and self.results:
+                # If no explicit per-testcase cucumber scenarios, fallback to global recorded scenarios
+                tc_cucumber_scenarios = self.results
             
             # If this test case has cucumber scenarios
             if tc_cucumber_scenarios:
@@ -949,6 +983,7 @@ class ReportGenerator:
                         html += f"""                        <div style="margin-top: 15px;">
                             <div class="detail-header" onclick="toggleDetail('scenario-error-{tc_id}-{scenario_idx}')">
                                 <strong style="color: #e74c3c;">⚠️ Error Details</strong>
+                                <span style="margin-left: 10px; font-weight: 600;">Stacktrace</span>
                                 <span class="collapse-icon" id="icon-scenario-error-{tc_id}-{scenario_idx}">▼</span>
                             </div>
                             <div class="detail-content" id="scenario-error-{tc_id}-{scenario_idx}">

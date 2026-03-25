@@ -246,8 +246,8 @@ def ddt(path: str, scenario: str = None, where: dict = None):
 
                 # Reset web driver for fresh browser per scenario
                 try:
-                    from orbs.keyword.web import Web
-                    Web.reset_driver()
+                    from orbs.keyword import web
+                    web.reset_driver()
                 except Exception:
                     pass
 

@@ -15,13 +15,13 @@ ORBS provides flexible failure handling strategies that allow you to control how
 Stops test execution immediately when the keyword fails and raises an exception.
 
 ```python
-from orbs.keyword import Web, FailureHandling
+from orbs.keyword import web, FailureHandling
 
 # Default behavior - will fail test if element not found
-Web.click("id=submit_button")
+web.click("id=submit_button")
 
 # Explicitly specify STOP_ON_FAILURE
-Web.click("id=submit_button", failure_handling=FailureHandling.STOP_ON_FAILURE)
+web.click("id=submit_button", failure_handling=FailureHandling.STOP_ON_FAILURE)
 ```
 
 **Use when:**
@@ -35,15 +35,15 @@ Logs the error but continues test execution. Returns `None` on failure.
 **Important:** Test case will be marked as **FAILED** if any CONTINUE_ON_FAILURE error occurs, but execution continues to collect all failures.
 
 ```python
-from orbs.keyword import Web, FailureHandling
+from orbs.keyword import web, FailureHandling
 
 # Try to close popup, but continue if it doesn't exist
-Web.click("id=close_popup", failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+web.click("id=close_popup", failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
 
 # Continue with main test flow
-Web.set_text("id=username", "admin")
-Web.set_text("id=password", "pass123")
-Web.click("id=login")
+web.set_text("id=username", "admin")
+web.set_text("id=password", "pass123")
+web.click("id=login")
 ```
 
 **Use when:**
@@ -60,18 +60,18 @@ Treats the action as completely optional. Suppresses all errors and logs as info
 **Important:** Test case remains **PASSED** even if OPTIONAL actions fail, because they are truly optional.
 
 ```python
-from orbs.keyword import Web, FailureHandling
+from orbs.keyword import web, FailureHandling
 
 # Optional banner - ignore if not present
-Web.click("id=optional_banner_close", failure_handling=FailureHandling.OPTIONAL)
+web.click("id=optional_banner_close", failure_handling=FailureHandling.OPTIONAL)
 
 # Optional cookie consent - may or may not exist
-Web.click("id=accept_cookies", failure_handling=FailureHandling.OPTIONAL)
+web.click("id=accept_cookies", failure_handling=FailureHandling.OPTIONAL)
 
 # Main test flow
-Web.open("https://example.com")
-Web.set_text("id=search", "automation")
-Web.click("id=search_button")
+web.open("https://example.com")
+web.set_text("id=search", "automation")
+web.click("id=search_button")
 ```
 
 **Use when:**
@@ -85,74 +85,74 @@ Web.click("id=search_button")
 ## Supported Keywords
 
 ### Web Keywords
-All major Web keywords support failure handling:
+All major web keywords support failure handling:
 
-- `Web.open()`
-- `Web.click()`
-- `Web.double_click()`
-- `Web.right_click()`
-- `Web.set_text()`
-- `Web.get_text()`
-- `Web.get_attribute()`
-- `Web.select_by_text()`
-- `Web.select_by_value()`
-- `Web.select_by_index()`
-- `Web.wait_for_element()`
-- `Web.wait_for_visible()`
-- `Web.wait_for_clickable()`
-- `Web.verify_text()`
-- `Web.verify_element_visible()`
+- `web.open()`
+- `web.click()`
+- `web.double_click()`
+- `web.right_click()`
+- `web.set_text()`
+- `web.get_text()`
+- `web.get_attribute()`
+- `web.select_by_text()`
+- `web.select_by_value()`
+- `web.select_by_index()`
+- `web.wait_for_element()`
+- `web.wait_for_visible()`
+- `web.wait_for_clickable()`
+- `web.verify_text()`
+- `web.verify_element_visible()`
 
 ### Mobile Keywords
 All major Mobile keywords support failure handling:
 
-- `Mobile.tap()`
-- `Mobile.long_press()`
-- `Mobile.double_tap()`
-- `Mobile.set_text()`
-- `Mobile.get_text()`
-- `Mobile.get_attribute()`
-- `Mobile.wait_for_element()`
-- `Mobile.wait_for_visible()`
+- `mobile.tap()`
+- `mobile.long_press()`
+- `mobile.double_tap()`
+- `mobile.set_text()`
+- `mobile.get_text()`
+- `mobile.get_attribute()`
+- `mobile.wait_for_element()`
+- `mobile.wait_for_visible()`
 
 ## Usage Examples
 
 ### Example 1: Handle Optional Popups
 
 ```python
-from orbs.keyword import Web, FailureHandling
+from orbs.keyword import web, FailureHandling
 
 def test_login_with_optional_popup():
-    Web.open("https://example.com")
+    web.open("https://example.com")
     
     # Optional: Close marketing popup if it appears
-    Web.click(
+    web.click(
         "id=marketing_popup_close", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
     # Optional: Dismiss notification banner
-    Web.click(
+    web.click(
         "id=notification_dismiss", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
     # Critical: Main login flow (will fail test if errors)
-    Web.set_text("id=username", "admin")
-    Web.set_text("id=password", "password123")
-    Web.click("id=login_button")
+    web.set_text("id=username", "admin")
+    web.set_text("id=password", "password123")
+    web.click("id=login_button")
     
-    Web.verify_text("id=welcome_message", "Welcome, Admin!")
+    web.verify_text("id=welcome_message", "Welcome, Admin!")
 ```
 
 ### Example 2: Smoke Test with CONTINUE_ON_FAILURE
 
 ```python
-from orbs.keyword import Web, FailureHandling
+from orbs.keyword import web, FailureHandling
 
 def test_smoke_navigation():
     """Smoke test that checks multiple pages without stopping on first failure"""
-    Web.open("https://example.com")
+    web.open("https://example.com")
     
     results = {}
     
@@ -167,11 +167,11 @@ def test_smoke_navigation():
     
     for locator, page_name in pages:
         # Continue even if a link fails
-        Web.click(locator, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+        web.click(locator, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
         time.sleep(1)
         
         # Try to verify page loaded
-        title = Web.get_text(
+        title = web.get_text(
             "css=h1", 
             failure_handling=FailureHandling.CONTINUE_ON_FAILURE
         )
@@ -186,37 +186,37 @@ def test_smoke_navigation():
 ### Example 3: Cross-Environment Test
 
 ```python
-from orbs.keyword import Web, FailureHandling
+from orbs.keyword import web, FailureHandling
 
 def test_form_submission():
     """Test that works across dev, staging, and prod environments"""
-    Web.open("https://example.com/form")
+    web.open("https://example.com/form")
     
     # Dev environment has debug panel - optional
-    Web.click(
+    web.click(
         "id=debug_panel_close", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
     # Staging has beta warning - optional
-    Web.click(
+    web.click(
         "id=beta_warning_dismiss", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
     # Fill form (critical)
-    Web.set_text("id=name", "John Doe")
-    Web.set_text("id=email", "john@example.com")
+    web.set_text("id=name", "John Doe")
+    web.set_text("id=email", "john@example.com")
     
     # Optional newsletter checkbox (not in all environments)
-    Web.click(
+    web.click(
         "id=newsletter_checkbox", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
     # Submit (critical)
-    Web.click("id=submit_button")
-    Web.verify_text("id=success_message", "Form submitted successfully!")
+    web.click("id=submit_button")
+    web.verify_text("id=success_message", "Form submitted successfully!")
 ```
 
 ### Example 4: Mobile Testing with Optional Elements
@@ -225,32 +225,32 @@ def test_form_submission():
 from orbs.keyword import Mobile, FailureHandling
 
 def test_mobile_app_login():
-    Mobile.launch("com.example.app", ".MainActivity")
+    mobile.launch("com.example.app", ".MainActivity")
     
     # Optional: Skip onboarding if already seen
-    Mobile.tap(
+    mobile.tap(
         "id=skip_onboarding", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
     # Optional: Dismiss permission dialogs
-    Mobile.tap(
+    mobile.tap(
         "id=allow_notifications", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
-    Mobile.tap(
+    mobile.tap(
         "id=allow_location", 
         failure_handling=FailureHandling.OPTIONAL
     )
     
     # Critical: Login flow
-    Mobile.tap("id=login_button")
-    Mobile.set_text("id=username", "testuser")
-    Mobile.set_text("id=password", "pass123")
-    Mobile.tap("id=submit_login")
+    mobile.tap("id=login_button")
+    mobile.set_text("id=username", "testuser")
+    mobile.set_text("id=password", "pass123")
+    mobile.tap("id=submit_login")
     
-    Mobile.wait_for_element("id=home_screen")
+    mobile.wait_for_element("id=home_screen")
 ```
 
 ## Logging Behavior
@@ -291,23 +291,23 @@ The failure handling strategy affects the final test case status:
 ```python
 # Test 1: Will be marked as FAILED
 def test_with_continue_on_failure():
-    Web.open("https://example.com")
-    Web.click("id=missing_button", failure_handling=FailureHandling.CONTINUE_ON_FAILURE)  # Error!
-    Web.click("id=another_button")  # This still runs
+    web.open("https://example.com")
+    web.click("id=missing_button", failure_handling=FailureHandling.CONTINUE_ON_FAILURE)  # Error!
+    web.click("id=another_button")  # This still runs
     # Result: Test case marked as FAILED (but all steps executed)
 
 # Test 2: Will be marked as PASSED
 def test_with_optional():
-    Web.open("https://example.com")
-    Web.click("id=missing_banner", failure_handling=FailureHandling.OPTIONAL)  # Ignored
-    Web.click("id=main_button")  # Success
+    web.open("https://example.com")
+    web.click("id=missing_banner", failure_handling=FailureHandling.OPTIONAL)  # Ignored
+    web.click("id=main_button")  # Success
     # Result: Test case marked as PASSED (optional action ignored)
 
 # Test 3: Will be marked as FAILED
 def test_with_stop_on_failure():
-    Web.open("https://example.com")
-    Web.click("id=missing_button")  # Default: STOP_ON_FAILURE
-    Web.click("id=another_button")  # This won't run
+    web.open("https://example.com")
+    web.click("id=missing_button")  # Default: STOP_ON_FAILURE
+    web.click("id=another_button")  # This won't run
     # Result: Test case marked as FAILED (execution stopped)
 ```
 
@@ -321,7 +321,7 @@ def smoke_test_all_links():
     links = ["id=home", "id=products", "id=about", "id=contact", "id=broken_link"]
     
     for link in links:
-        Web.click(link, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+        web.click(link, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
     
     # All links are tested, report shows which ones failed
     # Test status: FAILED (because 'broken_link' failed)
@@ -334,16 +334,16 @@ def smoke_test_all_links():
 ```python
 def test_login_flow():
     """Login should work regardless of optional elements"""
-    Web.open("https://example.com")
+    web.open("https://example.com")
     
     # Optional promotional banner
-    Web.click("id=promo_close", failure_handling=FailureHandling.OPTIONAL)
+    web.click("id=promo_close", failure_handling=FailureHandling.OPTIONAL)
     
     # Critical login flow
-    Web.set_text("id=username", "admin")
-    Web.set_text("id=password", "pass123")
-    Web.click("id=login")
-    Web.verify_text("id=welcome", "Welcome, admin!")
+    web.set_text("id=username", "admin")
+    web.set_text("id=password", "pass123")
+    web.click("id=login")
+    web.verify_text("id=welcome", "Welcome, admin!")
     
     # Test status: PASSED (promo banner is truly optional)
 ```
@@ -356,7 +356,7 @@ def test_login_flow():
 
 ```python
 # Get text with optional handling
-text = Web.get_text("id=label", failure_handling=FailureHandling.OPTIONAL)
+text = web.get_text("id=label", failure_handling=FailureHandling.OPTIONAL)
 
 if text:
     print(f"Label text: {text}")
@@ -369,43 +369,43 @@ else:
 ### 1. Use STOP_ON_FAILURE for Critical Actions
 ```python
 # Critical actions should fail the test
-Web.set_text("id=username", "admin")  # Default: STOP_ON_FAILURE
-Web.click("id=login")  # Default: STOP_ON_FAILURE
+web.set_text("id=username", "admin")  # Default: STOP_ON_FAILURE
+web.click("id=login")  # Default: STOP_ON_FAILURE
 ```
 
 ### 2. Use OPTIONAL for Environmental Differences
 ```python
 # Elements that may vary across environments
-Web.click("id=dev_only_banner", failure_handling=FailureHandling.OPTIONAL)
+web.click("id=dev_only_banner", failure_handling=FailureHandling.OPTIONAL)
 ```
 
 ### 3. Use CONTINUE_ON_FAILURE for Smoke Tests
 ```python
 # When you want to see all issues at once
 for link in navigation_links:
-    Web.click(link, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+    web.click(link, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
 ```
 
 ### 4. Document Why You're Using Non-Default Handling
 ```python
 # OPTIONAL because: Cookie banner only appears on first visit
-Web.click("id=accept_cookies", failure_handling=FailureHandling.OPTIONAL)
+web.click("id=accept_cookies", failure_handling=FailureHandling.OPTIONAL)
 
 # CONTINUE_ON_FAILURE because: This is a non-critical verification
-Web.verify_text("id=optional_label", "Test", 
+web.verify_text("id=optional_label", "Test", 
                 failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
 ```
 
 ### 5. Combine with Conditional Logic
 ```python
 # Try optional action and react accordingly
-popup_closed = Web.click(
+popup_closed = web.click(
     "id=popup_close", 
     failure_handling=FailureHandling.OPTIONAL
 )
 
 if popup_closed:
-    Web.sleep(1)  # Wait for popup animation
+    web.sleep(1)  # Wait for popup animation
 ```
 
 ## Comparison with Other Frameworks
@@ -432,7 +432,7 @@ def test_dynamic_handling():
     
     with_failure_handling(
         mode,
-        Web.click,
+        web.click,
         "id=debug_button"
     )
 ```

@@ -43,13 +43,13 @@ Object repository files follow the `WebElementEntity` XML format. Example:
 Recommended inline pattern (concise and readable):
 
 ```python
-from orbs.keyword.web import Web
+from orbs.keyword import web
 from orbs.keyword import find_test_obj
 
-Web.open("https://example.com")
-Web.set_text(find_test_obj("input_username.xml"), "admin")
-Web.set_text(find_test_obj("input_password.xml"), "password123")
-Web.click(find_test_obj("button_login.xml"))
+web.open("https://example.com")
+web.set_text(find_test_obj("input_username.xml"), "admin")
+web.set_text(find_test_obj("input_password.xml"), "password123")
+web.click(find_test_obj("button_login.xml"))
 ```
 
 Supported path formats (the project normalizes paths):
@@ -107,16 +107,16 @@ This workflow produces maintainable element definitions and enables automatic fa
 ## Example
 
 ```python
-from orbs.keyword.web import Web
+from orbs.keyword import web
 from orbs.keyword import find_test_obj
 
 def test_login():
-    Web.open("https://www.saucedemo.com/")
-    Web.set_text(find_test_obj("input_username.xml"), "standard_user")
-    Web.set_text(find_test_obj("input_password.xml"), "secret_sauce")
-    Web.click(find_test_obj("input_login-button.xml"))
-    Web.wait_for_element("css=.inventory_list")
-    Web.close()
+    web.open("https://www.saucedemo.com/")
+    web.set_text(find_test_obj("input_username.xml"), "standard_user")
+    web.set_text(find_test_obj("input_password.xml"), "secret_sauce")
+    web.click(find_test_obj("input_login-button.xml"))
+    web.wait_for_element("css=.inventory_list")
+    web.close()
 ```
 
 ## Tips
@@ -140,8 +140,8 @@ print(el.get_alternative_locators())
 You can mix object-repository references with classic locators:
 
 ```python
-Web.click("id=old-style-locator")
-Web.click(find_test_obj("new-element.xml"))
+web.click("id=old-style-locator")
+web.click(find_test_obj("new-element.xml"))
 ```
 
 ## See Also
