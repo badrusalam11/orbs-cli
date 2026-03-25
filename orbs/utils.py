@@ -37,11 +37,31 @@ def mask_sensitive_text(text):
 
     masked = re.sub(r'(["\'])([^"\']*)(["\'])', _mask_match, text)
 
-    # If there were no quotes, just return generic masked label
+    # If there were no quotes, keep locator string but show password marker
     if masked == text:
-        return '***PASSWORD***'
+        # preserve path part (e.g. id=password) but not sensitive value; if text wholly value, mask
+        return '***PASSWORD***' if 'id=' not in text and 'xpath=' not in text else text
 
     return masked
+
+
+def mask_sensitive_value(value, locator=None, secret=False):
+    """Mask value if secret flag is set or locator indicates password-like field."""
+    if secret:
+        return '***PASSWORD***'
+
+    if isinstance(value, str) and locator:
+        loc_lower = str(locator).lower()
+        if 'password' in loc_lower or 'pwd' in loc_lower:
+            return '***PASSWORD***'
+
+    if isinstance(value, str) and isinstance(locator, str):
+        # fallback: use existing heuristic in content
+        lower = value.lower()
+        if 'password' in lower or 'pwd' in lower:
+            return '***PASSWORD***'
+
+    return value
 
 
 def load_module_from_path(path):

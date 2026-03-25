@@ -10,6 +10,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from orbs.report_generator import ReportGenerator
+from orbs.utils import mask_sensitive_value
 
 
 class TestReportGeneratorJUnit(unittest.TestCase):
@@ -157,6 +158,11 @@ class TestReportGeneratorJUnit(unittest.TestCase):
 
         masked = self.rg.testcase_result[0]["keyword_steps"][0]["name"]
         self.assertIn("***PASSWORD***", masked)
+
+    def test_mask_sensitive_value_helper(self):
+        self.assertEqual(mask_sensitive_value("admin123", locator="id=password"), "***PASSWORD***")
+        self.assertEqual(mask_sensitive_value("admin123", locator="id=user-name"), "admin123")
+        self.assertEqual(mask_sensitive_value("admin123", locator="id=user-name", secret=True), "***PASSWORD***")
     
     def test_junit_with_mixed_results(self):
         """Test JUnit with multiple test cases - passed, failed, skipped"""
