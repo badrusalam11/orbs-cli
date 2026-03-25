@@ -1,11 +1,11 @@
 # Test case: get_users
 
 from orbs.keyword.api import API
-from orbs.config import config
+from orbs.config import env
 
 
 def run():
-    base_url = config.target("api_url", "https://jsonplaceholder.typicode.com")
+    base_url = env.get("api_url", "https://jsonplaceholder.typicode.com")
 
     API.set_base_url(base_url)
 

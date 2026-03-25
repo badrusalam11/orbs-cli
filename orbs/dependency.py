@@ -1,6 +1,6 @@
 from orbs.exception import DependencyException
 from orbs.guard import orbs_guard
-from orbs.config import config
+from orbs.config import setting
 from orbs.thread_context import get_context
 
 @orbs_guard(DependencyException)
@@ -11,7 +11,7 @@ def check_dependencies():
     ensure_appium_server()
 
     # Read default deviceName from appium.properties if present
-    device_name = get_context("device_id", config.get("deviceName", ""))
+    device_name = get_context("device_id", setting.get("deviceName", ""))
     
     # If a placeholder or empty, prompt selection
     if not device_name or device_name.lower() in ('', 'auto', 'detect'):

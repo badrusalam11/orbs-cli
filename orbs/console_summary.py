@@ -6,7 +6,7 @@ Displays a formatted summary of test results to the console.
 """
 
 from datetime import timedelta
-from orbs.config import config
+from orbs.config import setting
 
 
 class ConsoleSummary:
@@ -73,18 +73,18 @@ class ConsoleSummary:
         
         # Get platform from thread context first, fallback to config
         from orbs.thread_context import get_context
-        platform = get_context('platform') or config.get('default_platform', 'chrome')
+        platform = get_context('platform') or setting.get('default_platform', 'chrome')
         
         # Get headless mode - check multiple possible keys
         browser_headless = (
-            config.get_bool('headless', False) or 
-            config.get_bool('browser_headless', False)
+            setting.get_bool('headless', False) or 
+            setting.get_bool('browser_headless', False)
         )
         browser_display = f"{platform.title()} ({'headless' if browser_headless else 'headed'})"
         
-        self_healing = config.get_bool('self_healing_enabled', False)
-        retry_enabled = config.get_bool('retry_enabled', False)
-        retry_max = config.get_int('retry_max_attempts', 2)
+        self_healing = setting.get_bool('self_healing_enabled', False)
+        retry_enabled = setting.get_bool('retry_enabled', False)
+        retry_max = setting.get_int('retry_max_attempts', 2)
         
         # Determine overall status
         overall_status = 'PASSED' if failed == 0 else 'FAILED'

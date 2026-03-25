@@ -354,6 +354,9 @@ def finalize_report(suite_path):
     
     # Print console summary
     ConsoleSummary.print_summary(rg.overriew)
+
+    # Execution completion marker for CLI users
+    print("✅ ORBS TEST EXECUTION COMPLETED (suite/collection finished)")
     
     # Flush output to ensure console summary is displayed before process exits
     sys.stdout.flush()

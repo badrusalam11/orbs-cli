@@ -1,12 +1,12 @@
 from behave import given, when, then
 
 from orbs.keyword.web import Web
-from orbs.config import config
+from orbs.config import env
 
 
 @given('the user opens the search page')
 def step_open_search(context):
-    url = config.target("url", "https://www.google.com")
+    url = env.get("url", "https://www.google.com")
     Web.open_browser("chrome")
     Web.navigate(url)
 

@@ -12,7 +12,7 @@ from orbs.log import log
 from orbs.dependency import check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
 from orbs.exception import FeatureException, RunnerException
-from orbs.config import config
+from orbs.config import setting
 from orbs.keyword.web import Web
 from orbs.utils import load_module_from_path
 from ._constant import PLATFORM_LIST
@@ -105,6 +105,9 @@ class Runner:
         
         # Print console summary
         ConsoleSummary.print_summary(rg.overriew)
+
+        # Execution completion marker for CLI users
+        print("ORBS TEST EXECUTION COMPLETED (all test cases/features finished)")
         
         # Flush output
         sys.stdout.flush()
@@ -162,10 +165,10 @@ class Runner:
                 self._invoke_hook(hook, case)
 
             # Run the test case and capture status with retry logic
-            retry_enabled = config.get_bool("retry_enabled", False)
-            retry_max_attempts = config.get_int("retry_max_attempts", 2)
-            screenshot_on_fail = config.get_bool("screenshot_on_fail", False)
-            screenshot_on_retry = config.get_bool("screenshot_on_retry", False)
+            retry_enabled = setting.get_bool("retry_enabled", False)
+            retry_max_attempts = setting.get_int("retry_max_attempts", 2)
+            screenshot_on_fail = setting.get_bool("screenshot_on_fail", False)
+            screenshot_on_retry = setting.get_bool("screenshot_on_retry", False)
             
             status = "passed"
             exception = None

@@ -12,7 +12,7 @@ from reportlab.lib.utils import ImageReader
 from reportlab.lib import colors
 from reportlab.lib.colors import HexColor
 
-from orbs.config import config
+from orbs.config import setting
 from orbs.exception import ReportGenerationException
 from orbs.guard import orbs_guard
 
@@ -111,14 +111,14 @@ class ReportGenerator:
     def record_overview(self, suite_path, duration, start_time, end_time):
         from orbs.thread_context import get_context
         retry_count = get_context("retry_count") or 0
-        platform_name = get_context("platform") or config.get("default_platform", "chrome")
-        headless = config.get_bool("headless", False) or config.get_bool("browser_headless", False)
+        platform_name = get_context("platform") or setting.get("default_platform", "chrome")
+        headless = setting.get_bool("headless", False) or setting.get_bool("browser_headless", False)
         platform_display = f"{platform_name.title()} ({'headless' if headless else 'headed'})"
         
         self.overriew = {
             "testsuite_id": os.path.relpath(suite_path, os.getcwd()),
-            "tester_name": config.get("tester_name", "Unknown Tester"),
-            "environent": config.get("ORBS_ENV", "default"),
+            "tester_name": setting.get("tester_name", "Unknown Tester"),
+            "environent": setting.get("ORBS_ENV", "default"),
             "platform": platform_display,
             "host_name": platform.node(),
             "os": platform.system(),

@@ -3,7 +3,6 @@ orbs - A lightweight test automation framework with structured runner,
 report generator, and POM-based test execution.
 """
 
-__version__ = "0.1.0"
 
 from ._constant import PLATFORM_LIST
 
@@ -16,14 +15,14 @@ def run(target=None, platform=None, device_id=None):
     from .runner import Runner
     from .log import log
     from .dependency import check_dependencies
-    from .config import config
+    from .config import setting
     from .thread_context import set_context, get_context
 
     # Use platform from CLI if provided, otherwise use default_platform from config
     if platform:
         current_platform = platform
     else:
-        current_platform = config.get('default_platform')
+        current_platform = setting.get('default_platform')
     
     # Set platform and device_id to thread context
     set_context('platform', current_platform)

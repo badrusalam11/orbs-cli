@@ -2,7 +2,7 @@
 from functools import wraps
 from orbs.exception import OrbsException
 from orbs.log import log
-from orbs.config import config
+from orbs.config import setting
 
 
 def orbs_guard(error_cls, context_fn=None):
@@ -24,7 +24,7 @@ def orbs_guard(error_cls, context_fn=None):
             except Exception as e:
                 # --- 1. read debug flag ---
                 try:
-                    debug = config.get_bool("ORBS_DEBUG", False)
+                    debug = setting.get_bool("ORBS_DEBUG", False)
                 except Exception:
                     debug = False
 
