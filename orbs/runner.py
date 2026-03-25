@@ -105,6 +105,9 @@ class Runner:
         
         # Print console summary
         ConsoleSummary.print_summary(rg.overriew)
+
+        # Execution completion marker for CLI users
+        print("ORBS TEST EXECUTION COMPLETED (all test cases/features finished)")
         
         # Flush output
         sys.stdout.flush()
