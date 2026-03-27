@@ -591,7 +591,7 @@ orbs select-device
 ### Specify Device in Test Run
 
 ```bash
-orbs run testsuites/mobile.yml --platform=android --deviceId=emulator-5554
+orbs run testsuites/Mobile.yml --platform=android --deviceId=emulator-5554
 ```
 
 ### Multiple Device Testing

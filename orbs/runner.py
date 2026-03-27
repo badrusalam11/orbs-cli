@@ -13,7 +13,7 @@ from orbs.dependency import check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
 from orbs.exception import FeatureException, RunnerException
 from orbs.config import setting
-from orbs.keyword import web
+from orbs.keyword import Web, Mobile
 from orbs.utils import load_module_from_path
 from ._constant import PLATFORM_LIST
 import sys
@@ -185,14 +185,13 @@ class Runner:
                         
                         # Reset drivers for clean state before retry
                         try:
-                            web.reset_driver()
-                        except ImportError:
+                            Web.reset_driver()
+                        except Exception:
                             pass
                         
                         try:
-                            from orbs.keyword import mobile
-                            mobile.reset_driver()
-                        except ImportError:
+                            Mobile.reset_driver()
+                        except Exception:
                             pass
                     
                     self.run_case(case)
@@ -243,14 +242,13 @@ class Runner:
 
             # Reset drivers for clean state between test cases
             try:
-                web.reset_driver()
-            except ImportError:
+                Web.reset_driver()
+            except Exception:
                 pass
             
             try:
-                from orbs.keyword import mobile
-                mobile.reset_driver()
-            except ImportError:
+                Mobile.reset_driver()
+            except Exception:
                 pass
 
             # 🔹 Global AfterTestCase hooks

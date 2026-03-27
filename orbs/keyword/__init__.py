@@ -13,8 +13,8 @@ from .failure_handling import FailureHandling
 # from orbs.keyword import web
 # from orbs.keyword import api
 # from orbs.keyword import mobile
-from . import web as web
-from . import api as api
-from . import mobile as mobile
+# from . import web as web
+# from . import api as api
+# from . import mobile as mobile
 
-__all__ = ['Web', 'API', 'Mobile', 'find_test_obj', 'WebElementEntity', 'FailureHandling', 'web', 'api', 'mobile']
+__all__ = ['Web', 'API', 'Mobile', 'find_test_obj', 'WebElementEntity', 'FailureHandling']

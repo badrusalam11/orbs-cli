@@ -58,25 +58,25 @@ orbs create-testcase google_search
 Edit `testcases/google_search.py`:
 
 ```python
-from orbs.keyword import web
+from orbs.keyword import Web
 
 def test_google_search():
     """Test Google search functionality"""
     
     # Open Google
-    web.open("https://www.google.com")
+    Web.open("https://www.google.com")
     
     # Type search query
-    web.set_text("name=q", "Orbs automation framework")
+    Web.set_text("name=q", "Orbs automation framework")
     
     # Submit search
-    web.press_enter("name=q")
+    Web.press_enter("name=q")
     
     # Wait for results
     Web.wait_for_element("id=search", timeout=10)
     
     # Verify results are visible
-    assert web.is_visible("id=search"), "Search results not displayed"
+    assert Web.is_visible("id=search"), "Search results not displayed"
     
     print("✅ Google search test passed")
 ```

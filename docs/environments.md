@@ -127,13 +127,13 @@ class TestLogin:
         timeout = config.target("api_timeout", 30)
         
         # Use in test
-        web.navigate_to(base_url)
-        web.input_text("id=username", username)
-        web.input_text("id=password", password)
-        web.click("id=login-button")
+        Web.navigate_to(base_url)
+        Web.input_text("id=username", username)
+        Web.input_text("id=password", password)
+        Web.click("id=login-button")
         
         # Verify login
-        web.verify_element_visible("id=dashboard")
+        Web.verify_element_visible("id=dashboard")
 ```
 
 ### BDD/Behave Steps Example
@@ -257,7 +257,7 @@ Keep all possible configuration keys in `default.yml` as a reference:
 ```yaml
 # default.yml - Complete configuration template
 url: "https://example.com"
-api_url: "https://api.example.com"
+api_url: "https://API.example.com"
 username: "default_user"
 password: "default_password"
 # ... all other keys

@@ -54,19 +54,19 @@ Save as `data/cred/login.csv`.
 
 ```python
 from orbs.data import ddt
-from orbs.keyword import web
+from orbs.keyword import Web
 
 @ddt("cred/login.csv", scenario="scenario")
 def run(data):
-    web.open("https://example.com/login")
-    web.set_text("id=username", data["username"])
-    web.set_text("id=password", data["password"])
-    web.click("id=login-btn")
+    Web.open("https://example.com/login")
+    Web.set_text("id=username", data["username"])
+    Web.set_text("id=password", data["password"])
+    Web.click("id=login-btn")
 
     if data["expected"] == "success":
-        web.wait_for_element("id=dashboard")
+        Web.wait_for_element("id=dashboard")
     else:
-        web.wait_for_element("id=error-message")
+        Web.wait_for_element("id=error-message")
 ```
 
 ### 3. Run the Test
@@ -381,19 +381,19 @@ sql_injection,admin' OR '1'='1,pass,error
 
 ```python
 from orbs.data import ddt
-from orbs.keyword import web
+from orbs.keyword import Web
 
 @ddt("cred/login.csv", scenario="scenario")
 def run(data):
-    web.open("https://example.com/login")
-    web.set_text("id=username", data["username"])
-    web.set_text("id=password", data["password"])
-    web.click("id=login-btn")
+    Web.open("https://example.com/login")
+    Web.set_text("id=username", data["username"])
+    Web.set_text("id=password", data["password"])
+    Web.click("id=login-btn")
 
     if data["expected"] == "error":
-        assert web.is_visible("css=.error-message"), "Error message not shown"
+        assert Web.is_visible("css=.error-message"), "Error message not shown"
     else:
-        web.wait_for_element(f"id={data['expected']}")
+        Web.wait_for_element(f"id={data['expected']}")
 ```
 
 ### Form Validation
@@ -408,19 +408,19 @@ valid_name,John Doe,
 
 ```python
 from orbs.data import ddt
-from orbs.keyword import web
+from orbs.keyword import Web
 
 @ddt("validation/name_field.csv", scenario="scenario")
 def run(data):
-    web.open("https://example.com/form")
-    web.set_text("id=name", data["value"])
-    web.click("id=submit")
+    Web.open("https://example.com/form")
+    Web.set_text("id=name", data["value"])
+    Web.click("id=submit")
 
     if data["error_message"]:
-        error = web.get_text("css=.field-error")
+        error = Web.get_text("css=.field-error")
         assert error == data["error_message"], f"Expected '{data['error_message']}', got '{error}'"
     else:
-        web.wait_for_element("id=success")
+        Web.wait_for_element("id=success")
 ```
 
 ### API Testing with DDT
@@ -435,14 +435,14 @@ unauthorized,/api/admin,GET,401,
 
 ```python
 from orbs.data import ddt
-from orbs.keyword import api
+from orbs.keyword import API
 
 @ddt("api/endpoints.csv", scenario="scenario")
 def run(data):
     if data["method"] == "GET":
-        response = api.get(data["endpoint"])
+        response = API.get(data["endpoint"])
     elif data["method"] == "POST":
-        response = api.post(data["endpoint"], body=data["body"])
+        response = API.post(data["endpoint"], body=data["body"])
 
     assert str(response.status_code) == data["status_code"], \
         f"Expected {data['status_code']}, got {response.status_code}"
@@ -454,21 +454,21 @@ You can use `@ddt` for iteration and `load_data` for supplementary data:
 
 ```python
 from orbs.data import ddt, load_data
-from orbs.keyword import web
+from orbs.keyword import Web
 
 @ddt("test-cases/checkout.csv", scenario="scenario")
 def run(data):
     # Get user credentials from separate data file
     user = load_data("cred/users.csv").one(role=data["user_role"])
     
-    web.open("https://example.com/login")
-    web.set_text("id=username", user["username"])
-    web.set_text("id=password", user["password"])
-    web.click("id=login-btn")
+    Web.open("https://example.com/login")
+    Web.set_text("id=username", user["username"])
+    Web.set_text("id=password", user["password"])
+    Web.click("id=login-btn")
     
     # Continue with checkout flow using DDT data
-    web.click(f"id=product-{data['product_id']}")
-    web.click("id=checkout")
+    Web.click(f"id=product-{data['product_id']}")
+    Web.click("id=checkout")
 ```
 
 ---
@@ -493,14 +493,14 @@ For BDD feature files, Gherkin already provides a native data-driven mechanism: 
 
 ```python
 from orbs.data import ddt
-from orbs.keyword import web
+from orbs.keyword import Web
 
 @ddt("cred/login.csv", scenario="scenario")
 def run(data):
-    web.open("https://example.com/login")
-    web.set_text("id=username", data["username"])
-    web.set_text("id=password", data["password"])
-    web.click("id=login-btn")
+    Web.open("https://example.com/login")
+    Web.set_text("id=username", data["username"])
+    Web.set_text("id=password", data["password"])
+    Web.click("id=login-btn")
 ```
 
 ### BDD Feature File with Scenario Outline
@@ -525,21 +525,21 @@ Step definition (`include/steps/login_steps.py`):
 
 ```python
 from behave import given, when, then
-from orbs.keyword import web
+from orbs.keyword import Web
 
 @given('the user opens the login page')
 def step_impl(context):
-    web.open("https://example.com/login")
+    Web.open("https://example.com/login")
 
 @when('the user fill username {username} and password {password}')
 def step_impl(context, username, password):
-    web.set_text("id=username", username)
-    web.set_text("id=password", password)
-    web.click("id=login-btn")
+    Web.set_text("id=username", username)
+    Web.set_text("id=password", password)
+    Web.click("id=login-btn")
 
 @then('the user should see the dashboard')
 def step_impl(context):
-    web.wait_for_element("id=dashboard")
+    Web.wait_for_element("id=dashboard")
 ```
 
 ### When to Use Which

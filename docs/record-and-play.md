@@ -87,22 +87,22 @@ Generated test case: login_test
 Created by Orbs Recorder on 2026-02-22 12:34:56
 """
 
-from orbs.keyword import web
+from orbs.keyword import Web
 
 
 def run():
     """Generated test case for login_test"""
 
     # Setup
-    web.open("https://example.com")
+    Web.open("https://example.com")
 
     # Recorded interactions
-    web.click("css=#login")
-    web.set_text("css=input[name=\"username\"]", "user")
-    web.set_text("css=input[name=\"password\"]", "***PASSWORD***")
+    Web.click("css=#login")
+    Web.set_text("css=input[name=\"username\"]", "user")
+    Web.set_text("css=input[name=\"password\"]", "***PASSWORD***")
 
     # Cleanup
-    web.close()
+    Web.close()
 ```
 
 Run the generated test with the printed command, for example:
@@ -154,7 +154,7 @@ runner.start()
 
 - No actions captured: ensure the recorder injected listeners (CLI prints injection success) and the browser did not block scripts or disable console access.
 - Duplicate actions: dynamic pages can emit many events — use the generated test as a base and remove duplicates manually.
-- Elements not found when running generated test: page timing and dynamic content may require `web.wait_for_element()` or explicit waits.
+- Elements not found when running generated test: page timing and dynamic content may require `Web.wait_for_element()` or explicit waits.
 - Recording UI interfering: the recorder ignores clicks against its own UI, but verify selectors if you see unexpected interactions.
 
 ---

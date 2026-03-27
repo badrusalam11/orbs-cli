@@ -147,7 +147,7 @@ my-project/
 ├── settings/
 │   ├── browser.properties
 │   ├── execution.properties
-│   ├── mobile.properties
+│   ├── Mobile.properties
 │   ├── platform.properties
 │   └── server.properties
 ├── testcases/
@@ -479,7 +479,7 @@ orbs run testsuites/login.yml --platform=firefox
 
 Run on specific Android device:
 ```bash
-orbs run testsuites/mobile.yml --platform=android --deviceId=emulator-5554
+orbs run testsuites/Mobile.yml --platform=android --deviceId=emulator-5554
 ```
 
 **Valid platforms:**
