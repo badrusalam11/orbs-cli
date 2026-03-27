@@ -7,6 +7,8 @@ import requests
 import typer
 import shutil
 from pathlib import Path
+
+from orbs.thread_context import set_context
 from ._constant import PLATFORM_LIST, __version__
 from .utils import render_template
 import subprocess
@@ -410,7 +412,7 @@ def run_command(
     
     # Set ORBS_ENV so config.py will load the correct environment
     os.environ["ORBS_ENV"] = selected_env
-    
+    set_context("environment", selected_env)  # also set in thread context for live logger 
     # Execute the run with platform and device_id parameters
     from orbs import run
     run(target, platform, device_id)

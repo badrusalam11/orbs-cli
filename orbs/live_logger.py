@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from orbs.thread_context import get_context
+
 
 class LiveLogger:
     """
@@ -30,6 +32,7 @@ class LiveLogger:
         
         self.log_file = self.log_dir / "live.ndjson"
         self.step_counter = {}  # Track step numbers per test case
+        self.selected_env = "default"  # Track selected environment for context in events   
         
         # Create/truncate the file
         with open(self.log_file, 'w', encoding='utf-8') as f:
@@ -92,8 +95,10 @@ class LiveLogger:
     def execution_started(self, environment: Optional[str] = None, 
                          platform: Optional[str] = None) -> None:
         """Log execution start."""
+        self.selected_env = environment
         event = {
             "type": "execution_started",
+            "environment": self.selected_env,
             "execution_id": self.execution_id,
             "timestamp": self._get_timestamp()
         }
@@ -109,6 +114,7 @@ class LiveLogger:
         self._write_event({
             "type": "execution_finished",
             "execution_id": self.execution_id,
+            "environment": self.selected_env,
             "status": status,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()
@@ -122,6 +128,7 @@ class LiveLogger:
             "type": "testcase_started",
             "testcase_id": testcase_id,
             "name": name,
+            "environment": self.selected_env,
             "timestamp": self._get_timestamp()
         }
         if file_path:
@@ -135,6 +142,7 @@ class LiveLogger:
         self._write_event({
             "type": "testcase_finished",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "status": status,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()
@@ -155,6 +163,7 @@ class LiveLogger:
         event = {
             "type": "step_started",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "step_id": step_id,
             "keyword": keyword,
             "timestamp": self._get_timestamp()
@@ -172,6 +181,7 @@ class LiveLogger:
         self._write_event({
             "type": "step_passed",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "step_id": step_id,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()
@@ -184,6 +194,7 @@ class LiveLogger:
         event = {
             "type": "step_failed",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "step_id": step_id,
             "error": error,
             "duration": round(duration, 2),
@@ -200,6 +211,7 @@ class LiveLogger:
             "type": "step_skipped",
             "testcase_id": testcase_id,
             "step_id": step_id,
+            "environment": self.selected_env,
             "reason": reason,
             "timestamp": self._get_timestamp()
         })
@@ -210,6 +222,7 @@ class LiveLogger:
             "type": "testsuite_started",
             "testsuite_id": testsuite_id,
             "name": name,
+            "environment": self.selected_env,
             "timestamp": self._get_timestamp()
         })
     
@@ -219,6 +232,7 @@ class LiveLogger:
         self._write_event({
             "type": "testsuite_finished",
             "testsuite_id": testsuite_id,
+            "environment": self.selected_env,
             "status": status,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()
