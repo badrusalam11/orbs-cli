@@ -1,0 +1,2248 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for Orbs CLI">
+      
+      
+        <meta name="author" content="Muhamad Badru Salam">
+      
+      
+      
+        <link rel="prev" href="../environments/">
+      
+      
+        <link rel="next" href="../object-repository/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Failure Handling - Orbs CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#failure-handling" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbs CLI" class="md-header__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbs CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Failure Handling
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbs CLI" class="md-nav__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    Orbs CLI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../philosophy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mobile-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-driven-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Driven Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#failure-handling-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure Handling Strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Failure Handling Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-stop_on_failure-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. STOP_ON_FAILURE (Default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-continue_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. CONTINUE_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. OPTIONAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Keywords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supported Keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#web-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobile-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-handle-optional-popups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: Handle Optional Popups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-smoke-test-with-continue_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: Smoke Test with CONTINUE_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-cross-environment-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: Cross-Environment Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4-mobile-testing-with-optional-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 4: Mobile Testing with Optional Elements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logging Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stop_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STOP_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continue_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CONTINUE_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPTIONAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-case-status-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Case Status Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Test Case Status Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-different-status-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Different Status Outcomes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-continue_on_failure-marks-test-as-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why CONTINUE_ON_FAILURE Marks Test as Failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-optional-keeps-test-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why OPTIONAL Keeps Test Passed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return Values
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-use-stop_on_failure-for-critical-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Use STOP_ON_FAILURE for Critical Actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-use-optional-for-environmental-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Use OPTIONAL for Environmental Differences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-use-continue_on_failure-for-smoke-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Use CONTINUE_ON_FAILURE for Smoke Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-document-why-youre-using-non-default-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Document Why You're Using Non-Default Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-combine-with-conditional-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Combine with Conditional Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-other-frameworks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison with Other Frameworks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-dynamic-failure-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced: Dynamic Failure Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../record-and-play/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Record & Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../console-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#failure-handling-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure Handling Strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Failure Handling Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-stop_on_failure-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. STOP_ON_FAILURE (Default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-continue_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. CONTINUE_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. OPTIONAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Keywords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supported Keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#web-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobile-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-handle-optional-popups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: Handle Optional Popups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-smoke-test-with-continue_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: Smoke Test with CONTINUE_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-cross-environment-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: Cross-Environment Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4-mobile-testing-with-optional-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 4: Mobile Testing with Optional Elements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#logging-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logging Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stop_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        STOP_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continue_on_failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CONTINUE_ON_FAILURE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPTIONAL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-case-status-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Case Status Behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Test Case Status Behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-different-status-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Different Status Outcomes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-continue_on_failure-marks-test-as-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why CONTINUE_ON_FAILURE Marks Test as Failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-optional-keeps-test-passed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why OPTIONAL Keeps Test Passed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#return-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Return Values
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-use-stop_on_failure-for-critical-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Use STOP_ON_FAILURE for Critical Actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-use-optional-for-environmental-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Use OPTIONAL for Environmental Differences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-use-continue_on_failure-for-smoke-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Use CONTINUE_ON_FAILURE for Smoke Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-document-why-youre-using-non-default-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Document Why You're Using Non-Default Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-combine-with-conditional-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Combine with Conditional Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-other-frameworks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparison with Other Frameworks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-dynamic-failure-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced: Dynamic Failure Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="failure-handling">Failure Handling</h1>
+<h2 id="overview">Overview</h2>
+<p>ORBS provides flexible failure handling strategies that allow you to control how keyword failures are handled during test execution. This is especially useful for:</p>
+<ul>
+<li><strong>Optional actions</strong> that shouldn't fail the test</li>
+<li><strong>Exploratory testing</strong> where some actions might fail</li>
+<li><strong>Conditional logic</strong> where failures are expected</li>
+<li><strong>Non-critical verifications</strong> that can be skipped</li>
+</ul>
+<h2 id="failure-handling-strategies">Failure Handling Strategies</h2>
+<h3 id="1-stop_on_failure-default">1. STOP_ON_FAILURE (Default)</h3>
+<p>Stops test execution immediately when the keyword fails and raises an exception.</p>
+<pre><code class="language-python">from orbs.keyword import Web, FailureHandling
+
+# Default behavior - will fail test if element not found
+Web.click(&quot;id=submit_button&quot;)
+
+# Explicitly specify STOP_ON_FAILURE
+Web.click(&quot;id=submit_button&quot;, failure_handling=FailureHandling.STOP_ON_FAILURE)
+</code></pre>
+<p><strong>Use when:</strong>
+- The action is critical for the test flow
+- Failure should stop the test immediately
+- You need complete test reliability</p>
+<h3 id="2-continue_on_failure">2. CONTINUE_ON_FAILURE</h3>
+<p>Logs the error but continues test execution. Returns <code>None</code> on failure.</p>
+<p><strong>Important:</strong> Test case will be marked as <strong>FAILED</strong> if any CONTINUE_ON_FAILURE error occurs, but execution continues to collect all failures.</p>
+<pre><code class="language-python">from orbs.keyword import Web, FailureHandling
+
+# Try to close popup, but continue if it doesn't exist
+Web.click(&quot;id=close_popup&quot;, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+
+# Continue with main test flow
+Web.set_text(&quot;id=username&quot;, &quot;admin&quot;)
+Web.set_text(&quot;id=password&quot;, &quot;pass123&quot;)
+Web.click(&quot;id=login&quot;)
+</code></pre>
+<p><strong>Use when:</strong>
+- Action failure shouldn't stop the test
+- You want to collect all failures and review them later
+- Running smoke tests where you want to see all issues
+- Non-critical UI interactions</p>
+<p><strong>Test Status:</strong> FAILED (if any error occurs)</p>
+<h3 id="3-optional">3. OPTIONAL</h3>
+<p>Treats the action as completely optional. Suppresses all errors and logs as info only.</p>
+<p><strong>Important:</strong> Test case remains <strong>PASSED</strong> even if OPTIONAL actions fail, because they are truly optional.</p>
+<pre><code class="language-python">from orbs.keyword import Web, FailureHandling
+
+# Optional banner - ignore if not present
+Web.click(&quot;id=optional_banner_close&quot;, failure_handling=FailureHandling.OPTIONAL)
+
+# Optional cookie consent - may or may not exist
+Web.click(&quot;id=accept_cookies&quot;, failure_handling=FailureHandling.OPTIONAL)
+
+# Main test flow
+Web.open(&quot;https://example.com&quot;)
+Web.set_text(&quot;id=search&quot;, &quot;automation&quot;)
+Web.click(&quot;id=search_button&quot;)
+</code></pre>
+<p><strong>Use when:</strong>
+- Action is truly optional
+- Element may or may not exist
+- You don't want any error logging for missing elements
+- Testing across multiple environments with different UI states</p>
+<p><strong>Test Status:</strong> PASSED (failures are ignored)</p>
+<h2 id="supported-keywords">Supported Keywords</h2>
+<h3 id="web-keywords">Web Keywords</h3>
+<p>All major web keywords support failure handling:</p>
+<ul>
+<li><code>Web.open()</code></li>
+<li><code>Web.click()</code></li>
+<li><code>Web.double_click()</code></li>
+<li><code>Web.right_click()</code></li>
+<li><code>Web.set_text()</code></li>
+<li><code>Web.get_text()</code></li>
+<li><code>Web.get_attribute()</code></li>
+<li><code>Web.select_by_text()</code></li>
+<li><code>Web.select_by_value()</code></li>
+<li><code>Web.select_by_index()</code></li>
+<li><code>Web.wait_for_element()</code></li>
+<li><code>Web.wait_for_visible()</code></li>
+<li><code>Web.wait_for_clickable()</code></li>
+<li><code>Web.verify_text()</code></li>
+<li><code>Web.verify_element_visible()</code></li>
+</ul>
+<h3 id="mobile-keywords">Mobile Keywords</h3>
+<p>All major Mobile keywords support failure handling:</p>
+<ul>
+<li><code>Mobile.tap()</code></li>
+<li><code>Mobile.long_press()</code></li>
+<li><code>Mobile.double_tap()</code></li>
+<li><code>Mobile.set_text()</code></li>
+<li><code>Mobile.get_text()</code></li>
+<li><code>Mobile.get_attribute()</code></li>
+<li><code>Mobile.wait_for_element()</code></li>
+<li><code>Mobile.wait_for_visible()</code></li>
+</ul>
+<h2 id="usage-examples">Usage Examples</h2>
+<h3 id="example-1-handle-optional-popups">Example 1: Handle Optional Popups</h3>
+<pre><code class="language-python">from orbs.keyword import Web, FailureHandling
+
+def test_login_with_optional_popup():
+    Web.open(&quot;https://example.com&quot;)
+
+    # Optional: Close marketing popup if it appears
+    Web.click(
+        &quot;id=marketing_popup_close&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    # Optional: Dismiss notification banner
+    Web.click(
+        &quot;id=notification_dismiss&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    # Critical: Main login flow (will fail test if errors)
+    Web.set_text(&quot;id=username&quot;, &quot;admin&quot;)
+    Web.set_text(&quot;id=password&quot;, &quot;password123&quot;)
+    Web.click(&quot;id=login_button&quot;)
+
+    Web.verify_text(&quot;id=welcome_message&quot;, &quot;Welcome, Admin!&quot;)
+</code></pre>
+<h3 id="example-2-smoke-test-with-continue_on_failure">Example 2: Smoke Test with CONTINUE_ON_FAILURE</h3>
+<pre><code class="language-python">from orbs.keyword import Web, FailureHandling
+
+def test_smoke_navigation():
+    &quot;&quot;&quot;Smoke test that checks multiple pages without stopping on first failure&quot;&quot;&quot;
+    Web.open(&quot;https://example.com&quot;)
+
+    results = {}
+
+    # Test all navigation links - don't stop on first failure
+    pages = [
+        (&quot;id=home_link&quot;, &quot;Home&quot;),
+        (&quot;id=products_link&quot;, &quot;Products&quot;),
+        (&quot;id=about_link&quot;, &quot;About&quot;),
+        (&quot;id=contact_link&quot;, &quot;Contact&quot;),
+        (&quot;id=blog_link&quot;, &quot;Blog&quot;)
+    ]
+
+    for locator, page_name in pages:
+        # Continue even if a link fails
+        Web.click(locator, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+        time.sleep(1)
+
+        # Try to verify page loaded
+        title = Web.get_text(
+            &quot;css=h1&quot;, 
+            failure_handling=FailureHandling.CONTINUE_ON_FAILURE
+        )
+        results[page_name] = title is not None
+
+    # Review results
+    failed = [name for name, success in results.items() if not success]
+    if failed:
+        print(f&quot;Failed to navigate to: {', '.join(failed)}&quot;)
+</code></pre>
+<h3 id="example-3-cross-environment-test">Example 3: Cross-Environment Test</h3>
+<pre><code class="language-python">from orbs.keyword import Web, FailureHandling
+
+def test_form_submission():
+    &quot;&quot;&quot;Test that works across dev, staging, and prod environments&quot;&quot;&quot;
+    Web.open(&quot;https://example.com/form&quot;)
+
+    # Dev environment has debug panel - optional
+    Web.click(
+        &quot;id=debug_panel_close&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    # Staging has beta warning - optional
+    Web.click(
+        &quot;id=beta_warning_dismiss&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    # Fill form (critical)
+    Web.set_text(&quot;id=name&quot;, &quot;John Doe&quot;)
+    Web.set_text(&quot;id=email&quot;, &quot;john@example.com&quot;)
+
+    # Optional newsletter checkbox (not in all environments)
+    Web.click(
+        &quot;id=newsletter_checkbox&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    # Submit (critical)
+    Web.click(&quot;id=submit_button&quot;)
+    Web.verify_text(&quot;id=success_message&quot;, &quot;Form submitted successfully!&quot;)
+</code></pre>
+<h3 id="example-4-mobile-testing-with-optional-elements">Example 4: Mobile Testing with Optional Elements</h3>
+<pre><code class="language-python">from orbs.keyword import Mobile, FailureHandling
+
+def test_mobile_app_login():
+    Mobile.launch(&quot;com.example.app&quot;, &quot;.MainActivity&quot;)
+
+    # Optional: Skip onboarding if already seen
+    Mobile.tap(
+        &quot;id=skip_onboarding&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    # Optional: Dismiss permission dialogs
+    Mobile.tap(
+        &quot;id=allow_notifications&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    Mobile.tap(
+        &quot;id=allow_location&quot;, 
+        failure_handling=FailureHandling.OPTIONAL
+    )
+
+    # Critical: Login flow
+    Mobile.tap(&quot;id=login_button&quot;)
+    Mobile.set_text(&quot;id=username&quot;, &quot;testuser&quot;)
+    Mobile.set_text(&quot;id=password&quot;, &quot;pass123&quot;)
+    Mobile.tap(&quot;id=submit_login&quot;)
+
+    Mobile.wait_for_element(&quot;id=home_screen&quot;)
+</code></pre>
+<h2 id="logging-behavior">Logging Behavior</h2>
+<p>Each failure handling mode produces different log output:</p>
+<h3 id="stop_on_failure">STOP_ON_FAILURE</h3>
+<pre><code>[ERROR] [STOP_ON_FAILURE] click failed: Element not found: id=submit_button
+</code></pre>
+<p>→ Exception raised, test stops</p>
+<h3 id="continue_on_failure">CONTINUE_ON_FAILURE</h3>
+<pre><code>[ERROR] [CONTINUE_ON_FAILURE] click failed: Element not found: id=optional_button
+[WARNING] Test execution continues despite failure in click
+</code></pre>
+<p>→ No exception, test continues</p>
+<h3 id="optional">OPTIONAL</h3>
+<pre><code>[INFO] [OPTIONAL] click failed (ignored): Element not found: id=optional_banner
+</code></pre>
+<p>→ No exception, minimal logging</p>
+<h2 id="test-case-status-behavior">Test Case Status Behavior</h2>
+<p>The failure handling strategy affects the final test case status:</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Error Occurs</th>
+<th>Test Status</th>
+<th>Execution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>STOP_ON_FAILURE</strong></td>
+<td>✗ Exception</td>
+<td><strong>FAILED</strong></td>
+<td>Stops immediately</td>
+</tr>
+<tr>
+<td><strong>CONTINUE_ON_FAILURE</strong></td>
+<td>✗ Logged</td>
+<td><strong>FAILED</strong></td>
+<td>Continues to end</td>
+</tr>
+<tr>
+<td><strong>OPTIONAL</strong></td>
+<td>✗ Ignored</td>
+<td><strong>PASSED</strong></td>
+<td>Continues to end</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-different-status-outcomes">Example: Different Status Outcomes</h3>
+<pre><code class="language-python"># Test 1: Will be marked as FAILED
+def test_with_continue_on_failure():
+    Web.open(&quot;https://example.com&quot;)
+    Web.click(&quot;id=missing_button&quot;, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)  # Error!
+    Web.click(&quot;id=another_button&quot;)  # This still runs
+    # Result: Test case marked as FAILED (but all steps executed)
+
+# Test 2: Will be marked as PASSED
+def test_with_optional():
+    Web.open(&quot;https://example.com&quot;)
+    Web.click(&quot;id=missing_banner&quot;, failure_handling=FailureHandling.OPTIONAL)  # Ignored
+    Web.click(&quot;id=main_button&quot;)  # Success
+    # Result: Test case marked as PASSED (optional action ignored)
+
+# Test 3: Will be marked as FAILED
+def test_with_stop_on_failure():
+    Web.open(&quot;https://example.com&quot;)
+    Web.click(&quot;id=missing_button&quot;)  # Default: STOP_ON_FAILURE
+    Web.click(&quot;id=another_button&quot;)  # This won't run
+    # Result: Test case marked as FAILED (execution stopped)
+</code></pre>
+<h3 id="why-continue_on_failure-marks-test-as-failed">Why CONTINUE_ON_FAILURE Marks Test as Failed</h3>
+<p><code>CONTINUE_ON_FAILURE</code> is designed for <strong>collecting all failures</strong> in a single test run (e.g., smoke tests). The test continues to gather all errors, but the final status reflects that problems were encountered:</p>
+<pre><code class="language-python">def smoke_test_all_links():
+    &quot;&quot;&quot;Check all navigation links - collect all failures&quot;&quot;&quot;
+    links = [&quot;id=home&quot;, &quot;id=products&quot;, &quot;id=about&quot;, &quot;id=contact&quot;, &quot;id=broken_link&quot;]
+
+    for link in links:
+        Web.click(link, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+
+    # All links are tested, report shows which ones failed
+    # Test status: FAILED (because 'broken_link' failed)
+</code></pre>
+<h3 id="why-optional-keeps-test-passed">Why OPTIONAL Keeps Test Passed</h3>
+<p><code>OPTIONAL</code> is for <strong>truly optional elements</strong> that have no impact on test success:</p>
+<pre><code class="language-python">def test_login_flow():
+    &quot;&quot;&quot;Login should work regardless of optional elements&quot;&quot;&quot;
+    Web.open(&quot;https://example.com&quot;)
+
+    # Optional promotional banner
+    Web.click(&quot;id=promo_close&quot;, failure_handling=FailureHandling.OPTIONAL)
+
+    # Critical login flow
+    Web.set_text(&quot;id=username&quot;, &quot;admin&quot;)
+    Web.set_text(&quot;id=password&quot;, &quot;pass123&quot;)
+    Web.click(&quot;id=login&quot;)
+    Web.verify_text(&quot;id=welcome&quot;, &quot;Welcome, admin!&quot;)
+
+    # Test status: PASSED (promo banner is truly optional)
+</code></pre>
+<h2 id="return-values">Return Values</h2>
+<ul>
+<li><strong>STOP_ON_FAILURE</strong>: Returns result or raises exception</li>
+<li><strong>CONTINUE_ON_FAILURE</strong>: Returns result on success, <code>None</code> on failure</li>
+<li><strong>OPTIONAL</strong>: Returns result on success, <code>None</code> on failure</li>
+</ul>
+<pre><code class="language-python"># Get text with optional handling
+text = Web.get_text(&quot;id=label&quot;, failure_handling=FailureHandling.OPTIONAL)
+
+if text:
+    print(f&quot;Label text: {text}&quot;)
+else:
+    print(&quot;Label not found (optional)&quot;)
+</code></pre>
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="1-use-stop_on_failure-for-critical-actions">1. Use STOP_ON_FAILURE for Critical Actions</h3>
+<pre><code class="language-python"># Critical actions should fail the test
+Web.set_text(&quot;id=username&quot;, &quot;admin&quot;)  # Default: STOP_ON_FAILURE
+Web.click(&quot;id=login&quot;)  # Default: STOP_ON_FAILURE
+</code></pre>
+<h3 id="2-use-optional-for-environmental-differences">2. Use OPTIONAL for Environmental Differences</h3>
+<pre><code class="language-python"># Elements that may vary across environments
+Web.click(&quot;id=dev_only_banner&quot;, failure_handling=FailureHandling.OPTIONAL)
+</code></pre>
+<h3 id="3-use-continue_on_failure-for-smoke-tests">3. Use CONTINUE_ON_FAILURE for Smoke Tests</h3>
+<pre><code class="language-python"># When you want to see all issues at once
+for link in navigation_links:
+    Web.click(link, failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+</code></pre>
+<h3 id="4-document-why-youre-using-non-default-handling">4. Document Why You're Using Non-Default Handling</h3>
+<pre><code class="language-python"># OPTIONAL because: Cookie banner only appears on first visit
+Web.click(&quot;id=accept_cookies&quot;, failure_handling=FailureHandling.OPTIONAL)
+
+# CONTINUE_ON_FAILURE because: This is a non-critical verification
+Web.verify_text(&quot;id=optional_label&quot;, &quot;Test&quot;, 
+                failure_handling=FailureHandling.CONTINUE_ON_FAILURE)
+</code></pre>
+<h3 id="5-combine-with-conditional-logic">5. Combine with Conditional Logic</h3>
+<pre><code class="language-python"># Try optional action and react accordingly
+popup_closed = Web.click(
+    &quot;id=popup_close&quot;, 
+    failure_handling=FailureHandling.OPTIONAL
+)
+
+if popup_closed:
+    Web.sleep(1)  # Wait for popup animation
+</code></pre>
+<h2 id="comparison-with-other-frameworks">Comparison with Other Frameworks</h2>
+<table>
+<thead>
+<tr>
+<th>Framework</th>
+<th>Feature Name</th>
+<th>ORBS Equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Katalon</td>
+<td>FailureHandling.STOP_ON_FAILURE</td>
+<td>FailureHandling.STOP_ON_FAILURE</td>
+</tr>
+<tr>
+<td>Katalon</td>
+<td>FailureHandling.CONTINUE_ON_FAILURE</td>
+<td>FailureHandling.CONTINUE_ON_FAILURE</td>
+</tr>
+<tr>
+<td>Katalon</td>
+<td>FailureHandling.OPTIONAL</td>
+<td>FailureHandling.OPTIONAL</td>
+</tr>
+<tr>
+<td>Robot Framework</td>
+<td>Run Keyword And Continue On Failure</td>
+<td>CONTINUE_ON_FAILURE</td>
+</tr>
+<tr>
+<td>Robot Framework</td>
+<td>Run Keyword And Ignore Error</td>
+<td>OPTIONAL</td>
+</tr>
+</tbody>
+</table>
+<h2 id="advanced-dynamic-failure-handling">Advanced: Dynamic Failure Handling</h2>
+<p>Use <code>with_failure_handling()</code> function for dynamic scenarios:</p>
+<pre><code class="language-python">from orbs.keyword import Web, FailureHandling
+from orbs.keyword.failure_handling import with_failure_handling
+
+def test_dynamic_handling():
+    # Choose handling mode based on environment
+    mode = FailureHandling.OPTIONAL if is_dev_env() else FailureHandling.STOP_ON_FAILURE
+
+    with_failure_handling(
+        mode,
+        Web.click,
+        &quot;id=debug_button&quot;
+    )
+</code></pre>
+<h2 id="summary">Summary</h2>
+<p>FailureHandling in ORBS provides:
+- ✅ <strong>Flexible error handling</strong> for different test scenarios
+- ✅ <strong>Better test resilience</strong> across environments
+- ✅ <strong>Clearer test intent</strong> through explicit failure strategies
+- ✅ <strong>Compatible</strong> with both Web and Mobile keywords
+- ✅ <strong>Familiar API</strong> similar to Katalon and other frameworks</p>
+<p>Start using FailureHandling to make your tests more robust and maintainable!</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

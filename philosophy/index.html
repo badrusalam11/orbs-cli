@@ -1,0 +1,1830 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for Orbs CLI">
+      
+      
+        <meta name="author" content="Muhamad Badru Salam">
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../architecture/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Philosophy - Orbs CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#orbs-philosophy-concepts" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbs CLI" class="md-header__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbs CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Philosophy
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbs CLI" class="md-nav__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    Orbs CLI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-tests-are-software-not-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Tests are Software, Not Scripts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-explicit-is-better-than-implicit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Explicit is Better Than Implicit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-structure-before-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Structure Before Scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-one-core-many-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. One Core, Many Interfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-tooling-should-assist-not-hide-reality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tooling Should Assist, Not Hide Reality
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maturity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maturity Levels
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Maturity Levels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#level-1-beginners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 1: Beginners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#level-2-intermediate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 2: Intermediate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#level-3-advanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 3: Advanced
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-suite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Suite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listeners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-philosophy-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mobile-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-driven-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Driven Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../failure-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../record-and-play/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Record & Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../console-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-tests-are-software-not-scripts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Tests are Software, Not Scripts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-explicit-is-better-than-implicit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Explicit is Better Than Implicit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-structure-before-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Structure Before Scale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-one-core-many-interfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. One Core, Many Interfaces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-tooling-should-assist-not-hide-reality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Tooling Should Assist, Not Hide Reality
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#maturity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maturity Levels
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Maturity Levels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#level-1-beginners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 1: Beginners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#level-2-intermediate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 2: Intermediate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#level-3-advanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 3: Advanced
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Concepts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Concepts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-suite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Suite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listeners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-philosophy-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="orbs-philosophy-concepts">Orbs Philosophy &amp; Concepts</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Orbs is an automation platform that respects how people work.
+You can start visually, script directly, or build deep abstractions — all on the same core.
+Orbs gives guidance, not restrictions.
+Growth is supported, not enforced.</p>
+<p>Under the hood, Orbs is built on a set of core principles that guide its design, implementation, and evolution.
+These principles ensure that automation scales with your team's maturity without requiring framework migration or test rewrites.</p>
+<hr />
+<h2 id="core-principles">Core Principles</h2>
+<h3 id="1-tests-are-software-not-scripts">1. Tests are Software, Not Scripts</h3>
+<p><strong>What it means:</strong></p>
+<p>Automation code should be designed, structured, reviewed, and evolved like production code — not copied scripts glued together over time.</p>
+<p><strong>Why it matters:</strong></p>
+<ul>
+<li>Test automation is a software development discipline</li>
+<li>Poor structure leads to unmaintainable test suites</li>
+<li>Copy-paste approaches create technical debt that compounds over time</li>
+<li>Teams should apply the same engineering standards to tests as they do to production code</li>
+</ul>
+<p><strong>How Orbs supports this:</strong></p>
+<ul>
+<li>Enforced project structure from day one</li>
+<li>Separation of concerns: test cases, test suites, features, steps</li>
+<li>Template-based generation for consistency</li>
+<li>Support for listeners and hooks for extensibility</li>
+<li>Version control friendly structure</li>
+</ul>
+<hr />
+<h3 id="2-explicit-is-better-than-implicit">2. Explicit is Better Than Implicit</h3>
+<p><strong>What it means:</strong></p>
+<p>If something runs, it should be obvious:
+* What is executed
+* From where
+* With which configuration</p>
+<p>No silent defaults. No hidden behavior.</p>
+<p><strong>Why it matters:</strong></p>
+<ul>
+<li>Debugging mysterious test failures wastes time</li>
+<li>Team members should understand execution flow without digging through framework internals</li>
+<li>Configuration should be discoverable and documented</li>
+<li>Surprises in automation lead to loss of trust</li>
+</ul>
+<p><strong>How Orbs supports this:</strong></p>
+<ul>
+<li>Clear command syntax: <code>orbs run testsuites/login.yml</code></li>
+<li>Explicit platform selection: <code>orbs run --platform=android</code></li>
+<li>Configuration in readable files: <code>settings/*.properties</code> and <code>.env</code></li>
+<li>Transparent template system</li>
+<li>CLI commands that describe what they do</li>
+</ul>
+<hr />
+<h3 id="3-structure-before-scale">3. Structure Before Scale</h3>
+<p><strong>What it means:</strong></p>
+<p>Orbs enforces structure early so teams don't pay technical debt later. Scaling automation should feel predictable, not painful.</p>
+<p><strong>Why it matters:</strong></p>
+<ul>
+<li>Unstructured test suites become unmaintainable at scale</li>
+<li>Retrofitting structure into existing chaos is expensive</li>
+<li>Teams should focus on writing tests, not organizing them</li>
+<li>Good structure enables parallel execution, selective runs, and clear reporting</li>
+</ul>
+<p><strong>How Orbs supports this:</strong></p>
+<ul>
+<li>Scaffolding with <code>orbs init</code> creates proper structure immediately</li>
+<li>Predefined directories: <code>testcases/</code>, <code>testsuites/</code>, <code>features/</code>, <code>steps/</code>, <code>listeners/</code></li>
+<li>Naming conventions and templates</li>
+<li>YAML-based test suite definitions for clarity</li>
+<li>Separation of test logic from execution configuration</li>
+</ul>
+<hr />
+<h3 id="4-one-core-many-interfaces">4. One Core, Many Interfaces</h3>
+<p><strong>What it means:</strong></p>
+<p>The same execution engine can be accessed via:
+* CLI (<code>orbs run</code>)
+* REST API (<code>orbs serve</code>)
+* Orbs Studio (GUI) - planned</p>
+<p>Different entry points, same behavior.</p>
+<p><strong>Why it matters:</strong></p>
+<ul>
+<li>Teams have different preferences and workflows</li>
+<li>Junior engineers may prefer GUI, seniors prefer CLI</li>
+<li>CI/CD requires programmatic access</li>
+<li>Consistency across interfaces ensures reliable execution</li>
+<li>One implementation = easier maintenance</li>
+</ul>
+<p><strong>How Orbs supports this:</strong></p>
+<ul>
+<li>Core execution engine in <code>orbs.runner</code></li>
+<li>CLI wrapper via Typer</li>
+<li>REST API server for remote execution</li>
+<li>All interfaces use the same underlying runner</li>
+<li>Configuration is interface-agnostic</li>
+</ul>
+<hr />
+<h3 id="5-tooling-should-assist-not-hide-reality">5. Tooling Should Assist, Not Hide Reality</h3>
+<p><strong>What it means:</strong></p>
+<p>Generators, runners, and spy tools exist to accelerate work — not to obscure how automation actually works.</p>
+<p><strong>Why it matters:</strong></p>
+<ul>
+<li>Engineers should understand what they're running</li>
+<li>Black-box tools create dependency and knowledge gaps</li>
+<li>Generated code should be readable and modifiable</li>
+<li>Tooling should teach, not replace learning</li>
+</ul>
+<p><strong>How Orbs supports this:</strong></p>
+<ul>
+<li>Templates are Jinja2 files you can inspect and modify</li>
+<li>Generated code is standard Python/YAML</li>
+<li>Spy tools capture elements but don't hide locators</li>
+<li>CLI commands are transparent</li>
+<li>Source code is accessible and documented</li>
+</ul>
+<hr />
+<h2 id="maturity-levels">Maturity Levels</h2>
+<p>Orbs supports teams at different automation maturity levels:</p>
+<h3 id="level-1-beginners">Level 1: Beginners</h3>
+<p><strong>Who:</strong> Junior QA engineers, manual testers learning automation</p>
+<p><strong>Tools:</strong>
+* Visual spy tools for element capture
+* Template generators for boilerplate
+* YAML-based test suite definitions
+* Keyword-driven approach</p>
+<p><strong>Example workflow:</strong></p>
+<pre><code class="language-bash">orbs init myproject
+orbs spy --web --url=https://app.example.com
+orbs create-feature login
+orbs implement-feature login
+orbs run features/login.feature
+</code></pre>
+<hr />
+<h3 id="level-2-intermediate">Level 2: Intermediate</h3>
+<p><strong>Who:</strong> Automation engineers comfortable with code</p>
+<p><strong>Tools:</strong>
+* Direct Python test case development
+* Custom listeners for reporting
+* Environment-specific configuration
+* API testing integration</p>
+<p><strong>Example workflow:</strong></p>
+<pre><code class="language-bash">orbs create-testcase checkout_flow
+# Edit testcases/checkout_flow.py directly
+orbs create-testsuite regression
+# Edit testsuites/regression.yml to include tests
+orbs run testsuites/regression.yml --platform=chrome
+</code></pre>
+<hr />
+<h3 id="level-3-advanced">Level 3: Advanced</h3>
+<p><strong>Who:</strong> Senior SDETs, framework developers</p>
+<p><strong>Tools:</strong>
+* Custom keywords and extensions
+* API-driven execution
+* Docker-based parallel execution
+* CI/CD pipeline integration
+* Custom listeners for metrics/reporting</p>
+<p><strong>Example workflow:</strong></p>
+<pre><code class="language-bash"># Start API server
+orbs serve --port=5006
+
+# Trigger via REST API
+curl -X POST http://localhost:5006/run \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{&quot;target&quot;: &quot;testsuites/regression.yml&quot;, &quot;platform&quot;: &quot;chrome&quot;}'
+
+# Check status
+curl http://localhost:5006/status
+</code></pre>
+<hr />
+<h2 id="key-concepts">Key Concepts</h2>
+<h3 id="test-case">Test Case</h3>
+<p>A <strong>test case</strong> is a single, focused test scenario written in Python.</p>
+<p><strong>Location:</strong> <code>testcases/</code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-python">def test_login_valid_credentials():
+    # Test logic here
+    pass
+</code></pre>
+<p><strong>When to use:</strong>
+* Unit-level test scenarios
+* Reusable test building blocks
+* Code-first test development</p>
+<hr />
+<h3 id="test-suite">Test Suite</h3>
+<p>A <strong>test suite</strong> is a collection of test cases with execution configuration.</p>
+<p><strong>Location:</strong> <code>testsuites/</code></p>
+<p><strong>Format:</strong> YAML + Python</p>
+<p><strong>Example (login.yml):</strong></p>
+<pre><code class="language-yaml">test_cases:
+  - path: testcases\login.py
+    enabled: true
+</code></pre>
+<p><strong>When to use:</strong>
+* Grouping related test cases
+* Environment-specific test runs
+* Regression suites</p>
+<hr />
+<h3 id="feature">Feature</h3>
+<p>A <strong>feature</strong> is a BDD-style specification using Gherkin syntax.</p>
+<p><strong>Location:</strong> <code>include/features/</code></p>
+<p><strong>Example (login.feature):</strong></p>
+<pre><code class="language-gherkin">Feature: User Login
+  Scenario: Successful login
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should see the dashboard
+</code></pre>
+<p><strong>When to use:</strong>
+* Behavior-driven development
+* Business-readable test specs
+* Collaboration with non-technical stakeholders</p>
+<hr />
+<h3 id="steps">Steps</h3>
+<p><strong>Steps</strong> are the implementation of Gherkin scenarios using Behave.</p>
+<p><strong>Location:</strong> <code>include/steps/</code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-python">from behave import given, when, then
+
+@given('I am on the login page')
+def step_impl(context):
+    context.driver.get(&quot;https://app.example.com/login&quot;)
+</code></pre>
+<p><strong>When to use:</strong>
+* Implementing BDD features
+* Reusable step definitions</p>
+<hr />
+<h3 id="listeners">Listeners</h3>
+<p><strong>Listeners</strong> are hooks that execute at specific points in the test lifecycle.</p>
+<p><strong>Location:</strong> <code>listeners/</code></p>
+<p><strong>Use cases:</strong>
+* Custom reporting
+* Screenshot capture on failure
+* Metrics collection
+* Integration with third-party tools</p>
+<hr />
+<h3 id="configuration">Configuration</h3>
+<p>Configuration is explicit and layered:</p>
+<ol>
+<li><strong>Environment variables</strong> (<code>.env</code>)</li>
+<li><strong>Property files</strong> (<code>settings/*.properties</code>)</li>
+<li><strong>Command-line arguments</strong></li>
+</ol>
+<p><strong>Priority:</strong> CLI args &gt; Environment vars &gt; Property files</p>
+<hr />
+<h2 id="design-philosophy-summary">Design Philosophy Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>What it prevents</th>
+<th>What it enables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tests are software</td>
+<td>Copy-paste chaos</td>
+<td>Maintainable automation</td>
+</tr>
+<tr>
+<td>Explicit over implicit</td>
+<td>Mystery failures</td>
+<td>Clear debugging</td>
+</tr>
+<tr>
+<td>Structure before scale</td>
+<td>Technical debt</td>
+<td>Predictable growth</td>
+</tr>
+<tr>
+<td>One core, many interfaces</td>
+<td>Vendor lock-in</td>
+<td>Flexible workflows</td>
+</tr>
+<tr>
+<td>Tooling assists</td>
+<td>Black-box dependency</td>
+<td>Learning &amp; ownership</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../cli-reference/">CLI Reference</a> - Learn all available commands</li>
+<li><a href="../web-testing/">Web Testing</a> - Web automation guide</li>
+<li><a href="../mobile-testing/">Mobile Testing</a> - Android testing guide</li>
+<li><a href="../architecture/">Architecture</a> - Technical architecture overview</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

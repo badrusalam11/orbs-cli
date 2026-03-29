@@ -1,0 +1,2724 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for Orbs CLI">
+      
+      
+        <meta name="author" content="Muhamad Badru Salam">
+      
+      
+      
+        <link rel="prev" href="./">
+      
+      
+        <link rel="next" href="../web-testing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Installation / Setup - Orbs CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#orbs-cli-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbs CLI" class="md-header__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbs CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Installation / Setup
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbs CLI" class="md-nav__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    Orbs CLI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../philosophy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup-android" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setup android
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-testsuite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-testsuite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-testcase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-testcase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-listener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-listener
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implement-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        implement-feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        select-device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        select-platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        spy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        serve
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Cheat Sheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-project-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Project Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-platform-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Platform Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-environment-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Environment Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mobile-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Mobile Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#command-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appium-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium not starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adb-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADB not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup-android" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setup android
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-testsuite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-testsuite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-testcase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-testcase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-listener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-listener
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implement-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        implement-feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        select-device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        select-platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        spy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        serve
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Cheat Sheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-project-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Project Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-platform-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Platform Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-environment-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Environment Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mobile-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Mobile Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#command-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appium-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium not starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adb-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADB not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mobile-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-driven-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Driven Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../failure-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../record-and-play/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Record & Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../console-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#global-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup-android" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setup android
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-testsuite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-testsuite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-testcase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-testcase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-listener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create-listener
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implement-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        implement-feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        select-device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        select-platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        spy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        serve
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Cheat Sheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-project-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Project Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-platform-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Platform Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-environment-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Environment Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mobile-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Mobile Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#command-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appium-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium not starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adb-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADB not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="orbs-cli-reference">Orbs CLI Reference</h1>
+<p>Complete reference for all Orbs command-line interface commands.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#global-options">Global Options</a></li>
+<li><a href="#commands">Commands</a></li>
+<li><a href="#setup-android">setup android</a></li>
+<li><a href="#init">init</a></li>
+<li><a href="#create-testsuite">create-testsuite</a></li>
+<li><a href="#create-testcase">create-testcase</a></li>
+<li><a href="#create-feature">create-feature</a></li>
+<li><a href="#create-step">create-step</a></li>
+<li><a href="#create-listener">create-listener</a></li>
+<li><a href="#implement-feature">implement-feature</a></li>
+<li><a href="#run">run</a></li>
+<li><a href="#select-device">select-device</a></li>
+<li><a href="#select-platform">select-platform</a></li>
+<li><a href="#spy">spy</a></li>
+<li><a href="#serve">serve</a></li>
+</ul>
+<hr />
+<h2 id="installation">Installation</h2>
+<pre><code class="language-bash">pip install orbs-cli
+</code></pre>
+<p>Verify installation:</p>
+<pre><code class="language-bash">orbs --help
+</code></pre>
+<hr />
+<h2 id="global-options">Global Options</h2>
+<p>All Orbs commands support standard Typer options:</p>
+<pre><code class="language-bash">--help          Show help message and exit
+--version       Show version number
+</code></pre>
+<hr />
+<h2 id="commands">Commands</h2>
+<h3 id="setup-android">setup android</h3>
+<p><strong>Description:</strong><br />
+Install required dependencies for Android mobile testing (Node.js, npm, Appium, Appium UIAutomator2 driver).</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs setup android
+</code></pre>
+<p><strong>What it does:</strong></p>
+<ol>
+<li>Checks if Node.js and npm are installed</li>
+<li>If not found, automatically downloads and installs Node.js (Windows) or uses package manager (Linux/Mac)</li>
+<li>Installs Appium globally via npm</li>
+<li>Installs Appium UIAutomator2 driver</li>
+<li>Verifies all installations</li>
+</ol>
+<p><strong>Platform support:</strong>
+* ✅ Windows (automatic MSI installer)
+* ✅ macOS (via Homebrew if available)
+* ✅ Linux (via apt if available)</p>
+<p><strong>Example output:</strong></p>
+<pre><code>✅ npm detected
+⬇️ Installing appium...
+✅ appium installed
+⬇️ Installing appium-uiautomator2-driver...
+✅ appium-uiautomator2-driver installed
+✅ All mobile dependencies are ready
+</code></pre>
+<p><strong>Notes:</strong>
+* Requires internet connection
+* May require administrator/sudo privileges
+* Only needs to be run once per machine</p>
+<hr />
+<h3 id="init">init</h3>
+<p><strong>Description:</strong><br />
+Initialize a new Orbs project with proper directory structure and template files.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs init &lt;project_name&gt; [--template=&lt;template&gt;]
+
+# Or initialize in current directory
+orbs init . --template=web
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>project_name</code> - Name of the project (creates a new folder) or <code>.</code> for current directory</p>
+<p><strong>Options:</strong>
+* <code>--template</code> - Project template to use (default: <code>blank</code>). Available templates:</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>blank</code></td>
+<td>Empty project structure with no sample tests. Good for starting from scratch.</td>
+</tr>
+<tr>
+<td><code>web</code></td>
+<td>Web testing project with sample Chrome/Selenium test using <code>Web</code> keyword. Immediately runnable.</td>
+</tr>
+<tr>
+<td><code>mobile</code></td>
+<td>Mobile testing project with sample Appium test using <code>Mobile</code> keyword. Immediately runnable (requires Appium setup).</td>
+</tr>
+<tr>
+<td><code>api</code></td>
+<td>API testing project with sample HTTP test using <code>API</code> keyword. Immediately runnable.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-bash"># Create a blank project (default)
+orbs init my-project
+
+# Create a web testing project
+orbs init my-web-project --template=web
+
+# Create an API testing project
+orbs init my-api-project --template=api
+
+# Create a mobile testing project
+orbs init my-mobile-project --template=mobile
+</code></pre>
+<p><strong>Generated structure (base — shared across all templates):</strong></p>
+<pre><code>my-project/
+├── data/
+├── environments/
+│   ├── default.yml
+│   ├── dev.yml
+│   ├── prod.yml
+│   ├── staging.yml
+│   └── uat.yml
+├── listeners/
+├── settings/
+│   ├── browser.properties
+│   ├── execution.properties
+│   ├── Mobile.properties
+│   ├── platform.properties
+│   └── server.properties
+├── testcases/
+├── testsuites/
+├── testsuite_collections/
+├── .vscode/
+│   └── launch.json
+├── __init__.py
+├── Dockerfile
+├── main.py
+├── pytest.ini
+├── README.md
+└── requirements.txt
+</code></pre>
+<p><strong>Template-specific files:</strong></p>
+<p><strong><code>web</code> template</strong> adds:</p>
+<pre><code>├── testcases/
+│   └── search.py          # Web test using Web keyword
+├── testsuites/
+│   ├── search.yml         # Test suite config
+│   └── search.py          # Suite listeners
+├── include/
+│   ├── environment.py
+│   ├── features/
+│   │   └── search.feature # BDD feature file
+│   └── steps/
+│       └── search_steps.py
+</code></pre>
+<p><strong><code>mobile</code> template</strong> adds:</p>
+<pre><code>├── testcases/
+│   └── login.py           # Mobile test using Mobile keyword
+├── testsuites/
+│   ├── login.yml          # Test suite config
+│   └── login.py           # Suite listeners
+</code></pre>
+<p><strong><code>api</code> template</strong> adds:</p>
+<pre><code>├── testcases/
+│   └── get_users.py       # API test using API keyword
+├── testsuites/
+│   ├── get_users.yml      # Test suite config
+│   └── get_users.py       # Suite listeners
+</code></pre>
+<p><strong>Notes:</strong>
+* Will not overwrite existing folders
+* Non-blank templates create ready-to-run projects with sample tests
+* Includes Docker configuration for containerized execution
+* All templates include environment configs (default, dev, staging, uat, prod)</p>
+<hr />
+<h3 id="create-testsuite">create-testsuite</h3>
+<p><strong>Description:</strong><br />
+Generate a new test suite with YAML configuration and Python runner files.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs create-testsuite &lt;name&gt;
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>name</code> - Name of the test suite</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs create-testsuite regression
+</code></pre>
+<p><strong>Generated files:</strong>
+* <code>testsuites/regression.yml</code> - Test suite configuration
+* <code>testsuites/regression.py</code> - Python runner (optional)</p>
+<p><strong>regression.yml template:</strong></p>
+<pre><code class="language-yaml">name: regression
+description: Test suite for regression
+
+testcases: []
+
+platform: chrome
+</code></pre>
+<p><strong>When to use:</strong>
+* Grouping related test cases
+* Creating environment-specific test runs
+* Organizing regression, smoke, or integration suites</p>
+<hr />
+<h3 id="create-testcase">create-testcase</h3>
+<p><strong>Description:</strong><br />
+Generate a new test case Python file.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs create-testcase &lt;name&gt;
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>name</code> - Name of the test case</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs create-testcase checkout_flow
+</code></pre>
+<p><strong>Generated file:</strong>
+* <code>testcases/checkout_flow.py</code></p>
+<p><strong>Template:</strong></p>
+<pre><code class="language-python">def test_checkout_flow():
+    &quot;&quot;&quot;
+    Test case: checkout_flow
+    &quot;&quot;&quot;
+    # TODO: Implement test logic
+    pass
+</code></pre>
+<p><strong>Context-aware:</strong>
+* If run from <code>testcases/</code> subdirectory, creates file there
+* Otherwise creates in <code>testcases/</code> at project root</p>
+<hr />
+<h3 id="create-feature">create-feature</h3>
+<p><strong>Description:</strong><br />
+Generate a new BDD feature file using Gherkin syntax.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs create-feature &lt;name&gt;
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>name</code> - Name of the feature</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs create-feature user_registration
+</code></pre>
+<p><strong>Generated file:</strong>
+* <code>include/features/user_registration.feature</code></p>
+<p><strong>Template:</strong></p>
+<pre><code class="language-gherkin">Feature: user_registration
+
+  Scenario: user_registration scenario
+    Given a precondition
+    When an action occurs
+    Then verify the outcome
+</code></pre>
+<p><strong>Next steps:</strong>
+1. Edit the feature file with your actual scenarios
+2. Run <code>orbs implement-feature user_registration</code> to generate step definitions</p>
+<hr />
+<h3 id="create-step">create-step</h3>
+<p><strong>Description:</strong><br />
+Generate a new step definition file for BDD tests.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs create-step &lt;name&gt;
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>name</code> - Name of the step file</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs create-step authentication
+</code></pre>
+<p><strong>Generated file:</strong>
+* <code>include/steps/authentication.py</code></p>
+<p><strong>Template:</strong></p>
+<pre><code class="language-python">from behave import given, when, then
+
+# Add your step definitions here
+</code></pre>
+<hr />
+<h3 id="create-listener">create-listener</h3>
+<p><strong>Description:</strong><br />
+Generate a new test listener for hooks and custom reporting.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs create-listener &lt;name&gt;
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>name</code> - Name of the listener</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs create-listener screenshot_on_failure
+</code></pre>
+<p><strong>Generated file:</strong>
+* <code>listeners/screenshot_on_failure.py</code></p>
+<p><strong>Use cases:</strong>
+* Custom reporting
+* Screenshot capture
+* Performance metrics
+* Integration with third-party tools</p>
+<hr />
+<h3 id="implement-feature">implement-feature</h3>
+<p><strong>Description:</strong><br />
+Generate step definition boilerplate from an existing feature file.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs implement-feature &lt;name&gt;
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>name</code> - Name of the feature (without .feature extension)</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs create-feature login
+# Edit include/features/login.feature
+orbs implement-feature login
+</code></pre>
+<p><strong>What it does:</strong>
+1. Reads <code>include/features/&lt;name&gt;.feature</code>
+2. Extracts all Given/When/Then/And steps
+3. Generates step definition functions in <code>include/steps/&lt;name&gt;_steps.py</code>
+4. Handles parameterized steps with <code>&lt;param&gt;</code> → <code>{param}</code> conversion</p>
+<p><strong>Example feature:</strong></p>
+<pre><code class="language-gherkin">Feature: Login
+  Scenario: Valid login
+    Given I navigate to &lt;url&gt;
+    When I enter username &quot;&lt;user&gt;&quot; and password &quot;&lt;pass&gt;&quot;
+    Then I should see &quot;&lt;message&gt;&quot;
+</code></pre>
+<p><strong>Generated steps:</strong></p>
+<pre><code class="language-python">from behave import given, when, then
+
+@given('I navigate to {url}')
+def step_impl(context, url):
+    pass
+
+@when('I enter username &quot;{user}&quot; and password &quot;{pass}&quot;')
+def step_impl(context, user, pass):
+    pass
+
+@then('I should see &quot;{message}&quot;')
+def step_impl(context, message):
+    pass
+</code></pre>
+<hr />
+<h3 id="run">run</h3>
+<p><strong>Description:</strong><br />
+Execute test suites, test cases, or feature files.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs run &lt;target&gt; [options]
+</code></pre>
+<p><strong>Arguments:</strong>
+* <code>target</code> - Path to test suite (.yml), test case (.py), or feature file (.feature)</p>
+<p><strong>Options:</strong>
+* <code>--env &lt;path&gt;</code>, <code>-e &lt;path&gt;</code> - Load environment variables from custom .env file
+* <code>--platform &lt;name&gt;</code>, <code>-p &lt;name&gt;</code> - Override platform (android, chrome, firefox, edge, safari)
+* <code>--deviceId &lt;id&gt;</code> - Specify device ID for mobile testing</p>
+<p><strong>Examples:</strong></p>
+<p>Run a test suite:</p>
+<pre><code class="language-bash">orbs run testsuites/regression.yml
+</code></pre>
+<p>Run a specific test case:</p>
+<pre><code class="language-bash">orbs run testcases/login.py
+</code></pre>
+<p>Run a feature file:</p>
+<pre><code class="language-bash">orbs run include/features/checkout.feature
+</code></pre>
+<p>Run with custom environment:</p>
+<pre><code class="language-bash">orbs run testsuites/smoke.yml --env=.env.staging
+</code></pre>
+<p>Run on specific platform:</p>
+<pre><code class="language-bash">orbs run testsuites/login.yml --platform=firefox
+</code></pre>
+<p>Run on specific Android device:</p>
+<pre><code class="language-bash">orbs run testsuites/Mobile.yml --platform=android --deviceId=emulator-5554
+</code></pre>
+<p><strong>Valid platforms:</strong>
+* <strong>Mobile:</strong> <code>android</code>
+* <strong>Web:</strong> <code>chrome</code>, <code>firefox</code>, <code>edge</code>, <code>safari</code></p>
+<p><strong>Notes:</strong>
+* Platform can also be set in test suite YAML or settings/platform.properties
+* CLI argument takes highest priority
+* Environment file loading is optional</p>
+<hr />
+<h3 id="select-device">select-device</h3>
+<p><strong>Description:</strong><br />
+List connected Android devices and select one to update <code>settings/appium.properties</code>.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs select-device
+</code></pre>
+<p><strong>What it does:</strong>
+1. Runs <code>adb devices</code> to list connected devices
+2. Presents interactive selection menu
+3. Updates <code>deviceName</code> in <code>settings/appium.properties</code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs select-device
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>? Select device: 
+  emulator-5554
+❯ R58M40ABCDE
+
+✅ Updated deviceName=R58M40ABCDE in settings/appium.properties
+</code></pre>
+<p><strong>Requirements:</strong>
+* ADB (Android Debug Bridge) must be in PATH
+* At least one Android device/emulator connected</p>
+<hr />
+<h3 id="select-platform">select-platform</h3>
+<p><strong>Description:</strong><br />
+Interactively select default platform and save to configuration.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs select-platform
+</code></pre>
+<p><strong>What it does:</strong>
+1. Shows list of available platforms (mobile + web)
+2. Saves selection to <code>settings/platform.properties</code></p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs select-platform
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>? Select platform: 
+  android
+❯ chrome
+  firefox
+  edge
+
+✅ Selected platform 'chrome' saved to settings/platform.properties
+</code></pre>
+<hr />
+<h3 id="spy">spy</h3>
+<p><strong>Description:</strong><br />
+Launch interactive element spy for web or mobile testing.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash"># Web spy
+orbs spy --web --url=&lt;url&gt;
+
+# Mobile spy (Android)
+orbs spy --mobile
+</code></pre>
+<p><strong>Options:</strong>
+* <code>--web</code> - Launch web spy mode
+* <code>--mobile</code> - Launch mobile spy mode
+* <code>--url &lt;url&gt;</code> - Target URL for web spy (required for --web)</p>
+<p><strong>Examples:</strong></p>
+<p>Web spy:</p>
+<pre><code class="language-bash">orbs spy --web --url=https://google.com
+</code></pre>
+<p>Mobile spy:</p>
+<pre><code class="language-bash">orbs spy --mobile
+</code></pre>
+<p><strong>Features:</strong>
+* Inspect elements interactively
+* Capture locators (CSS, XPath, ID)
+* Generate test code snippets
+* Real-time element highlighting</p>
+<p><strong>Keyboard shortcuts (Web):</strong>
+* <code>Ctrl +</code> <code>- Capture element under cursor
+*</code>Ctrl + C` - Stop spy session</p>
+<p><strong>See:</strong> <a href="../spy/">Spy Documentation</a> for detailed usage</p>
+<hr />
+<h3 id="serve">serve</h3>
+<p><strong>Description:</strong><br />
+Start Orbs REST API server for remote test execution.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-bash">orbs serve [--port &lt;port&gt;]
+</code></pre>
+<p><strong>Options:</strong>
+* <code>--port &lt;port&gt;</code> - Custom port number (default: 5006)</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-bash">orbs serve --port 8080
+</code></pre>
+<p><strong>API Endpoints:</strong></p>
+<p><strong>GET /testsuites</strong> - List all available test suites</p>
+<pre><code class="language-bash">curl http://localhost:5006/testsuites
+</code></pre>
+<p><strong>POST /run</strong> - Execute a test</p>
+<pre><code class="language-bash">curl -X POST http://localhost:5006/run \
+  -H &quot;Content-Type: application/json&quot; \
+  -d '{
+    &quot;target&quot;: &quot;testsuites/regression.yml&quot;,
+    &quot;platform&quot;: &quot;chrome&quot;
+  }'
+</code></pre>
+<p><strong>GET /status</strong> - Check execution status</p>
+<pre><code class="language-bash">curl http://localhost:5006/status
+</code></pre>
+<p><strong>Use cases:</strong>
+* CI/CD integration
+* Remote test execution
+* Test orchestration
+* Integration with custom dashboards</p>
+<hr />
+<h2 id="command-cheat-sheet">Command Cheat Sheet</h2>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Setup Android environment</td>
+<td><code>orbs setup android</code></td>
+</tr>
+<tr>
+<td>Create new project</td>
+<td><code>orbs init myproject</code></td>
+</tr>
+<tr>
+<td>Create test suite</td>
+<td><code>orbs create-testsuite smoke</code></td>
+</tr>
+<tr>
+<td>Create test case</td>
+<td><code>orbs create-testcase login</code></td>
+</tr>
+<tr>
+<td>Create BDD feature</td>
+<td><code>orbs create-feature checkout</code></td>
+</tr>
+<tr>
+<td>Generate step definitions</td>
+<td><code>orbs implement-feature checkout</code></td>
+</tr>
+<tr>
+<td>Run test suite</td>
+<td><code>orbs run testsuites/smoke.yml</code></td>
+</tr>
+<tr>
+<td>Run on Firefox</td>
+<td><code>orbs run testsuites/smoke.yml --platform=firefox</code></td>
+</tr>
+<tr>
+<td>Select Android device</td>
+<td><code>orbs select-device</code></td>
+</tr>
+<tr>
+<td>Select default platform</td>
+<td><code>orbs select-platform</code></td>
+</tr>
+<tr>
+<td>Web element spy</td>
+<td><code>orbs spy --web --url=https://app.com</code></td>
+</tr>
+<tr>
+<td>Mobile element spy</td>
+<td><code>orbs spy --mobile</code></td>
+</tr>
+<tr>
+<td>Start API server</td>
+<td><code>orbs serve</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="1-project-initialization">1. Project Initialization</h3>
+<p>Always start with <code>orbs init</code> to ensure proper structure</p>
+<h3 id="2-naming-conventions">2. Naming Conventions</h3>
+<ul>
+<li>Use snake_case for file names: <code>user_login.py</code></li>
+<li>Use descriptive names: <code>checkout_flow</code> not <code>test1</code></li>
+</ul>
+<h3 id="3-platform-configuration">3. Platform Configuration</h3>
+<p>Set default platform in <code>settings/platform.properties</code> to avoid repeating <code>--platform</code> flag</p>
+<h3 id="4-environment-management">4. Environment Management</h3>
+<p>Use separate <code>.env</code> files for different environments:
+* <code>.env.dev</code>
+* <code>.env.staging</code>
+* <code>.env.production</code></p>
+<h3 id="5-mobile-testing">5. Mobile Testing</h3>
+<p>Run <code>orbs select-device</code> before mobile test execution to ensure correct device is targeted</p>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="command-not-found">Command not found</h3>
+<pre><code class="language-bash"># Ensure orbs is installed
+pip install orbs-cli
+
+# Or install in development mode
+pip install -e .
+</code></pre>
+<h3 id="appium-not-starting">Appium not starting</h3>
+<pre><code class="language-bash"># Verify installation
+appium --version
+
+# Reinstall if needed
+orbs setup android
+</code></pre>
+<h3 id="adb-not-found">ADB not found</h3>
+<p>Add Android SDK platform-tools to PATH:</p>
+<p><strong>Windows:</strong></p>
+<pre><code>C:\Users\&lt;username&gt;\AppData\Local\Android\Sdk\platform-tools
+</code></pre>
+<p><strong>Mac/Linux:</strong></p>
+<pre><code class="language-bash">export PATH=$PATH:~/Library/Android/sdk/platform-tools
+</code></pre>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../philosophy/">Philosophy &amp; Concepts</a></li>
+<li><a href="../web-testing/">Web Testing Guide</a></li>
+<li><a href="../mobile-testing/">Mobile Testing Guide</a></li>
+<li><a href="../spy/">Spy Tool Usage</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

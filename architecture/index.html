@@ -1,0 +1,3017 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for Orbs CLI">
+      
+      
+        <meta name="author" content="Muhamad Badru Salam">
+      
+      
+      
+        <link rel="prev" href="../philosophy/">
+      
+      
+        <link rel="next" href="../cli-reference/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Architecture - Orbs CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#orbs-architecture-overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbs CLI" class="md-header__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbs CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbs CLI" class="md-nav__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    Orbs CLI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../philosophy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High-Level Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="High-Level Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-runner-orbsrunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Runner (orbs.runner)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-browser-factory-orbsbrowser_factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Browser Factory (orbs.browser_factory)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-mobile-factory-orbsmobile_factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Mobile Factory (orbs.mobile_factory)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-thread-context-orbsthread_context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Thread Context (orbs.thread_context)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-web-keywords-orbskeywordweb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Web Keywords (orbs.keyword.web)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-mobile-keywords-orbskeywordmobile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Mobile Keywords (orbs.keyword.mobile)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-api-client-orbsapi_client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. API Client (orbs.api_client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-listener-manager-orbslistener_manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Listener Manager (orbs.listener_manager)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-configuration-orbsconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Configuration (orbs.config)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-template-engine-orbsutils" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Template Engine (orbs.utils)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#web-test-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Test Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bdd-feature-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BDD Feature Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thread-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread Safety
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Thread Safety">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution-thread-local-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solution: Thread-Local Storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#web-keyword-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Keyword Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extension-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extension Points
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extension Points">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-custom-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Custom Keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Listeners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-custom-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Custom Factories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-custom-reporters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Custom Reporters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Project Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#framework-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Framework Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-project-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Project Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology Stack
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technology Stack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-factory-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Factory Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-singleton-thread-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Singleton (Thread-Local)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-template-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Template Method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-strategy-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Strategy Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-observer-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Observer Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-facade-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Facade Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-lazy-driver-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Lazy Driver Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-connection-pooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Connection Pooling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-parallel-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Parallel Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-smart-waiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Smart Waiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-credential-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Credential Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-ssl-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. SSL Verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-input-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Input Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future Enhancements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mobile-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-driven-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Driven Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../failure-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../record-and-play/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Record & Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../console-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High-Level Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="High-Level Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Core Components">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-runner-orbsrunner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Runner (orbs.runner)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-browser-factory-orbsbrowser_factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Browser Factory (orbs.browser_factory)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-mobile-factory-orbsmobile_factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Mobile Factory (orbs.mobile_factory)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-thread-context-orbsthread_context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Thread Context (orbs.thread_context)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-web-keywords-orbskeywordweb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Web Keywords (orbs.keyword.web)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-mobile-keywords-orbskeywordmobile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Mobile Keywords (orbs.keyword.mobile)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-api-client-orbsapi_client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. API Client (orbs.api_client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-listener-manager-orbslistener_manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Listener Manager (orbs.listener_manager)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-configuration-orbsconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Configuration (orbs.config)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-template-engine-orbsutils" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Template Engine (orbs.utils)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Execution Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#web-test-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Test Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bdd-feature-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BDD Feature Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#thread-safety" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread Safety
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Thread Safety">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution-thread-local-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solution: Thread-Local Storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#web-keyword-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Keyword Implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#benefits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Benefits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extension-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extension Points
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Extension Points">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-custom-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Custom Keywords
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Listeners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-custom-factories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Custom Factories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-custom-reporters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Custom Reporters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Project Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#framework-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Framework Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-project-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Project Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology Stack
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Technology Stack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-factory-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Factory Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-singleton-thread-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Singleton (Thread-Local)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-template-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Template Method
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-strategy-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Strategy Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-observer-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Observer Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-facade-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Facade Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-lazy-driver-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Lazy Driver Initialization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-connection-pooling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Connection Pooling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-parallel-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Parallel Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-smart-waiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Smart Waiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-credential-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Credential Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-ssl-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. SSL Verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-input-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Input Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future Enhancements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Future Enhancements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planned-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Planned Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="orbs-architecture-overview">Orbs Architecture Overview</h1>
+<p>Technical architecture and design patterns of the Orbs automation framework.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#high-level-architecture">High-Level Architecture</a></li>
+<li><a href="#core-components">Core Components</a></li>
+<li><a href="#execution-flow">Execution Flow</a></li>
+<li><a href="#thread-safety">Thread Safety</a></li>
+<li><a href="#extension-points">Extension Points</a></li>
+<li><a href="#project-structure">Project Structure</a></li>
+<li><a href="#technology-stack">Technology Stack</a></li>
+<li><a href="#design-patterns">Design Patterns</a></li>
+</ul>
+<hr />
+<h2 id="high-level-architecture">High-Level Architecture</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                       User Interfaces                        │
+├──────────────┬──────────────┬──────────────┬────────────────┤
+│     CLI      │  REST API    │  Spy Tools   │  Studio (TBD)  │
+│  (Typer)     │  (FastAPI)   │  (Selenium)  │                │
+└──────┬───────┴──────┬───────┴──────┬───────┴────────┬───────┘
+       │              │              │                │
+       └──────────────┴──────────────┴────────────────┘
+                         │
+                    ┌────▼────┐
+                    │  Runner │  ◄── Orchestrates execution
+                    └────┬────┘
+                         │
+       ┌─────────────────┼─────────────────┐
+       │                 │                 │
+  ┌────▼────┐      ┌────▼────┐      ┌────▼────┐
+  │   Web   │      │ Mobile  │      │   API   │
+  │ Keyword │      │ Keyword │      │ Client  │
+  └────┬────┘      └────┬────┘      └────┬────┘
+       │                 │                 │
+  ┌────▼────┐      ┌────▼────┐      ┌────▼────┐
+  │ Browser │      │ Appium  │      │ Requests│
+  │ Factory │      │ Factory │      │ Session │
+  └─────────┘      └─────────┘      └─────────┘
+       │                 │                 │
+  ┌────▼────┐      ┌────▼────┐      ┌────▼────┐
+  │Selenium │      │ Appium  │      │  HTTP   │
+  │WebDriver│      │ Driver  │      │ Client  │
+  └─────────┘      └─────────┘      └─────────┘
+</code></pre>
+<h3 id="key-characteristics">Key Characteristics</h3>
+<ul>
+<li><strong>Layered Architecture</strong> - Clear separation of concerns</li>
+<li><strong>Plugin-based Extensions</strong> - Listeners, keywords, factories</li>
+<li><strong>Thread-safe Design</strong> - Parallel execution support</li>
+<li><strong>Multi-interface</strong> - CLI, API, GUI access to same core</li>
+<li><strong>Configuration-driven</strong> - YAML, properties, environment variables</li>
+</ul>
+<hr />
+<h2 id="core-components">Core Components</h2>
+<h3 id="1-runner-orbsrunner">1. Runner (<code>orbs.runner</code>)</h3>
+<p><strong>Purpose:</strong> Central execution orchestrator</p>
+<p><strong>Responsibilities:</strong>
+* Load test suites, cases, or features
+* Determine execution mode (pytest, behave, direct)
+* Manage test lifecycle
+* Coordinate listeners
+* Handle platform configuration</p>
+<p><strong>Key Functions:</strong></p>
+<pre><code class="language-python">def run(target: str, platform: str = None, device_id: str = None):
+    &quot;&quot;&quot;Main entry point for test execution&quot;&quot;&quot;
+    # 1. Parse target (suite/case/feature)
+    # 2. Load configuration
+    # 3. Initialize listeners
+    # 4. Execute tests
+    # 5. Generate reports
+</code></pre>
+<h3 id="2-browser-factory-orbsbrowser_factory">2. Browser Factory (<code>orbs.browser_factory</code>)</h3>
+<p><strong>Purpose:</strong> Create and configure WebDriver instances</p>
+<p><strong>Responsibilities:</strong>
+* Platform detection (chrome, firefox, edge, safari)
+* Driver configuration from properties
+* Headless mode support
+* Custom options injection</p>
+<p><strong>Key Functions:</strong></p>
+<pre><code class="language-python">def create_driver(platform: str = None) -&gt; WebDriver:
+    &quot;&quot;&quot;Create configured browser instance&quot;&quot;&quot;
+    # Read settings/browser.properties
+    # Apply platform-specific options
+    # Return initialized driver
+</code></pre>
+<h3 id="3-mobile-factory-orbsmobile_factory">3. Mobile Factory (<code>orbs.mobile_factory</code>)</h3>
+<p><strong>Purpose:</strong> Create and configure Appium driver instances</p>
+<p><strong>Responsibilities:</strong>
+* Load capabilities from settings/appium.properties
+* Start Appium server if needed
+* Device detection and selection
+* Driver initialization</p>
+<p><strong>Key Functions:</strong></p>
+<pre><code class="language-python">def create_driver(device_id: str = None) -&gt; WebDriver:
+    &quot;&quot;&quot;Create configured mobile driver&quot;&quot;&quot;
+    # Load appium.properties
+    # Ensure Appium server is running
+    # Initialize with capabilities
+</code></pre>
+<h3 id="4-thread-context-orbsthread_context">4. Thread Context (<code>orbs.thread_context</code>)</h3>
+<p><strong>Purpose:</strong> Thread-local storage for driver instances and state</p>
+<p><strong>Why:</strong>
+* Enables parallel test execution
+* Each thread gets isolated driver
+* Prevents cross-thread interference</p>
+<p><strong>Implementation:</strong></p>
+<pre><code class="language-python">import threading
+
+_context = threading.local()
+
+def get_context(key: str):
+    &quot;&quot;&quot;Get thread-local value&quot;&quot;&quot;
+    return getattr(_context, key, None)
+
+def set_context(key: str, value):
+    &quot;&quot;&quot;Set thread-local value&quot;&quot;&quot;
+    setattr(_context, key, value)
+</code></pre>
+<h3 id="5-web-keywords-orbskeywordweb">5. Web Keywords (<code>orbs.keyword.web</code>)</h3>
+<p><strong>Purpose:</strong> High-level Selenium operations</p>
+<p><strong>Responsibilities:</strong>
+* Element location and interaction
+* Smart waiting and retries
+* Multi-strategy locator support
+* Common web operations</p>
+<p><strong>Design:</strong>
+* Class methods (no instantiation needed)
+* Automatic driver retrieval from thread context
+* Built-in error handling</p>
+<h3 id="6-mobile-keywords-orbskeywordmobile">6. Mobile Keywords (<code>orbs.keyword.mobile</code>)</h3>
+<p><strong>Purpose:</strong> High-level Appium operations</p>
+<p><strong>Similar to Web Keywords but for mobile:</strong>
+* Touch gestures
+* Device interactions
+* Mobile-specific locators</p>
+<h3 id="7-api-client-orbsapi_client">7. API Client (<code>orbs.api_client</code>)</h3>
+<p><strong>Purpose:</strong> HTTP request handling with logging</p>
+<p><strong>Features:</strong>
+* Session-based requests
+* Automatic request/response recording
+* Thread-safe logging</p>
+<h3 id="8-listener-manager-orbslistener_manager">8. Listener Manager (<code>orbs.listener_manager</code>)</h3>
+<p><strong>Purpose:</strong> Load and execute test hooks</p>
+<p><strong>Responsibilities:</strong>
+* Discover listener modules
+* Execute hooks at lifecycle events
+* Handle errors gracefully</p>
+<p><strong>Lifecycle Events:</strong>
+* <code>before_suite</code>
+* <code>before_test</code>
+* <code>after_test</code>
+* <code>after_suite</code>
+* <code>on_failure</code></p>
+<h3 id="9-configuration-orbsconfig">9. Configuration (<code>orbs.config</code>)</h3>
+<p><strong>Purpose:</strong> Centralized configuration management</p>
+<p><strong>Sources (priority order):</strong>
+1. Command-line arguments
+2. Environment variables
+3. Property files (settings/*.properties)
+4. Defaults</p>
+<p><strong>Example:</strong></p>
+<pre><code class="language-python">from orbs.config import config
+
+platform = config.get(&quot;platform&quot;, &quot;chrome&quot;)
+headless = config.get(&quot;headless&quot;, False)
+</code></pre>
+<h3 id="10-template-engine-orbsutils">10. Template Engine (<code>orbs.utils</code>)</h3>
+<p><strong>Purpose:</strong> Generate boilerplate code from Jinja2 templates</p>
+<p><strong>Used by:</strong>
+* <code>orbs create-testsuite</code>
+* <code>orbs create-testcase</code>
+* <code>orbs create-feature</code>
+* <code>orbs implement-feature</code></p>
+<p><strong>Location:</strong> <code>orbs/templates/jinja/</code></p>
+<hr />
+<h2 id="execution-flow">Execution Flow</h2>
+<h3 id="web-test-execution">Web Test Execution</h3>
+<pre><code>┌─────────────────┐
+│ orbs run test.py│
+└────────┬────────┘
+         │
+    ┌────▼────────────────────┐
+    │ Runner.run(target)      │
+    └────────┬────────────────┘
+             │
+    ┌────────▼───────────────┐
+    │ Load configuration     │
+    │ (platform, settings)   │
+    └────────┬───────────────┘
+             │
+    ┌────────▼────────────────┐
+    │ Initialize listeners    │
+    │ (listeners/*.py)        │
+    └────────┬────────────────┘
+             │
+    ┌────────▼─────────────────┐
+    │ Execute: before_suite()  │
+    └────────┬─────────────────┘
+             │
+    ┌────────▼──────────────────┐
+    │ Run test function         │
+    │   ├─ Web.open(url)        │
+    │   ├─ Create driver        │
+    │   │   (BrowserFactory)    │
+    │   ├─ Store in thread ctx  │
+    │   ├─ Web.click(...)       │
+    │   └─ Assertions           │
+    └────────┬──────────────────┘
+             │
+    ┌────────▼─────────────────┐
+    │ Execute: after_test()    │
+    └────────┬─────────────────┘
+             │
+    ┌────────▼──────────────────┐
+    │ Close driver              │
+    └────────┬──────────────────┘
+             │
+    ┌────────▼─────────────────┐
+    │ Execute: after_suite()   │
+    └────────┬─────────────────┘
+             │
+    ┌────────▼──────────────────┐
+    │ Generate report           │
+    └───────────────────────────┘
+</code></pre>
+<h3 id="bdd-feature-execution">BDD Feature Execution</h3>
+<pre><code>┌───────────────────────────┐
+│ orbs run login.feature    │
+└──────────┬────────────────┘
+           │
+    ┌──────▼──────────────┐
+    │ Runner detects .feature│
+    └──────┬──────────────┘
+           │
+    ┌──────▼───────────────┐
+    │ Call behave runner   │
+    │ with feature path    │
+    └──────┬───────────────┘
+           │
+    ┌──────▼────────────────┐
+    │ Behave loads:         │
+    │  - features/*.feature │
+    │  - steps/*.py         │
+    │  - environment.py     │
+    └──────┬────────────────┘
+           │
+    ┌──────▼─────────────────┐
+    │ before_scenario()      │
+    │  (environment.py)      │
+    └──────┬─────────────────┘
+           │
+    ┌──────▼──────────────────┐
+    │ Execute scenario steps  │
+    │  @given, @when, @then   │
+    └──────┬──────────────────┘
+           │
+    ┌──────▼─────────────────┐
+    │ after_scenario()       │
+    │  (cleanup)             │
+    └────────────────────────┘
+</code></pre>
+<hr />
+<h2 id="thread-safety">Thread Safety</h2>
+<h3 id="problem">Problem</h3>
+<p>Multiple tests running in parallel need isolated driver instances:</p>
+<pre><code class="language-python"># Thread 1: Test on Chrome
+# Thread 2: Test on Firefox
+# Both running simultaneously
+</code></pre>
+<p>If drivers are global, they interfere with each other.</p>
+<h3 id="solution-thread-local-storage">Solution: Thread-Local Storage</h3>
+<p>Each thread gets its own driver:</p>
+<pre><code class="language-python"># orbs/thread_context.py
+import threading
+
+_context = threading.local()
+
+def set_context(key, value):
+    setattr(_context, key, value)
+
+def get_context(key):
+    return getattr(_context, key, None)
+</code></pre>
+<p>Usage:</p>
+<pre><code class="language-python"># Thread 1
+set_context('web_driver', chrome_driver)
+
+# Thread 2
+set_context('web_driver', firefox_driver)
+
+# Each thread retrieves its own driver
+my_driver = get_context('web_driver')
+</code></pre>
+<h3 id="web-keyword-implementation">Web Keyword Implementation</h3>
+<pre><code class="language-python">class Web:
+    @classmethod
+    def _get_driver(cls):
+        &quot;&quot;&quot;Get thread-local driver&quot;&quot;&quot;
+        driver = get_context('web_driver')
+        if driver is None:
+            driver = BrowserFactory.create_driver()
+            set_context('web_driver', driver)
+        return driver
+
+    @classmethod
+    def click(cls, locator):
+        driver = cls._get_driver()  # Thread-safe
+        # ...
+</code></pre>
+<h3 id="benefits">Benefits</h3>
+<ul>
+<li>✅ Parallel execution support</li>
+<li>✅ No race conditions</li>
+<li>✅ Isolated test environments</li>
+<li>✅ Scalable to any number of threads</li>
+</ul>
+<hr />
+<h2 id="extension-points">Extension Points</h2>
+<p>Orbs is designed for extensibility without modifying core code.</p>
+<h3 id="1-custom-keywords">1. Custom Keywords</h3>
+<p>Create custom keyword libraries:</p>
+<pre><code class="language-python"># keywords/custom_web.py
+from orbs.keyword import Web
+
+class CustomWeb(Web):
+    @classmethod
+    def login(cls, username, password):
+        &quot;&quot;&quot;Custom login keyword&quot;&quot;&quot;
+        cls.type_text(&quot;id=username&quot;, username)
+        cls.type_text(&quot;id=password&quot;, password)
+        cls.click(&quot;id=login-btn&quot;)
+</code></pre>
+<p>Use in tests:</p>
+<pre><code class="language-python">from keywords.custom_web import CustomWeb
+
+def test_login():
+    CustomWeb.login(&quot;admin&quot;, &quot;password&quot;)
+</code></pre>
+<h3 id="2-listeners">2. Listeners</h3>
+<p>Create test lifecycle hooks:</p>
+<pre><code class="language-python"># listeners/screenshot_listener.py
+
+def before_test(context):
+    &quot;&quot;&quot;Called before each test&quot;&quot;&quot;
+    print(f&quot;Starting test: {context.test_name}&quot;)
+
+def after_test(context):
+    &quot;&quot;&quot;Called after each test&quot;&quot;&quot;
+    if context.failed:
+        # Take screenshot on failure
+        from orbs.keyword.web import Web
+        Web.take_screenshot(f&quot;failures/{context.test_name}.png&quot;)
+
+def on_failure(context, error):
+    &quot;&quot;&quot;Called when test fails&quot;&quot;&quot;
+    print(f&quot;Test failed with error: {error}&quot;)
+</code></pre>
+<p>Listeners are auto-discovered from <code>listeners/</code> directory.</p>
+<h3 id="3-custom-factories">3. Custom Factories</h3>
+<p>Override driver creation:</p>
+<pre><code class="language-python"># factories/custom_browser.py
+from selenium import webdriver
+from orbs.browser_factory import BrowserFactory
+
+class CustomBrowserFactory(BrowserFactory):
+    @staticmethod
+    def create_driver(platform=None):
+        &quot;&quot;&quot;Custom driver with proxy&quot;&quot;&quot;
+        options = webdriver.ChromeOptions()
+        options.add_argument('--proxy-server=http://proxy:8080')
+        return webdriver.Chrome(options=options)
+</code></pre>
+<h3 id="4-custom-reporters">4. Custom Reporters</h3>
+<p>Generate custom test reports:</p>
+<pre><code class="language-python"># listeners/custom_reporter.py
+
+_results = []
+
+def after_test(context):
+    _results.append({
+        'name': context.test_name,
+        'status': 'PASS' if not context.failed else 'FAIL',
+        'duration': context.duration
+    })
+
+def after_suite(context):
+    # Generate HTML report
+    with open('custom_report.html', 'w') as f:
+        f.write('&lt;html&gt;&lt;body&gt;')
+        for result in _results:
+            f.write(f&quot;&lt;div&gt;{result}&lt;/div&gt;&quot;)
+        f.write('&lt;/body&gt;&lt;/html&gt;')
+</code></pre>
+<hr />
+<h2 id="project-structure">Project Structure</h2>
+<h3 id="framework-structure">Framework Structure</h3>
+<pre><code>orbs/
+├── __init__.py               # Package initialization
+├── cli.py                    # Typer CLI commands
+├── runner.py                 # Test execution orchestrator
+├── config.py                 # Configuration management
+├── browser_factory.py        # Web driver creation
+├── mobile_factory.py         # Mobile driver creation
+├── api_client.py             # HTTP client
+├── thread_context.py         # Thread-local storage
+├── listener_manager.py       # Hook execution
+├── report_generator.py       # Report creation
+├── utils.py                  # Utilities (templates, etc.)
+├── keyword/
+│   ├── Web.py                # Web keywords
+│   ├── Mobile.py             # Mobile keywords
+│   └── locator.py            # Locator utilities
+├── spy/
+│   ├── base.py               # Base spy class
+│   ├── Web.py                # Web spy implementation
+│   ├── Mobile.py             # Mobile spy implementation
+│   └── js/
+│       └── web_spy_listener.js  # Browser injection script
+└── templates/
+    ├── jinja/                # Code generation templates
+    │   ├── testcases/
+    │   ├── testsuites/
+    │   ├── features/
+    │   └── steps/
+    └── project/              # Project scaffold template
+        ├── __init__.py
+        ├── main.py
+        ├── settings/
+        ├── testcases/
+        ├── testsuites/
+        └── include/
+</code></pre>
+<h3 id="user-project-structure">User Project Structure</h3>
+<pre><code>myproject/
+├── __init__.py               # Project root marker
+├── main.py                   # Entry point (optional)
+├── .env                      # Environment variables
+├── pytest.ini                # Pytest configuration
+├── settings/                 # Configuration files
+│   ├── browser.properties
+│   ├── Mobile.properties
+│   ├── appium.properties
+│   ├── platform.properties
+│   └── server.properties
+├── testcases/                # Individual test cases
+│   ├── login.py
+│   └── checkout.py
+├── testsuites/               # Test suite definitions
+│   ├── smoke.yml
+│   ├── regression.yml
+│   └── regression.py
+├── testsuite_collections/    # Suite collections
+│   └── nightly.yml
+├── listeners/                # Custom hooks
+│   └── screenshot_on_failure.py
+├── include/                  # BDD resources
+│   ├── environment.py        # Behave hooks
+│   ├── features/
+│   │   └── login.feature
+│   └── steps/
+│       └── login_steps.py
+├── object_repository/        # Spy-captured elements
+│   ├── LoginButton.xml
+│   └── SearchBox.xml
+└── reports/                  # Generated reports (gitignored)
+    └── test_report.html
+</code></pre>
+<hr />
+<h2 id="technology-stack">Technology Stack</h2>
+<h3 id="core-dependencies">Core Dependencies</h3>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Selenium</strong></td>
+<td>Web browser automation</td>
+</tr>
+<tr>
+<td><strong>Appium</strong></td>
+<td>Mobile app automation</td>
+</tr>
+<tr>
+<td><strong>Requests</strong></td>
+<td>HTTP client for API testing</td>
+</tr>
+<tr>
+<td><strong>Behave</strong></td>
+<td>BDD framework (Gherkin)</td>
+</tr>
+<tr>
+<td><strong>Pytest</strong></td>
+<td>Test runner and assertions</td>
+</tr>
+<tr>
+<td><strong>Typer</strong></td>
+<td>CLI framework</td>
+</tr>
+<tr>
+<td><strong>FastAPI</strong></td>
+<td>REST API server</td>
+</tr>
+<tr>
+<td><strong>Jinja2</strong></td>
+<td>Template engine</td>
+</tr>
+<tr>
+<td><strong>InquirerPy</strong></td>
+<td>Interactive prompts</td>
+</tr>
+<tr>
+<td><strong>python-dotenv</strong></td>
+<td>Environment variable management</td>
+</tr>
+</tbody>
+</table>
+<h3 id="optional-dependencies">Optional Dependencies</h3>
+<table>
+<thead>
+<tr>
+<th>Library</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Allure</strong></td>
+<td>Advanced reporting</td>
+</tr>
+<tr>
+<td><strong>Requests-mock</strong></td>
+<td>API mocking</td>
+</tr>
+<tr>
+<td><strong>Docker</strong></td>
+<td>Containerized execution</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="design-patterns">Design Patterns</h2>
+<h3 id="1-factory-pattern">1. Factory Pattern</h3>
+<p><strong>BrowserFactory</strong> and <strong>MobileFactory</strong> create drivers:</p>
+<pre><code class="language-python"># Encapsulates driver creation logic
+driver = BrowserFactory.create_driver(platform=&quot;chrome&quot;)
+</code></pre>
+<p><strong>Benefits:</strong>
+* Centralized configuration
+* Easy to extend with new platforms
+* Testable in isolation</p>
+<h3 id="2-singleton-thread-local">2. Singleton (Thread-Local)</h3>
+<p><strong>Thread context</strong> ensures one driver per thread:</p>
+<pre><code class="language-python"># First call creates driver
+driver1 = Web._get_driver()
+
+# Subsequent calls return same instance
+driver2 = Web._get_driver()
+
+assert driver1 is driver2  # Same instance
+</code></pre>
+<h3 id="3-template-method">3. Template Method</h3>
+<p><strong>Runner</strong> defines test execution template:</p>
+<pre><code class="language-python">def run(target):
+    load_config()
+    initialize_listeners()
+    execute_before_hooks()
+    run_tests()
+    execute_after_hooks()
+    generate_report()
+</code></pre>
+<p>Subclasses override specific steps.</p>
+<h3 id="4-strategy-pattern">4. Strategy Pattern</h3>
+<p><strong>Locator strategies</strong> are selected dynamically:</p>
+<pre><code class="language-python"># User specifies strategy
+Web.click(&quot;id=button&quot;)
+Web.click(&quot;css=.submit&quot;)
+Web.click(&quot;xpath=//button&quot;)
+
+# Framework selects appropriate locator
+</code></pre>
+<h3 id="5-observer-pattern">5. Observer Pattern</h3>
+<p><strong>Listeners</strong> observe test lifecycle events:</p>
+<pre><code class="language-python"># Framework notifies listeners
+listener_manager.notify('before_test', context)
+listener_manager.notify('after_test', context)
+</code></pre>
+<h3 id="6-facade-pattern">6. Facade Pattern</h3>
+<p><strong>Web/Mobile keywords</strong> provide simple interface to complex operations:</p>
+<pre><code class="language-python"># Simple API
+Web.click(&quot;id=button&quot;)
+
+# Hides complexity:
+# - Driver retrieval
+# - Element waiting
+# - Error handling
+# - Retry logic
+</code></pre>
+<hr />
+<h2 id="performance-considerations">Performance Considerations</h2>
+<h3 id="1-lazy-driver-initialization">1. Lazy Driver Initialization</h3>
+<p>Drivers are created only when first needed:</p>
+<pre><code class="language-python">def _get_driver(cls):
+    driver = get_context('web_driver')
+    if driver is None:  # Create only if needed
+        driver = BrowserFactory.create_driver()
+        set_context('web_driver', driver)
+    return driver
+</code></pre>
+<h3 id="2-connection-pooling">2. Connection Pooling</h3>
+<p>API client uses <code>requests.Session</code> for connection reuse:</p>
+<pre><code class="language-python">self.session = requests.Session()  # Reuses connections
+</code></pre>
+<h3 id="3-parallel-execution">3. Parallel Execution</h3>
+<p>Thread-local storage enables parallel tests:</p>
+<pre><code class="language-bash">pytest -n 4  # Run 4 tests in parallel
+</code></pre>
+<h3 id="4-smart-waiting">4. Smart Waiting</h3>
+<p>Explicit waits instead of sleep:</p>
+<pre><code class="language-python"># ❌ Slow
+time.sleep(5)
+
+# ✅ Fast
+WebDriverWait(driver, 10).until(
+    EC.presence_of_element_located((By.ID, &quot;element&quot;))
+)
+</code></pre>
+<hr />
+<h2 id="security-considerations">Security Considerations</h2>
+<h3 id="1-credential-management">1. Credential Management</h3>
+<p>Never hardcode credentials:</p>
+<pre><code class="language-python"># ✅ Good
+username = os.getenv(&quot;TEST_USERNAME&quot;)
+
+# ❌ Bad
+username = &quot;admin&quot;
+</code></pre>
+<h3 id="2-ssl-verification">2. SSL Verification</h3>
+<p>API client verifies SSL by default:</p>
+<pre><code class="language-python"># Default: verify=True
+response = API.get(&quot;/endpoint&quot;)
+
+# Only disable for local development
+API.session.verify = False  # Not recommended
+</code></pre>
+<h3 id="3-input-validation">3. Input Validation</h3>
+<p>Validate user inputs in CLI:</p>
+<pre><code class="language-python">if platform not in VALID_PLATFORMS:
+    raise ValueError(f&quot;Invalid platform: {platform}&quot;)
+</code></pre>
+<hr />
+<h2 id="future-enhancements">Future Enhancements</h2>
+<h3 id="planned-features">Planned Features</h3>
+<ul>
+<li><strong>Orbs Studio</strong> - GUI for test creation and execution</li>
+<li><strong>iOS Support</strong> - Appium integration for iOS</li>
+<li><strong>Distributed Execution</strong> - Selenium Grid integration</li>
+<li><strong>AI-Powered Healing</strong> - Self-healing locators</li>
+<li><strong>Visual Testing</strong> - Screenshot comparison</li>
+<li><strong>Performance Testing</strong> - Load testing integration</li>
+</ul>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../philosophy/">Philosophy &amp; Concepts</a> - Framework principles</li>
+<li><a href="../cli-reference/">CLI Reference</a> - Command documentation</li>
+<li><a href="../web-testing/">Web Testing</a> - Web automation guide</li>
+<li><a href="../mobile-testing/">Mobile Testing</a> - Mobile automation guide</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

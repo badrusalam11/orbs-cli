@@ -1,0 +1,3815 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for Orbs CLI">
+      
+      
+        <meta name="author" content="Muhamad Badru Salam">
+      
+      
+      
+        <link rel="prev" href="../cli-reference/">
+      
+      
+        <link rel="next" href="../mobile-testing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Web Testing - Orbs CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#web-testing-with-orbs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbs CLI" class="md-header__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbs CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Web Testing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbs CLI" class="md-nav__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    Orbs CLI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../philosophy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-initialize-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Initialize Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configure-browser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Configure Browser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-create-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Create Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-run-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Run Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#browser-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Browser Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Browser Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-browsers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Browsers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-platform-override" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Platform Override
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headless-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headless Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#locator-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locator Strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Locator Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Keywords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Web Keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Navigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webopenurl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.open(url)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webrefresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.refresh()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.back()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webforward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Interaction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Interaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webclicklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.click(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webdouble_clicklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.double_click(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webset_textlocator-text-timeout10-clear_firsttrue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.set_text(locator, text, timeout=10, clear_first=True)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webclearlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.clear(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webpress_enterlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.press_enter(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#websubmitlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.submit(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dropdowns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dropdowns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dropdowns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webselect_by_textlocator-text-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.select_by_text(locator, text, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webselect_by_valuelocator-value-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.select_by_value(locator, value, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webselect_by_indexlocator-index-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.select_by_index(locator, index, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checkboxes-radio-buttons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkboxes &amp; Radio Buttons
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checkboxes &amp; Radio Buttons">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webchecklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.check(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webunchecklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.uncheck(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webis_checkedlocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.is_checked(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element State
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element State">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webis_visiblelocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.is_visible(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webis_enabledlocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.is_enabled(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webwait_for_elementlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.wait_for_element(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webwait_for_visiblelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.wait_for_visible(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webwait_for_invisiblelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.wait_for_invisible(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Properties
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webget_textlocator-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_text(locator, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webget_attributelocator-attribute-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_attribute(locator, attribute, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webget_valuelocator-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_value(locator, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alerts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webaccept_alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.accept_alert()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webdismiss_alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.dismiss_alert()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webget_alert_text-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_alert_text() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows &amp; Frames
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows &amp; Frames">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webswitch_to_framelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.switch_to_frame(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webswitch_to_default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.switch_to_default()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webswitch_to_windowindex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.switch_to_window(index)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scrolling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scrolling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scrolling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webscroll_to_elementlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.scroll_to_element(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webscroll_to_bottom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.scroll_to_bottom()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#javascript-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JavaScript Execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JavaScript Execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webexecute_scriptscript-args" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.execute_script(script, *args)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#screenshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Screenshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Screenshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webtake_screenshotfilepath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.take_screenshot(filepath)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#driver-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Driver Control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Driver Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webclose_browser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.close_browser()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webquit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.quit()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing Test Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing Test Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-test-case-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python Test Case Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-suite-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Suite Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bdd-with-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BDD with Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BDD with Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-use-page-object-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Use Page Object Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-explicit-waits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Explicit Waits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-meaningful-assertions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Meaningful Assertions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-clean-up-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Clean Up Resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-environment-specific-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Environment-Specific URLs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#element-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-not-clickable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Clickable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale Element
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#browser-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Browser Not Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slow-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slow Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mobile-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-driven-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Driven Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../failure-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../record-and-play/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Record & Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../console-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-initialize-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Initialize Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configure-browser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Configure Browser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-create-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Create Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-run-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Run Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#browser-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Browser Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Browser Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-browsers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Browsers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-platform-override" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime Platform Override
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#headless-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headless Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#locator-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locator Strategies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Locator Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Syntax
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supported-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default Strategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Keywords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Web Keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Navigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webopenurl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.open(url)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webrefresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.refresh()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.back()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webforward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.forward()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Interaction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Interaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webclicklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.click(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webdouble_clicklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.double_click(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webset_textlocator-text-timeout10-clear_firsttrue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.set_text(locator, text, timeout=10, clear_first=True)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webclearlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.clear(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webpress_enterlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.press_enter(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#websubmitlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.submit(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dropdowns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dropdowns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dropdowns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webselect_by_textlocator-text-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.select_by_text(locator, text, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webselect_by_valuelocator-value-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.select_by_value(locator, value, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webselect_by_indexlocator-index-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.select_by_index(locator, index, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checkboxes-radio-buttons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkboxes &amp; Radio Buttons
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checkboxes &amp; Radio Buttons">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webchecklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.check(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webunchecklocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.uncheck(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webis_checkedlocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.is_checked(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element State
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element State">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webis_visiblelocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.is_visible(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webis_enabledlocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.is_enabled(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webwait_for_elementlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.wait_for_element(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webwait_for_visiblelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.wait_for_visible(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webwait_for_invisiblelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.wait_for_invisible(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Properties
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webget_textlocator-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_text(locator, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webget_attributelocator-attribute-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_attribute(locator, attribute, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webget_valuelocator-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_value(locator, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alerts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webaccept_alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.accept_alert()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webdismiss_alert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.dismiss_alert()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webget_alert_text-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.get_alert_text() -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-frames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Windows &amp; Frames
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Windows &amp; Frames">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webswitch_to_framelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.switch_to_frame(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webswitch_to_default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.switch_to_default()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webswitch_to_windowindex" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.switch_to_window(index)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scrolling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scrolling
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scrolling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webscroll_to_elementlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.scroll_to_element(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webscroll_to_bottom" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.scroll_to_bottom()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#javascript-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JavaScript Execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JavaScript Execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webexecute_scriptscript-args" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.execute_script(script, *args)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#screenshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Screenshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Screenshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webtake_screenshotfilepath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.take_screenshot(filepath)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#driver-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Driver Control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Driver Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webclose_browser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.close_browser()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webquit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web.quit()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing Test Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing Test Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-test-case-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python Test Case Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-suite-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Suite Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bdd-with-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BDD with Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="BDD with Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create Feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Generate Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-feature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Feature
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-use-page-object-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Use Page Object Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-explicit-waits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Explicit Waits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-meaningful-assertions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Meaningful Assertions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-clean-up-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Clean Up Resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-environment-specific-urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Environment-Specific URLs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#element-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-not-clickable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Clickable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stale-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale Element
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#browser-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Browser Not Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slow-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slow Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="web-testing-with-orbs">Web Testing with Orbs</h1>
+<p>Complete guide to web browser automation using Orbs framework.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#quick-start">Quick Start</a></li>
+<li><a href="#browser-configuration">Browser Configuration</a></li>
+<li><a href="#locator-strategies">Locator Strategies</a></li>
+<li><a href="#web-keywords">Web Keywords</a></li>
+<li><a href="#writing-test-cases">Writing Test Cases</a></li>
+<li><a href="#bdd-with-features">BDD with Features</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+<hr />
+<h2 id="introduction">Introduction</h2>
+<p>Orbs provides high-level web automation keywords built on Selenium WebDriver. The framework handles:</p>
+<ul>
+<li><strong>Automatic driver management</strong> - No need to manually create/close drivers</li>
+<li><strong>Thread-safe execution</strong> - Parallel test execution support</li>
+<li><strong>Smart waiting</strong> - Automatic waits with configurable timeouts</li>
+<li><strong>Retry logic</strong> - Handles stale element exceptions</li>
+<li><strong>Multiple browsers</strong> - Chrome, Firefox, Edge, Safari support</li>
+</ul>
+<hr />
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="1-initialize-project">1. Initialize Project</h3>
+<pre><code class="language-bash">orbs init web-automation
+cd web-automation
+</code></pre>
+<h3 id="2-configure-browser">2. Configure Browser</h3>
+<p>Edit <code>settings/browser.properties</code>:</p>
+<pre><code class="language-properties">browser=chrome
+headless=false
+args=--incognito;--window-size=1920,1080
+</code></pre>
+<h3 id="3-create-test-case">3. Create Test Case</h3>
+<pre><code class="language-bash">orbs create-testcase google_search
+</code></pre>
+<p>Edit <code>testcases/google_search.py</code>:</p>
+<pre><code class="language-python">from orbs.keyword import Web
+
+def test_google_search():
+    &quot;&quot;&quot;Test Google search functionality&quot;&quot;&quot;
+
+    # Open Google
+    Web.open(&quot;https://www.google.com&quot;)
+
+    # Type search query
+    Web.set_text(&quot;name=q&quot;, &quot;Orbs automation framework&quot;)
+
+    # Submit search
+    Web.press_enter(&quot;name=q&quot;)
+
+    # Wait for results
+    Web.wait_for_element(&quot;id=search&quot;, timeout=10)
+
+    # Verify results are visible
+    assert Web.is_visible(&quot;id=search&quot;), &quot;Search results not displayed&quot;
+
+    print(&quot;✅ Google search test passed&quot;)
+</code></pre>
+<h3 id="4-run-test">4. Run Test</h3>
+<pre><code class="language-bash">orbs run testcases/google_search.py --platform=chrome
+</code></pre>
+<hr />
+<h2 id="browser-configuration">Browser Configuration</h2>
+<h3 id="configuration-file">Configuration File</h3>
+<p>Location: <code>settings/browser.properties</code></p>
+<pre><code class="language-properties"># Browser selection
+browser=chrome
+
+# Headless mode (true/false)
+headless=false
+
+# Window size (widthxheight)
+window_size=1920x1080
+
+# Private Mode
+private_mode=true
+
+# Additional Arguments (comma-separated)
+args=--disable-gpu,--no-sandbox
+
+# WebDriver executable path (optional)
+driver_path=/path/to/chromedriver
+</code></pre>
+<h3 id="supported-browsers">Supported Browsers</h3>
+<table>
+<thead>
+<tr>
+<th>Browser</th>
+<th>Platform Value</th>
+<th>Requirements</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chrome</td>
+<td><code>chrome</code></td>
+<td>ChromeDriver</td>
+</tr>
+<tr>
+<td>Firefox</td>
+<td><code>firefox</code></td>
+<td>GeckoDriver</td>
+</tr>
+<tr>
+<td>Edge</td>
+<td><code>edge</code></td>
+<td>EdgeDriver</td>
+</tr>
+<tr>
+<td>Safari</td>
+<td><code>safari</code></td>
+<td>Built-in (macOS only)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime-platform-override">Runtime Platform Override</h3>
+<pre><code class="language-bash"># Run on Firefox
+orbs run testsuites/smoke.yml --platform=firefox
+
+# Run on Edge
+orbs run testsuites/regression.yml --platform=edge
+</code></pre>
+<h3 id="headless-execution">Headless Execution</h3>
+<p>For CI/CD or background execution:</p>
+<pre><code class="language-properties">headless=true
+</code></pre>
+<p>Or via environment variable:</p>
+<pre><code class="language-bash">export HEADLESS=true
+orbs run testsuites/regression.yml
+</code></pre>
+<hr />
+<h2 id="locator-strategies">Locator Strategies</h2>
+<p>Orbs supports multiple locator strategies with a simple syntax:</p>
+<h3 id="syntax">Syntax</h3>
+<pre><code>strategy=value
+</code></pre>
+<h3 id="supported-strategies">Supported Strategies</h3>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Syntax</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ID</td>
+<td><code>id=element_id</code></td>
+<td><code>id=submit-button</code></td>
+</tr>
+<tr>
+<td>CSS Selector</td>
+<td><code>css=.class-name</code></td>
+<td><code>css=#login-form input[type='email']</code></td>
+</tr>
+<tr>
+<td>XPath</td>
+<td><code>xpath=//div[@id='test']</code></td>
+<td><code>xpath=//button[text()='Submit']</code></td>
+</tr>
+<tr>
+<td>Name</td>
+<td><code>name=element_name</code></td>
+<td><code>name=username</code></td>
+</tr>
+<tr>
+<td>Class Name</td>
+<td><code>class=class-name</code></td>
+<td><code>class=btn-primary</code></td>
+</tr>
+<tr>
+<td>Tag Name</td>
+<td><code>tag=div</code></td>
+<td><code>tag=input</code></td>
+</tr>
+<tr>
+<td>Link Text</td>
+<td><code>link=Click Here</code></td>
+<td><code>link=Sign Up</code></td>
+</tr>
+<tr>
+<td>Partial Link</td>
+<td><code>partial_link=Click</code></td>
+<td><code>partial_link=Learn More</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="default-strategy">Default Strategy</h3>
+<p>If no strategy is specified, <strong>ID</strong> is assumed:</p>
+<pre><code class="language-python">Web.click(&quot;submit-button&quot;)  # Treated as id=submit-button
+</code></pre>
+<h3 id="best-practices">Best Practices</h3>
+<p><strong>Priority order:</strong></p>
+<ol>
+<li><strong>ID</strong> - Fast, unique, stable</li>
+<li><strong>CSS Selector</strong> - Flexible, readable</li>
+<li><strong>XPath</strong> - Powerful but slower</li>
+<li><strong>Name</strong> - Good for form elements</li>
+<li><strong>Link Text</strong> - Good for links</li>
+<li><strong>Class</strong> - Avoid if not unique</li>
+</ol>
+<p><strong>Examples:</strong></p>
+<p>✅ Good:</p>
+<pre><code class="language-python">Web.click(&quot;id=login-btn&quot;)
+Web.set_text(&quot;css=#email-field&quot;)
+</code></pre>
+<p>❌ Avoid:</p>
+<pre><code class="language-python">Web.click(&quot;xpath=/html/body/div[3]/div[2]/button[1]&quot;)  # Fragile
+Web.click(&quot;class=btn&quot;)  # Not unique
+</code></pre>
+<hr />
+<h2 id="web-keywords">Web Keywords</h2>
+<h3 id="navigation">Navigation</h3>
+<h4 id="webopenurl"><code>Web.open(url)</code></h4>
+<p>Open a URL in the browser.</p>
+<pre><code class="language-python">Web.open(&quot;https://example.com&quot;)
+</code></pre>
+<h4 id="webrefresh"><code>Web.refresh()</code></h4>
+<p>Refresh the current page.</p>
+<pre><code class="language-python">Web.refresh()
+</code></pre>
+<h4 id="webback"><code>Web.back()</code></h4>
+<p>Navigate to previous page.</p>
+<pre><code class="language-python">Web.back()
+</code></pre>
+<h4 id="webforward"><code>Web.forward()</code></h4>
+<p>Navigate to next page.</p>
+<pre><code class="language-python">Web.forward()
+</code></pre>
+<hr />
+<h3 id="element-interaction">Element Interaction</h3>
+<h4 id="webclicklocator-timeout10"><code>Web.click(locator, timeout=10)</code></h4>
+<p>Click an element.</p>
+<pre><code class="language-python">Web.click(&quot;id=submit-button&quot;)
+Web.click(&quot;css=.login-btn&quot;, timeout=5)
+</code></pre>
+<h4 id="webdouble_clicklocator-timeout10"><code>Web.double_click(locator, timeout=10)</code></h4>
+<p>Double-click an element.</p>
+<pre><code class="language-python">Web.double_click(&quot;id=file-item&quot;)
+</code></pre>
+<h4 id="webset_textlocator-text-timeout10-clear_firsttrue"><code>Web.set_text(locator, text, timeout=10, clear_first=True)</code></h4>
+<p>Type text into an input field.</p>
+<pre><code class="language-python">Web.set_text(&quot;id=username&quot;, &quot;admin&quot;)
+Web.set_text(&quot;name=email&quot;, &quot;test@example.com&quot;, clear_first=False)
+</code></pre>
+<h4 id="webclearlocator-timeout10"><code>Web.clear(locator, timeout=10)</code></h4>
+<p>Clear text from an input field.</p>
+<pre><code class="language-python">Web.clear(&quot;id=search-box&quot;)
+</code></pre>
+<h4 id="webpress_enterlocator-timeout10"><code>Web.press_enter(locator, timeout=10)</code></h4>
+<p>Press Enter key on an element.</p>
+<pre><code class="language-python">Web.set_text(&quot;id=search&quot;, &quot;automation&quot;)
+Web.press_enter(&quot;id=search&quot;)
+</code></pre>
+<h4 id="websubmitlocator-timeout10"><code>Web.submit(locator, timeout=10)</code></h4>
+<p>Submit a form.</p>
+<pre><code class="language-python">Web.submit(&quot;id=login-form&quot;)
+</code></pre>
+<hr />
+<h3 id="dropdowns">Dropdowns</h3>
+<h4 id="webselect_by_textlocator-text-timeout10"><code>Web.select_by_text(locator, text, timeout=10)</code></h4>
+<p>Select dropdown option by visible text.</p>
+<pre><code class="language-python">Web.select_by_text(&quot;id=country&quot;, &quot;United States&quot;)
+</code></pre>
+<h4 id="webselect_by_valuelocator-value-timeout10"><code>Web.select_by_value(locator, value, timeout=10)</code></h4>
+<p>Select dropdown option by value attribute.</p>
+<pre><code class="language-python">Web.select_by_value(&quot;id=country&quot;, &quot;US&quot;)
+</code></pre>
+<h4 id="webselect_by_indexlocator-index-timeout10"><code>Web.select_by_index(locator, index, timeout=10)</code></h4>
+<p>Select dropdown option by index (0-based).</p>
+<pre><code class="language-python">Web.select_by_index(&quot;id=country&quot;, 0)  # First option
+</code></pre>
+<hr />
+<h3 id="checkboxes-radio-buttons">Checkboxes &amp; Radio Buttons</h3>
+<h4 id="webchecklocator-timeout10"><code>Web.check(locator, timeout=10)</code></h4>
+<p>Check a checkbox (if not already checked).</p>
+<pre><code class="language-python">Web.check(&quot;id=terms-checkbox&quot;)
+</code></pre>
+<h4 id="webunchecklocator-timeout10"><code>Web.uncheck(locator, timeout=10)</code></h4>
+<p>Uncheck a checkbox (if checked).</p>
+<pre><code class="language-python">Web.uncheck(&quot;id=newsletter-opt-in&quot;)
+</code></pre>
+<h4 id="webis_checkedlocator-timeout10-bool"><code>Web.is_checked(locator, timeout=10) -&gt; bool</code></h4>
+<p>Check if checkbox/radio is selected.</p>
+<pre><code class="language-python">if Web.is_checked(&quot;id=remember-me&quot;):
+    print(&quot;Remember me is checked&quot;)
+</code></pre>
+<hr />
+<h3 id="element-state">Element State</h3>
+<h4 id="webis_visiblelocator-timeout10-bool"><code>Web.is_visible(locator, timeout=10) -&gt; bool</code></h4>
+<p>Check if element is visible.</p>
+<pre><code class="language-python">if Web.is_visible(&quot;id=error-message&quot;):
+    print(&quot;Error message displayed&quot;)
+</code></pre>
+<h4 id="webis_enabledlocator-timeout10-bool"><code>Web.is_enabled(locator, timeout=10) -&gt; bool</code></h4>
+<p>Check if element is enabled.</p>
+<pre><code class="language-python">if Web.is_enabled(&quot;id=submit-btn&quot;):
+    Web.click(&quot;id=submit-btn&quot;)
+</code></pre>
+<h4 id="webwait_for_elementlocator-timeout10"><code>Web.wait_for_element(locator, timeout=10)</code></h4>
+<p>Wait for element to be present.</p>
+<pre><code class="language-python">Web.wait_for_element(&quot;css=.loading-spinner&quot;)
+</code></pre>
+<h4 id="webwait_for_visiblelocator-timeout10"><code>Web.wait_for_visible(locator, timeout=10)</code></h4>
+<p>Wait for element to be visible.</p>
+<pre><code class="language-python">Web.wait_for_visible(&quot;id=success-message&quot;, timeout=15)
+</code></pre>
+<h4 id="webwait_for_invisiblelocator-timeout10"><code>Web.wait_for_invisible(locator, timeout=10)</code></h4>
+<p>Wait for element to become invisible.</p>
+<pre><code class="language-python">Web.wait_for_invisible(&quot;css=.loading-spinner&quot;, timeout=30)
+</code></pre>
+<hr />
+<h3 id="element-properties">Element Properties</h3>
+<h4 id="webget_textlocator-timeout10-str"><code>Web.get_text(locator, timeout=10) -&gt; str</code></h4>
+<p>Get visible text from element.</p>
+<pre><code class="language-python">message = Web.get_text(&quot;id=notification&quot;)
+assert message == &quot;Login successful&quot;
+</code></pre>
+<h4 id="webget_attributelocator-attribute-timeout10-str"><code>Web.get_attribute(locator, attribute, timeout=10) -&gt; str</code></h4>
+<p>Get attribute value from element.</p>
+<pre><code class="language-python">href = Web.get_attribute(&quot;id=download-link&quot;, &quot;href&quot;)
+class_name = Web.get_attribute(&quot;id=submit-btn&quot;, &quot;class&quot;)
+</code></pre>
+<h4 id="webget_valuelocator-timeout10-str"><code>Web.get_value(locator, timeout=10) -&gt; str</code></h4>
+<p>Get value from input field.</p>
+<pre><code class="language-python">email = Web.get_value(&quot;id=email-field&quot;)
+</code></pre>
+<hr />
+<h3 id="alerts">Alerts</h3>
+<h4 id="webaccept_alert"><code>Web.accept_alert()</code></h4>
+<p>Accept browser alert.</p>
+<pre><code class="language-python">Web.click(&quot;id=delete-btn&quot;)
+Web.accept_alert()
+</code></pre>
+<h4 id="webdismiss_alert"><code>Web.dismiss_alert()</code></h4>
+<p>Dismiss browser alert.</p>
+<pre><code class="language-python">Web.dismiss_alert()
+</code></pre>
+<h4 id="webget_alert_text-str"><code>Web.get_alert_text() -&gt; str</code></h4>
+<p>Get alert message text.</p>
+<pre><code class="language-python">alert_text = Web.get_alert_text()
+assert &quot;Are you sure?&quot; in alert_text
+</code></pre>
+<hr />
+<h3 id="windows-frames">Windows &amp; Frames</h3>
+<h4 id="webswitch_to_framelocator-timeout10"><code>Web.switch_to_frame(locator, timeout=10)</code></h4>
+<p>Switch to iframe.</p>
+<pre><code class="language-python">Web.switch_to_frame(&quot;id=payment-iframe&quot;)
+Web.set_text(&quot;id=card-number&quot;, &quot;4111111111111111&quot;)
+Web.switch_to_default()
+</code></pre>
+<h4 id="webswitch_to_default"><code>Web.switch_to_default()</code></h4>
+<p>Switch back to main content.</p>
+<pre><code class="language-python">Web.switch_to_default()
+</code></pre>
+<h4 id="webswitch_to_windowindex"><code>Web.switch_to_window(index)</code></h4>
+<p>Switch to browser window by index.</p>
+<pre><code class="language-python">Web.switch_to_window(1)  # Switch to second window
+</code></pre>
+<hr />
+<h3 id="scrolling">Scrolling</h3>
+<h4 id="webscroll_to_elementlocator-timeout10"><code>Web.scroll_to_element(locator, timeout=10)</code></h4>
+<p>Scroll element into view.</p>
+<pre><code class="language-python">Web.scroll_to_element(&quot;id=footer-section&quot;)
+</code></pre>
+<h4 id="webscroll_to_bottom"><code>Web.scroll_to_bottom()</code></h4>
+<p>Scroll to bottom of page.</p>
+<pre><code class="language-python">Web.scroll_to_bottom()
+</code></pre>
+<hr />
+<h3 id="javascript-execution">JavaScript Execution</h3>
+<h4 id="webexecute_scriptscript-args"><code>Web.execute_script(script, *args)</code></h4>
+<p>Execute JavaScript code.</p>
+<pre><code class="language-python">Web.execute_script(&quot;window.scrollTo(0, 500)&quot;)
+Web.execute_script(&quot;arguments[0].click()&quot;, element)
+</code></pre>
+<hr />
+<h3 id="screenshots">Screenshots</h3>
+<h4 id="webtake_screenshotfilepath"><code>Web.take_screenshot(filepath)</code></h4>
+<p>Capture screenshot.</p>
+<pre><code class="language-python">Web.take_screenshot(&quot;screenshots/login_page.png&quot;)
+</code></pre>
+<hr />
+<h3 id="driver-control">Driver Control</h3>
+<h4 id="webclose_browser"><code>Web.close_browser()</code></h4>
+<p>Close current browser window.</p>
+<pre><code class="language-python">Web.close_browser()
+</code></pre>
+<h4 id="webquit"><code>Web.quit()</code></h4>
+<p>Close all browser windows and quit driver.</p>
+<pre><code class="language-python">Web.quit()
+</code></pre>
+<hr />
+<h2 id="writing-test-cases">Writing Test Cases</h2>
+<h3 id="python-test-case-example">Python Test Case Example</h3>
+<pre><code class="language-python">from orbs.keyword.web import Web
+
+def test_user_login():
+    &quot;&quot;&quot;Test user login flow&quot;&quot;&quot;
+
+    # Navigate to login page
+    Web.open(&quot;https://app.example.com/login&quot;)
+
+    # Enter credentials
+    Web.set_text(&quot;id=email&quot;, &quot;test@example.com&quot;)
+    Web.set_text(&quot;id=password&quot;, &quot;SecurePass123&quot;)
+
+    # Submit form
+    Web.click(&quot;id=login-button&quot;)
+
+    # Wait for dashboard
+    Web.wait_for_visible(&quot;id=dashboard&quot;, timeout=10)
+
+    # Verify success
+    welcome_msg = Web.get_text(&quot;css=.welcome-message&quot;)
+    assert &quot;Welcome back&quot; in welcome_msg
+
+    print(&quot;✅ Login test passed&quot;)
+
+def test_user_logout():
+    &quot;&quot;&quot;Test user logout&quot;&quot;&quot;
+
+    Web.click(&quot;id=user-menu&quot;)
+    Web.click(&quot;link=Logout&quot;)
+
+    # Verify redirect to login
+    Web.wait_for_visible(&quot;id=login-button&quot;)
+
+    print(&quot;✅ Logout test passed&quot;)
+</code></pre>
+<h3 id="test-suite-example">Test Suite Example</h3>
+<p><code>testsuites/login.yml</code>:</p>
+<pre><code class="language-yaml">name: Login Test Suite
+description: End-to-end login tests
+
+testcases:
+  - path: testcases/login/test_user_login
+    enable: true
+  - path: testcases/login/test_user_logout
+    enable: false
+</code></pre>
+<p>Run:</p>
+<pre><code class="language-bash">orbs run testsuites/login.yml
+</code></pre>
+<hr />
+<h2 id="bdd-with-features">BDD with Features</h2>
+<h3 id="create-feature">Create Feature</h3>
+<pre><code class="language-bash">orbs create-feature user_authentication
+</code></pre>
+<p>Edit <code>include/features/user_authentication.feature</code>:</p>
+<pre><code class="language-gherkin">Feature: User Authentication
+
+  Scenario: Successful login with valid credentials
+    Given I am on the login page
+    When I enter email &quot;test@example.com&quot;
+    And I enter password &quot;SecurePass123&quot;
+    And I click the login button
+    Then I should see the dashboard
+
+  Scenario: Failed login with invalid credentials
+    Given I am on the login page
+    When I enter email &quot;wrong@example.com&quot;
+    And I enter password &quot;WrongPass&quot;
+    And I click the login button
+    Then I should see error message &quot;Invalid credentials&quot;
+</code></pre>
+<h3 id="generate-steps">Generate Steps</h3>
+<pre><code class="language-bash">orbs implement-feature user_authentication
+</code></pre>
+<p>Edit <code>include/steps/user_authentication_steps.py</code>:</p>
+<pre><code class="language-python">from behave import given, when, then
+from orbs.keyword.web import Web
+
+@given('I am on the login page')
+def step_impl(context):
+    Web.open(&quot;https://app.example.com/login&quot;)
+
+@when('I enter email &quot;{email}&quot;')
+def step_impl(context, email):
+    Web.set_text(&quot;id=email&quot;, email)
+
+@when('I enter password &quot;{password}&quot;')
+def step_impl(context, password):
+    Web.set_text(&quot;id=password&quot;, password)
+
+@when('I click the login button')
+def step_impl(context):
+    Web.click(&quot;id=login-button&quot;)
+
+@then('I should see the dashboard')
+def step_impl(context):
+    Web.wait_for_visible(&quot;id=dashboard&quot;, timeout=10)
+    assert Web.is_visible(&quot;id=dashboard&quot;)
+
+@then('I should see error message &quot;{message}&quot;')
+def step_impl(context, message):
+    error_text = Web.get_text(&quot;css=.error-message&quot;)
+    assert message in error_text
+</code></pre>
+<h3 id="run-feature">Run Feature</h3>
+<pre><code class="language-bash">orbs run include/features/user_authentication.feature
+</code></pre>
+<hr />
+<h2 id="best-practices_1">Best Practices</h2>
+<h3 id="1-use-page-object-pattern">1. Use Page Object Pattern</h3>
+<p>Create reusable page classes:</p>
+<pre><code class="language-python"># pages/login_page.py
+from orbs.keyword.web import Web
+
+class LoginPage:
+    URL = &quot;https://app.example.com/login&quot;
+
+    # Locators
+    EMAIL_FIELD = &quot;id=email&quot;
+    PASSWORD_FIELD = &quot;id=password&quot;
+    LOGIN_BUTTON = &quot;id=login-button&quot;
+    ERROR_MESSAGE = &quot;css=.error-message&quot;
+
+    @staticmethod
+    def open():
+        Web.open(LoginPage.URL)
+
+    @staticmethod
+    def login(email, password):
+        Web.set_text(LoginPage.EMAIL_FIELD, email)
+        Web.set_text(LoginPage.PASSWORD_FIELD, password)
+        Web.click(LoginPage.LOGIN_BUTTON)
+
+    @staticmethod
+    def get_error_message():
+        return Web.get_text(LoginPage.ERROR_MESSAGE)
+</code></pre>
+<p>Use in tests:</p>
+<pre><code class="language-python">from pages.login_page import LoginPage
+
+def test_login():
+    LoginPage.open()
+    LoginPage.login(&quot;test@example.com&quot;, &quot;password123&quot;)
+    # assertions...
+</code></pre>
+<h3 id="2-explicit-waits">2. Explicit Waits</h3>
+<p>Always use timeouts for stability:</p>
+<pre><code class="language-python">Web.wait_for_visible(&quot;id=results&quot;, timeout=15)
+Web.click(&quot;id=submit&quot;, timeout=10)
+</code></pre>
+<h3 id="3-meaningful-assertions">3. Meaningful Assertions</h3>
+<pre><code class="language-python"># ❌ Not helpful
+assert Web.is_visible(&quot;id=message&quot;)
+
+# ✅ Clear failure message
+message = Web.get_text(&quot;id=message&quot;)
+assert message == &quot;Success&quot;, f&quot;Expected 'Success', got '{message}'&quot;
+</code></pre>
+<h3 id="4-clean-up-resources">4. Clean Up Resources</h3>
+<p>Use test fixtures or teardown:</p>
+<pre><code class="language-python">def test_example():
+    try:
+        Web.open(&quot;https://example.com&quot;)
+        # test logic
+    finally:
+        Web.quit_browser()
+</code></pre>
+<h3 id="5-environment-specific-urls">5. Environment-Specific URLs</h3>
+<p>Use environment variables:</p>
+<pre><code class="language-python">from orbs.config import config
+BASE_URL = config.get(&quot;BASE_URL&quot;, &quot;https://staging.example.com&quot;)
+Web.open(f&quot;{BASE_URL}/login&quot;)
+</code></pre>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="element-not-found">Element Not Found</h3>
+<p><strong>Symptom:</strong> <code>NoSuchElementException</code></p>
+<p><strong>Solutions:</strong>
+* Increase timeout: <code>Web.click("id=btn", timeout=15)</code>
+* Verify locator in browser DevTools
+* Wait for element: <code>Web.wait_for_element("id=btn")</code>
+* Check if element is in iframe</p>
+<h3 id="element-not-clickable">Element Not Clickable</h3>
+<p><strong>Symptom:</strong> <code>ElementClickInterceptedException</code></p>
+<p><strong>Solutions:</strong>
+* Scroll to element: <code>Web.scroll_to_element("id=btn")</code>
+* Wait for overlay to disappear: <code>Web.wait_for_invisible("css=.loading")</code>
+* Use JavaScript click: <code>Web.execute_script("arguments[0].click()", element)</code></p>
+<h3 id="stale-element">Stale Element</h3>
+<p><strong>Symptom:</strong> <code>StaleElementReferenceException</code></p>
+<p><strong>Solutions:</strong>
+* Orbs handles this automatically with retry logic
+* Avoid storing element references
+* Re-find element after page changes</p>
+<h3 id="browser-not-starting">Browser Not Starting</h3>
+<p><strong>Symptom:</strong> WebDriver errors</p>
+<p><strong>Solutions:</strong>
+* Verify driver installation: <code>chromedriver --version</code>
+* Update driver to match browser version
+* Check <code>settings/browser.properties</code> configuration
+* Try headless mode for CI environments</p>
+<h3 id="slow-tests">Slow Tests</h3>
+<p><strong>Solutions:</strong>
+* Use headless mode: <code>headless=true</code>
+* Reduce unnecessary waits
+* Run in parallel (test suite collection level)
+* Optimize locators (prefer ID, CSS over XPath)</p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../mobile-testing/">Mobile Testing Guide</a></li>
+<li><a href="../api-testing/">API Testing Guide</a></li>
+<li><a href="../spy/">Spy Tool Usage</a></li>
+<li><a href="../architecture/">Architecture Overview</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

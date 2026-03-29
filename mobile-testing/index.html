@@ -1,0 +1,3583 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for Orbs CLI">
+      
+      
+        <meta name="author" content="Muhamad Badru Salam">
+      
+      
+      
+        <link rel="prev" href="../web-testing/">
+      
+      
+        <link rel="next" href="../api-testing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Mobile Testing - Orbs CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mobile-testing-with-orbs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbs CLI" class="md-header__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbs CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Mobile Testing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbs CLI" class="md-nav__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    Orbs CLI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../philosophy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-setup-android-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Setup Android Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-initialize-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Initialize Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-connect-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Connect Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-select-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Select Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-configure-appium" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Configure Appium
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-create-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Create Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-run-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Run Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#appium-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium Properties
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Appium Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appium-server-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium Server Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platform-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mobile-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Keywords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mobile Keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#app-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App Control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="App Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobilelaunchidnone-activitynone-resetfalse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.launch(id=None, activity=None, reset=False)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilelaunch_and_installapk-idnone-activitynone-resetfalse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.launch_and_install(apk, id=None, activity=None, reset=False)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileactivate_appbundle_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.activate_app(bundle_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileterminate_appbundle_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.terminate_app(bundle_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Interaction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Interaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobiletaplocator-timeout10-retry_count3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.tap(locator, timeout=10, retry_count=3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileset_textlocator-text-timeout10-clear_firsttrue-retry_count3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.set_text(locator, text, timeout=10, clear_first=True, retry_count=3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileclear_textlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.clear_text(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilelong_presslocator-duration1000-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.long_press(locator, duration=1000, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element State
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element State">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileelement_visiblelocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.element_visible(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileelement_existslocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.element_exists(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilewait_for_elementlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.wait_for_element(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilewait_for_visiblelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.wait_for_visible(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Properties
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileget_textlocator-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.get_text(locator, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileget_attributelocator-attribute-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.get_attribute(locator, attribute, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gestures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gestures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipestart_x-start_y-end_x-end_y-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe(start_x, start_y, end_x, end_y, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_upstart_xnone-distance500-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_up(start_x=None, distance=500, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_downstart_xnone-distance500-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_down(start_x=None, distance=500, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_leftstart_ynone-distance300-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_left(start_y=None, distance=300, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_rightstart_ynone-distance300-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_right(start_y=None, distance=300, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilescroll_to_elementlocator-max_scrolls5-directionup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.scroll_to_element(locator, max_scrolls=5, direction='up')
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Interaction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Device Interaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.back()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilehide_keyboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.hide_keyboard()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#screen-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Screen Capture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Screen Capture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobiletake_screenshotfilepath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.take_screenshot(filepath)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#locator-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locator Strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing Test Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing Test Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-suite-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Suite Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#device-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Device Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list-connected-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Connected Devices
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-device-interactively" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Select Device Interactively
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specify-device-in-test-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specify Device in Test Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-device-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Device Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-use-resource-ids-when-possible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Use Resource IDs When Possible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-handle-keyboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Handle Keyboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-use-explicit-waits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Use Explicit Waits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-page-object-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Page Object Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-screenshot-on-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Screenshot on Failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#appium-server-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium Server Not Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adb-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADB Not Found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-not-detected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Not Detected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-creation-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Creation Failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slow-test-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slow Test Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Topics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Topics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#device-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Information
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#driver-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Driver Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallel-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-driven-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Driven Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../failure-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../spy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../record-and-play/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Record & Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../console-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-setup-android-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Setup Android Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-initialize-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Initialize Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-connect-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Connect Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-select-device" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Select Device
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-configure-appium" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Configure Appium
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-create-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Create Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-run-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Run Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#appium-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium Properties
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Appium Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#appium-server-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium Server Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platform-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mobile-keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Keywords
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mobile Keywords">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#app-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App Control
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="App Control">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobilelaunchidnone-activitynone-resetfalse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.launch(id=None, activity=None, reset=False)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilelaunch_and_installapk-idnone-activitynone-resetfalse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.launch_and_install(apk, id=None, activity=None, reset=False)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileactivate_appbundle_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.activate_app(bundle_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileterminate_appbundle_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.terminate_app(bundle_id)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Interaction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Interaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobiletaplocator-timeout10-retry_count3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.tap(locator, timeout=10, retry_count=3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileset_textlocator-text-timeout10-clear_firsttrue-retry_count3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.set_text(locator, text, timeout=10, clear_first=True, retry_count=3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileclear_textlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.clear_text(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilelong_presslocator-duration1000-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.long_press(locator, duration=1000, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element State
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element State">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileelement_visiblelocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.element_visible(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileelement_existslocator-timeout10-bool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.element_exists(locator, timeout=10) -&gt; bool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilewait_for_elementlocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.wait_for_element(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilewait_for_visiblelocator-timeout10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.wait_for_visible(locator, timeout=10)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Properties
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Element Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileget_textlocator-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.get_text(locator, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileget_attributelocator-attribute-timeout10-str" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.get_attribute(locator, attribute, timeout=10) -&gt; str
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gestures
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gestures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipestart_x-start_y-end_x-end_y-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe(start_x, start_y, end_x, end_y, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_upstart_xnone-distance500-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_up(start_x=None, distance=500, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_downstart_xnone-distance500-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_down(start_x=None, distance=500, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_leftstart_ynone-distance300-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_left(start_y=None, distance=300, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobileswipe_rightstart_ynone-distance300-duration1000" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.swipe_right(start_y=None, distance=300, duration=1000)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilescroll_to_elementlocator-max_scrolls5-directionup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.scroll_to_element(locator, max_scrolls=5, direction='up')
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-interaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Interaction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Device Interaction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobileback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.back()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobilehide_keyboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.hide_keyboard()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#screen-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Screen Capture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Screen Capture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mobiletake_screenshotfilepath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile.take_screenshot(filepath)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#locator-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Locator Strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing Test Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing Test Cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#python-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python Test Case
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-suite-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Suite Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#device-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Device Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list-connected-devices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Connected Devices
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#select-device-interactively" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Select Device Interactively
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#specify-device-in-test-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Specify Device in Test Run
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-device-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Device Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-use-resource-ids-when-possible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Use Resource IDs When Possible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-handle-keyboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Handle Keyboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-use-explicit-waits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Use Explicit Waits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-page-object-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Page Object Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-screenshot-on-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Screenshot on Failure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#appium-server-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Appium Server Not Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adb-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADB Not Found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#device-not-detected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Not Detected
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-creation-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Creation Failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slow-test-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slow Test Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-topics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Topics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Topics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#device-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Device Information
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#driver-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Driver Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallel-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallel Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="mobile-testing-with-orbs">Mobile Testing with Orbs</h1>
+<p>Complete guide to Android mobile automation using Orbs and Appium.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#quick-start">Quick Start</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#mobile-keywords">Mobile Keywords</a></li>
+<li><a href="#writing-test-cases">Writing Test Cases</a></li>
+<li><a href="#device-management">Device Management</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+<hr />
+<h2 id="introduction">Introduction</h2>
+<p>Orbs provides mobile automation capabilities through <strong>Appium</strong> integration, supporting Android devices and emulators. The framework handles:</p>
+<ul>
+<li><strong>Automatic Appium server management</strong> - Starts server if not running</li>
+<li><strong>Device detection and selection</strong> - Interactive device picker</li>
+<li><strong>Thread-safe execution</strong> - Parallel mobile test support</li>
+<li><strong>Smart element waiting</strong> - Automatic waits with retries</li>
+<li><strong>Unified API</strong> - Similar to web automation for easy learning</li>
+</ul>
+<hr />
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="system-requirements">System Requirements</h3>
+<ul>
+<li><strong>Operating System:</strong> Windows, macOS, or Linux</li>
+<li><strong>Node.js:</strong> v14+ (installed automatically via <code>orbs setup android</code>)</li>
+<li><strong>npm:</strong> Latest version</li>
+<li><strong>Java JDK:</strong> 8 or higher</li>
+<li><strong>Android SDK:</strong> Android Studio or command-line tools</li>
+</ul>
+<h3 id="environment-variables">Environment Variables</h3>
+<p>Add to system PATH:</p>
+<p><strong>Windows:</strong></p>
+<pre><code>JAVA_HOME=C:\Program Files\Java\jdk-11.0.x
+ANDROID_HOME=C:\Users\&lt;username&gt;\AppData\Local\Android\Sdk
+
+PATH=%JAVA_HOME%\bin;%ANDROID_HOME%\platform-tools;%ANDROID_HOME%\tools
+</code></pre>
+<p><strong>Mac/Linux:</strong></p>
+<pre><code class="language-bash">export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.jdk/Contents/Home
+export ANDROID_HOME=~/Library/Android/sdk
+export PATH=$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$PATH
+</code></pre>
+<hr />
+<h2 id="quick-start">Quick Start</h2>
+<h3 id="1-setup-android-environment">1. Setup Android Environment</h3>
+<pre><code class="language-bash">orbs setup android
+</code></pre>
+<p>This command will:
+* ✅ Install Node.js (if not present)
+* ✅ Install Appium globally
+* ✅ Install Appium UIAutomator2 driver
+* ✅ Verify all installations</p>
+<h3 id="2-initialize-project">2. Initialize Project</h3>
+<pre><code class="language-bash">orbs init mobile-automation
+cd mobile-automation
+</code></pre>
+<h3 id="3-connect-device">3. Connect Device</h3>
+<p>Connect Android device via USB or start emulator:</p>
+<pre><code class="language-bash"># Check connected devices
+adb devices
+
+# Start emulator (if using AVD)
+emulator -avd Pixel_4_API_30
+</code></pre>
+<h3 id="4-select-device">4. Select Device</h3>
+<pre><code class="language-bash">orbs select-device
+</code></pre>
+<p>Interactive menu:</p>
+<pre><code>? Select device: 
+  emulator-5554
+❯ R58M40ABCDE
+
+✅ Updated deviceName=R58M40ABCDE in settings/appium.properties
+</code></pre>
+<h3 id="5-configure-appium">5. Configure Appium</h3>
+<p>Edit <code>settings/appium.properties</code>:</p>
+<pre><code class="language-properties"># Device configuration
+deviceName=R58M40ABCDE
+platformName=Android
+platformVersion=12.0
+
+# App configuration
+appPackage=com.example.app
+appActivity=.MainActivity
+
+# Or use app file path
+# app=/path/to/app.apk
+
+# Appium server
+appium_url=http://localhost:4723/wd/hub
+
+# Additional capabilities
+automationName=UiAutomator2
+noReset=true
+fullReset=false
+</code></pre>
+<h3 id="6-create-test-case">6. Create Test Case</h3>
+<pre><code class="language-bash">orbs create-testcase android_login
+</code></pre>
+<p>Edit <code>testcases/android_login.py</code>:</p>
+<pre><code class="language-python">from orbs.keyword.mobile import Mobile
+
+def test_android_login():
+    &quot;&quot;&quot;Test Android app login&quot;&quot;&quot;
+
+    # Wait for app to load
+    Mobile.wait_for_element(&quot;id=com.example.app:id/username&quot;, timeout=10)
+
+    # Enter credentials
+    Mobile.set_text(&quot;id=com.example.app:id/username&quot;, &quot;testuser&quot;)
+    Mobile.set_text(&quot;id=com.example.app:id/password&quot;, &quot;password123&quot;)
+
+    # Click login
+    Mobile.tap(&quot;id=com.example.app:id/login_button&quot;)
+
+    # Verify home screen
+    Mobile.wait_for_element(&quot;id=com.example.app:id/home_screen&quot;, timeout=10)
+    assert Mobile.element_visible(&quot;id=com.example.app:id/home_screen&quot;)
+
+    print(&quot;✅ Android login test passed&quot;)
+</code></pre>
+<h3 id="7-run-test">7. Run Test</h3>
+<pre><code class="language-bash">orbs run testsuites/login.yml --platform=android
+</code></pre>
+<hr />
+<h2 id="configuration">Configuration</h2>
+<h3 id="appium-properties">Appium Properties</h3>
+<p>Location: <code>settings/appium.properties</code></p>
+<h4 id="basic-configuration">Basic Configuration</h4>
+<pre><code class="language-properties"># Required
+deviceName=emulator-5554
+platformName=Android
+platformVersion=11.0
+
+# App identification (choose one)
+appPackage=com.android.calculator2
+appActivity=com.android.calculator2.Calculator
+
+# Or use APK file
+# app=/absolute/path/to/app.apk
+</code></pre>
+<h4 id="advanced-capabilities">Advanced Capabilities</h4>
+<pre><code class="language-properties"># Automation engine
+automationName=UiAutomator2
+
+# Reset behavior
+noReset=true          # Don't reset app state between sessions
+fullReset=false       # Don't uninstall app
+
+# Timeouts (milliseconds)
+newCommandTimeout=300000
+
+# Performance
+skipServerInstallation=true
+skipDeviceInitialization=false
+
+# Logging
+printPageSourceOnFindFailure=true
+</code></pre>
+<h3 id="appium-server-configuration">Appium Server Configuration</h3>
+<pre><code class="language-properties"># Server URL
+appium_url=http://localhost:4723/wd/hub
+
+# Or remote server
+# appium_url=http://192.168.1.100:4723/wd/hub
+</code></pre>
+<h3 id="platform-configuration">Platform Configuration</h3>
+<p>Location: <code>settings/platform.properties</code></p>
+<pre><code class="language-properties">default_platform=android
+</code></pre>
+<hr />
+<h2 id="mobile-keywords">Mobile Keywords</h2>
+<h3 id="app-control">App Control</h3>
+<h4 id="mobilelaunchidnone-activitynone-resetfalse"><code>Mobile.launch(id=None, activity=None, reset=False)</code></h4>
+<p>Launch an application with optional package ID and activity.</p>
+<pre><code class="language-python"># Launch from config
+Mobile.launch()
+
+# Launch specific app
+Mobile.launch(&quot;com.android.chrome&quot;, &quot;com.google.android.apps.chrome.Main&quot;)
+
+# Launch with reset
+Mobile.launch(&quot;com.swaglabsmobileapp&quot;, &quot;.MainActivity&quot;, reset=True)
+
+# Keyword args
+Mobile.launch(id=&quot;com.android.chrome&quot;, activity=&quot;.Main&quot;, reset=True)
+</code></pre>
+<h4 id="mobilelaunch_and_installapk-idnone-activitynone-resetfalse"><code>Mobile.launch_and_install(apk, id=None, activity=None, reset=False)</code></h4>
+<p>Install APK and launch the application.</p>
+<pre><code class="language-python"># Install and launch
+Mobile.launch_and_install(&quot;/apps/myapp.apk&quot;)
+
+# Install with specific launch params
+Mobile.launch_and_install(
+    apk=&quot;/apps/chrome.apk&quot;,
+    id=&quot;com.android.chrome&quot;,
+    activity=&quot;.Main&quot;,
+    reset=True
+)
+</code></pre>
+<h4 id="mobileactivate_appbundle_id"><code>Mobile.activate_app(bundle_id)</code></h4>
+<p>Activate app by bundle ID.</p>
+<pre><code class="language-python">Mobile.activate_app(&quot;com.android.chrome&quot;)
+</code></pre>
+<h4 id="mobileterminate_appbundle_id"><code>Mobile.terminate_app(bundle_id)</code></h4>
+<p>Terminate app by bundle ID.</p>
+<pre><code class="language-python">Mobile.terminate_app(&quot;com.android.chrome&quot;)
+</code></pre>
+<hr />
+<h3 id="element-interaction">Element Interaction</h3>
+<h4 id="mobiletaplocator-timeout10-retry_count3"><code>Mobile.tap(locator, timeout=10, retry_count=3)</code></h4>
+<p>Tap on an element with retry logic.</p>
+<pre><code class="language-python">Mobile.tap(&quot;id=com.example.app:id/submit_button&quot;)
+Mobile.tap(&quot;xpath=//android.widget.Button[@text='Login']&quot;)
+</code></pre>
+<h4 id="mobileset_textlocator-text-timeout10-clear_firsttrue-retry_count3"><code>Mobile.set_text(locator, text, timeout=10, clear_first=True, retry_count=3)</code></h4>
+<p>Enter text into an element with retry logic.</p>
+<pre><code class="language-python">Mobile.set_text(&quot;id=com.example.app:id/email&quot;, &quot;test@example.com&quot;)
+Mobile.set_text(&quot;xpath=//android.widget.EditText[@content-desc='Username']&quot;, &quot;admin&quot;)
+</code></pre>
+<h4 id="mobileclear_textlocator-timeout10"><code>Mobile.clear_text(locator, timeout=10)</code></h4>
+<p>Clear text from an element.</p>
+<pre><code class="language-python">Mobile.clear_text(&quot;id=com.example.app:id/search_field&quot;)
+</code></pre>
+<h4 id="mobilelong_presslocator-duration1000-timeout10"><code>Mobile.long_press(locator, duration=1000, timeout=10)</code></h4>
+<p>Long press on an element.</p>
+<pre><code class="language-python">Mobile.long_press(&quot;id=com.example.app:id/item&quot;, duration=2000)
+</code></pre>
+<hr />
+<h3 id="element-state">Element State</h3>
+<h4 id="mobileelement_visiblelocator-timeout10-bool"><code>Mobile.element_visible(locator, timeout=10) -&gt; bool</code></h4>
+<p>Check if element is visible.</p>
+<pre><code class="language-python">if Mobile.element_visible(&quot;id=com.example.app:id/error_message&quot;):
+    print(&quot;Error displayed&quot;)
+</code></pre>
+<h4 id="mobileelement_existslocator-timeout10-bool"><code>Mobile.element_exists(locator, timeout=10) -&gt; bool</code></h4>
+<p>Check if element exists.</p>
+<pre><code class="language-python">if Mobile.element_exists(&quot;id=com.example.app:id/submit&quot;):
+    Mobile.tap(&quot;id=com.example.app:id/submit&quot;)
+</code></pre>
+<h4 id="mobilewait_for_elementlocator-timeout10"><code>Mobile.wait_for_element(locator, timeout=10)</code></h4>
+<p>Wait for element to be present.</p>
+<pre><code class="language-python">Mobile.wait_for_element(&quot;id=com.example.app:id/loading&quot;, timeout=30)
+</code></pre>
+<h4 id="mobilewait_for_visiblelocator-timeout10"><code>Mobile.wait_for_visible(locator, timeout=10)</code></h4>
+<p>Wait for element to be visible.</p>
+<pre><code class="language-python">Mobile.wait_for_visible(&quot;id=com.example.app:id/success_dialog&quot;)
+</code></pre>
+<hr />
+<h3 id="element-properties">Element Properties</h3>
+<h4 id="mobileget_textlocator-timeout10-str"><code>Mobile.get_text(locator, timeout=10) -&gt; str</code></h4>
+<p>Get text from element.</p>
+<pre><code class="language-python">message = Mobile.get_text(&quot;id=com.example.app:id/notification&quot;)
+assert message == &quot;Upload successful&quot;
+</code></pre>
+<h4 id="mobileget_attributelocator-attribute-timeout10-str"><code>Mobile.get_attribute(locator, attribute, timeout=10) -&gt; str</code></h4>
+<p>Get attribute value.</p>
+<pre><code class="language-python">enabled = Mobile.get_attribute(&quot;id=com.example.app:id/btn&quot;, &quot;enabled&quot;)
+content_desc = Mobile.get_attribute(&quot;xpath=//android.widget.Button&quot;, &quot;content-desc&quot;)
+</code></pre>
+<hr />
+<h3 id="gestures">Gestures</h3>
+<h4 id="mobileswipestart_x-start_y-end_x-end_y-duration1000"><code>Mobile.swipe(start_x, start_y, end_x, end_y, duration=1000)</code></h4>
+<p>Swipe gesture from start to end coordinates.</p>
+<pre><code class="language-python"># Swipe right
+Mobile.swipe(100, 500, 900, 500, duration=800)
+
+# Swipe up (scroll)
+Mobile.swipe(500, 1500, 500, 500, duration=600)
+</code></pre>
+<h4 id="mobileswipe_upstart_xnone-distance500-duration1000"><code>Mobile.swipe_up(start_x=None, distance=500, duration=1000)</code></h4>
+<p>Swipe up from bottom of screen.</p>
+<pre><code class="language-python">Mobile.swipe_up()
+Mobile.swipe_up(distance=800)
+</code></pre>
+<h4 id="mobileswipe_downstart_xnone-distance500-duration1000"><code>Mobile.swipe_down(start_x=None, distance=500, duration=1000)</code></h4>
+<p>Swipe down from top of screen.</p>
+<pre><code class="language-python">Mobile.swipe_down()
+Mobile.swipe_down(distance=800)
+</code></pre>
+<h4 id="mobileswipe_leftstart_ynone-distance300-duration1000"><code>Mobile.swipe_left(start_y=None, distance=300, duration=1000)</code></h4>
+<p>Swipe left.</p>
+<pre><code class="language-python">Mobile.swipe_left()
+</code></pre>
+<h4 id="mobileswipe_rightstart_ynone-distance300-duration1000"><code>Mobile.swipe_right(start_y=None, distance=300, duration=1000)</code></h4>
+<p>Swipe right.</p>
+<pre><code class="language-python">Mobile.swipe_right()
+</code></pre>
+<h4 id="mobilescroll_to_elementlocator-max_scrolls5-directionup"><code>Mobile.scroll_to_element(locator, max_scrolls=5, direction='up')</code></h4>
+<p>Scroll until element is found.</p>
+<pre><code class="language-python">Mobile.scroll_to_element(&quot;id=com.example.app:id/settings&quot;)
+Mobile.scroll_to_element(&quot;accessibility_id=Submit&quot;, direction=&quot;down&quot;)
+</code></pre>
+<hr />
+<h3 id="device-interaction">Device Interaction</h3>
+<h4 id="mobileback"><code>Mobile.back()</code></h4>
+<p>Press Android back button.</p>
+<pre><code class="language-python">Mobile.back()
+</code></pre>
+<h4 id="mobilehide_keyboard"><code>Mobile.hide_keyboard()</code></h4>
+<p>Hide on-screen keyboard.</p>
+<pre><code class="language-python">Mobile.hide_keyboard()
+</code></pre>
+<hr />
+<h3 id="screen-capture">Screen Capture</h3>
+<h4 id="mobiletake_screenshotfilepath"><code>Mobile.take_screenshot(filepath)</code></h4>
+<p>Capture screenshot.</p>
+<pre><code class="language-python">Mobile.take_screenshot(&quot;screenshots/login_screen.png&quot;)
+</code></pre>
+<hr />
+<h3 id="locator-strategies">Locator Strategies</h3>
+<p>Orbs supports multiple Android locator strategies:</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Syntax</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Resource ID</td>
+<td><code>id=resource-id</code></td>
+<td><code>id=com.example.app:id/button</code></td>
+</tr>
+<tr>
+<td>XPath</td>
+<td><code>xpath=xpath-expression</code></td>
+<td><code>xpath=//android.widget.Button[@text='Login']</code></td>
+</tr>
+<tr>
+<td>Accessibility ID</td>
+<td><code>accessibility_id=content-desc</code></td>
+<td><code>accessibility_id=Submit Button</code></td>
+</tr>
+<tr>
+<td>Class Name</td>
+<td><code>class=class-name</code></td>
+<td><code>class=android.widget.Button</code></td>
+</tr>
+<tr>
+<td>Android UIAutomator</td>
+<td><code>android_uiautomator=UiSelector</code></td>
+<td><code>android_uiautomator=new UiSelector().text("Login")</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-python"># By resource ID (most stable)
+Mobile.tap(&quot;id=com.android.calculator2:id/digit_5&quot;)
+
+# By XPath
+Mobile.tap(&quot;xpath=//android.widget.Button[@text='Calculate']&quot;)
+
+# By content-desc (accessibility)
+Mobile.tap(&quot;accessibility_id=Submit Form&quot;)
+
+# By class
+Mobile.tap(&quot;class=android.widget.EditText&quot;)
+
+# By UIAutomator
+Mobile.tap(&quot;android_uiautomator=new UiSelector().text('Login')&quot;)
+</code></pre>
+<hr />
+<h2 id="writing-test-cases">Writing Test Cases</h2>
+<h3 id="python-test-case">Python Test Case</h3>
+<pre><code class="language-python">from orbs.keyword.mobile import Mobile
+
+def test_calculator_addition():
+    &quot;&quot;&quot;Test calculator addition&quot;&quot;&quot;
+
+    # Wait for app to load
+    Mobile.wait_for_element(&quot;id=com.android.calculator2:id/digit_1&quot;, timeout=10)
+
+    # Perform calculation: 5 + 3 = 8
+    Mobile.tap(&quot;id=com.android.calculator2:id/digit_5&quot;)
+    Mobile.tap(&quot;id=com.android.calculator2:id/op_add&quot;)
+    Mobile.tap(&quot;id=com.android.calculator2:id/digit_3&quot;)
+    Mobile.tap(&quot;id=com.android.calculator2:id/eq&quot;)
+
+    # Verify result
+    result = Mobile.get_text(&quot;id=com.android.calculator2:id/result&quot;)
+    assert result == &quot;8&quot;, f&quot;Expected 8, got {result}&quot;
+
+    print(&quot;✅ Calculator test passed&quot;)
+
+def test_form_submission():
+    &quot;&quot;&quot;Test form submission flow&quot;&quot;&quot;
+
+    # Fill form
+    Mobile.set_text(&quot;id=com.example.app:id/name&quot;, &quot;John Doe&quot;)
+    Mobile.set_text(&quot;id=com.example.app:id/email&quot;, &quot;john@example.com&quot;)
+    Mobile.hide_keyboard()
+
+    # Scroll to submit button
+    Mobile.scroll_to_element(&quot;id=com.example.app:id/submit&quot;)
+
+    # Submit form
+    Mobile.tap(&quot;id=com.example.app:id/submit&quot;)
+
+    # Wait for confirmation
+    Mobile.wait_for_visible(&quot;id=com.example.app:id/success_message&quot;, timeout=10)
+
+    # Verify message
+    message = Mobile.get_text(&quot;id=com.example.app:id/success_message&quot;)
+    assert &quot;submitted successfully&quot; in message.lower()
+
+    print(&quot;✅ Form submission test passed&quot;)
+</code></pre>
+<h3 id="test-suite-example">Test Suite Example</h3>
+<p><code>testsuites/mobile_regression.yml</code>:</p>
+<pre><code class="language-yaml">name: Mobile Regression Suite
+description: Android app regression tests
+
+testcases:
+  - path: testcases/android_login/test_android_login
+    enable: true
+  - path: testcases/calculator/test_calculator_addition
+    enable: true
+  - path: testcases/forms/test_form_submission
+    enable: false
+</code></pre>
+<p>Run:</p>
+<pre><code class="language-bash">orbs run testsuites/mobile_regression.yml --platform=android
+</code></pre>
+<hr />
+<h2 id="device-management">Device Management</h2>
+<h3 id="list-connected-devices">List Connected Devices</h3>
+<pre><code class="language-bash">adb devices
+</code></pre>
+<p>Output:</p>
+<pre><code>List of devices attached
+emulator-5554          device
+R58M40ABCDE            device
+</code></pre>
+<h3 id="select-device-interactively">Select Device Interactively</h3>
+<pre><code class="language-bash">orbs select-device
+</code></pre>
+<h3 id="specify-device-in-test-run">Specify Device in Test Run</h3>
+<pre><code class="language-bash">orbs run testsuites/Mobile.yml --platform=android --deviceId=emulator-5554
+</code></pre>
+<h3 id="multiple-device-testing">Multiple Device Testing</h3>
+<p>Run tests on different devices in parallel:</p>
+<pre><code class="language-bash"># Terminal 1
+orbs run testsuites/suite1.yml --platform=android --deviceId=emulator-5554
+
+# Terminal 2
+orbs run testsuites/suite2.yml --platform=android --deviceId=R58M40ABCDE
+</code></pre>
+<hr />
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="1-use-resource-ids-when-possible">1. Use Resource IDs When Possible</h3>
+<p>✅ Stable:</p>
+<pre><code class="language-python">Mobile.tap(&quot;id=com.example.app:id/login_button&quot;)
+</code></pre>
+<p>❌ Fragile:</p>
+<pre><code class="language-python">Mobile.tap(&quot;xpath=/hierarchy/android.widget.FrameLayout[1]/android.widget.Button[3]&quot;)
+</code></pre>
+<h3 id="2-handle-keyboard">2. Handle Keyboard</h3>
+<p>Always hide keyboard after text input:</p>
+<pre><code class="language-python">Mobile.set_text(&quot;id=email_field&quot;, &quot;test@example.com&quot;)
+Mobile.hide_keyboard()
+</code></pre>
+<h3 id="3-use-explicit-waits">3. Use Explicit Waits</h3>
+<pre><code class="language-python">Mobile.wait_for_visible(&quot;id=success_message&quot;, timeout=15)
+</code></pre>
+<h3 id="4-page-object-pattern">4. Page Object Pattern</h3>
+<pre><code class="language-python"># pages/login_page.py
+from orbs.keyword.mobile import Mobile
+
+class LoginPage:
+    USERNAME = &quot;id=com.example.app:id/username&quot;
+    PASSWORD = &quot;id=com.example.app:id/password&quot;
+    LOGIN_BTN = &quot;id=com.example.app:id/login_button&quot;
+
+    @staticmethod
+    def login(username, password):
+        Mobile.set_text(LoginPage.USERNAME, username)
+        Mobile.set_text(LoginPage.PASSWORD, password)
+        Mobile.hide_keyboard()
+        Mobile.tap(LoginPage.LOGIN_BTN)
+</code></pre>
+<h3 id="5-error-handling">5. Error Handling</h3>
+<pre><code class="language-python">def test_with_retry():
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            Mobile.tap(&quot;id=unstable_element&quot;)
+            break
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            print(f&quot;Retry {attempt + 1}/{max_retries}&quot;)
+            time.sleep(2)
+</code></pre>
+<h3 id="6-screenshot-on-failure">6. Screenshot on Failure</h3>
+<pre><code class="language-python">def test_login():
+    try:
+        Mobile.tap(&quot;id=login_button&quot;)
+        # test logic
+    except Exception as e:
+        Mobile.take_screenshot(&quot;screenshots/failure.png&quot;)
+        raise
+</code></pre>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="appium-server-not-starting">Appium Server Not Starting</h3>
+<p><strong>Check installation:</strong></p>
+<pre><code class="language-bash">appium --version
+</code></pre>
+<p><strong>Reinstall:</strong></p>
+<pre><code class="language-bash">orbs setup android
+</code></pre>
+<p><strong>Start manually:</strong></p>
+<pre><code class="language-bash">appium --address 0.0.0.0 --port 4723
+</code></pre>
+<h3 id="adb-not-found">ADB Not Found</h3>
+<p><strong>Verify PATH:</strong></p>
+<pre><code class="language-bash">adb version
+</code></pre>
+<p><strong>Add to PATH (Windows):</strong></p>
+<pre><code>C:\Users\&lt;username&gt;\AppData\Local\Android\Sdk\platform-tools
+</code></pre>
+<h3 id="device-not-detected">Device Not Detected</h3>
+<p><strong>Check USB debugging:</strong>
+* Enable Developer Options on device
+* Enable USB Debugging
+* Accept debugging authorization prompt</p>
+<p><strong>Verify connection:</strong></p>
+<pre><code class="language-bash">adb devices
+</code></pre>
+<p><strong>Restart ADB:</strong></p>
+<pre><code class="language-bash">adb kill-server
+adb start-server
+</code></pre>
+<h3 id="element-not-found">Element Not Found</h3>
+<p><strong>Solutions:</strong>
+* Increase timeout
+* Use Appium Inspector to verify locators
+* Wait for app to load completely
+* Check if element is in different activity</p>
+<h3 id="session-creation-failed">Session Creation Failed</h3>
+<p><strong>Check capabilities:</strong>
+* Verify <code>appPackage</code> and <code>appActivity</code> are correct
+* Ensure app is installed: <code>adb shell pm list packages | grep example</code>
+* Check platform version matches device</p>
+<p><strong>View logs:</strong></p>
+<pre><code class="language-bash">adb logcat
+</code></pre>
+<h3 id="slow-test-execution">Slow Test Execution</h3>
+<p><strong>Optimize:</strong>
+* Reduce unnecessary waits
+* Use <code>noReset=true</code> to skip reinstall
+* Disable animations on device
+* Use faster emulator (x86 images with HAXM)</p>
+<hr />
+<h2 id="advanced-topics">Advanced Topics</h2>
+<h3 id="device-information">Device Information</h3>
+<pre><code class="language-python"># Get screen size
+size = Mobile.get_device_size()
+print(f&quot;Width: {size['width']}, Height: {size['height']}&quot;)
+
+# Get/Set orientation
+orientation = Mobile.get_orientation()  # PORTRAIT or LANDSCAPE
+Mobile.set_orientation(&quot;LANDSCAPE&quot;)
+</code></pre>
+<h3 id="driver-management">Driver Management</h3>
+<pre><code class="language-python"># Check driver status
+status = Mobile.get_driver_status()
+
+# Reset driver between tests
+Mobile.reset_driver()
+
+# Quit session
+Mobile.quit()
+</code></pre>
+<h3 id="parallel-execution">Parallel Execution</h3>
+<p>Run multiple test suites in parallel using different devices:</p>
+<pre><code class="language-bash"># Use orchestration tool or CI/CD
+pytest -n 2 --deviceId=emulator-5554,R58M40ABCDE
+</code></pre>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../web-testing/">Web Testing Guide</a></li>
+<li><a href="../spy/">Spy Tool for Mobile</a></li>
+<li><a href="../api-testing/">API Testing</a></li>
+<li><a href="../architecture/">Architecture Overview</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

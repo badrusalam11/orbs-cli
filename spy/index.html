@@ -1,0 +1,2546 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Official documentation for Orbs CLI">
+      
+      
+        <meta name="author" content="Muhamad Badru Salam">
+      
+      
+      
+        <link rel="prev" href="../object-repository/">
+      
+      
+        <link rel="next" href="../record-and-play/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Spy Tool - Orbs CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#spy-tool-usage-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Orbs CLI" class="md-header__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Orbs CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Spy Tool
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Orbs CLI" class="md-nav__button md-logo" aria-label="Orbs CLI" data-md-component="logo">
+      
+  <img src="https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png" alt="logo">
+
+    </a>
+    Orbs CLI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../philosophy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Philosophy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Core Usage
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation / Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mobile-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mobile Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-driven-testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Driven Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../failure-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../object-repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tools
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Spy Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Spy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Web Spy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-web-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting Web Spy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capturing-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capturing Elements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capturing Elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-Step
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#captured-locator-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Captured Locator Strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-captured-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Captured Element
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-page-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic Page Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mobile-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Spy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mobile Spy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-mobile-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting Mobile Spy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#captured-mobile-locators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Captured Mobile Locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-mobile-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Mobile Element
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#captured-element-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Captured Element Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Captured Element Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xml-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XML Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-captured-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading Captured Elements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-captured-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Captured Elements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Captured Elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#direct-usage-in-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Usage in Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#object-repository-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object Repository Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#centralized-element-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Centralized Element Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-name-elements-descriptively" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Name Elements Descriptively
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-prefer-stable-locators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Prefer Stable Locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-organize-by-pagemodule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Organize by Page/Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-verify-captured-locators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Verify Captured Locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-update-when-ui-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Update When UI Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-document-custom-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Document Custom Attributes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#web-spy-not-capturing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Spy Not Capturing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listeners-not-working-after-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listeners Not Working After Navigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobile-spy-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Spy Not Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-not-found-in-xml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Found in XML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-directory-not-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Directory Not Created
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-element-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Element Naming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-element-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Element Capture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with CI/CD
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../record-and-play/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Record & Play
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../console-summary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Console Summary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Loader
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#web-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Spy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Web Spy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-web-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting Web Spy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capturing-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Capturing Elements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Capturing Elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-Step
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#captured-locator-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Captured Locator Strategies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-captured-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Captured Element
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-page-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic Page Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mobile-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Spy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mobile Spy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-mobile-spy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting Mobile Spy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How It Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#captured-mobile-locators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Captured Mobile Locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-mobile-element" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Mobile Element
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#captured-element-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Captured Element Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Captured Element Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#xml-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XML Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-captured-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading Captured Elements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-captured-elements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Captured Elements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Captured Elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#direct-usage-in-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Usage in Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#object-repository-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object Repository Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#centralized-element-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Centralized Element Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-name-elements-descriptively" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Name Elements Descriptively
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-prefer-stable-locators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Prefer Stable Locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-organize-by-pagemodule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Organize by Page/Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-verify-captured-locators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Verify Captured Locators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-update-when-ui-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Update When UI Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-document-custom-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Document Custom Attributes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#web-spy-not-capturing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Web Spy Not Capturing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#listeners-not-working-after-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Listeners Not Working After Navigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobile-spy-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mobile Spy Not Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-not-found-in-xml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Element Not Found in XML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#output-directory-not-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Output Directory Not Created
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-element-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Element Naming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#batch-element-capture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Batch Element Capture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with CI/CD
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="spy-tool-usage-guide">Spy Tool Usage Guide</h1>
+<p>Interactive element inspection and locator capture for web and mobile testing.</p>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#web-spy">Web Spy</a></li>
+<li><a href="#mobile-spy">Mobile Spy</a></li>
+<li><a href="#captured-element-format">Captured Element Format</a></li>
+<li><a href="#using-captured-elements">Using Captured Elements</a></li>
+<li><a href="#best-practices">Best Practices</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+<hr />
+<h2 id="introduction">Introduction</h2>
+<p>The <strong>Orbs Spy</strong> is an interactive tool for inspecting and capturing element locators from web pages and mobile apps. It helps you:</p>
+<ul>
+<li><strong>Inspect elements</strong> interactively without writing code</li>
+<li><strong>Capture multiple locator strategies</strong> (ID, XPath, CSS, etc.)</li>
+<li><strong>Generate test-ready code snippets</strong> automatically</li>
+<li><strong>Build object repositories</strong> for reusable elements</li>
+<li><strong>Speed up test development</strong> by avoiding manual locator creation</li>
+</ul>
+<hr />
+<h2 id="web-spy">Web Spy</h2>
+<h3 id="starting-web-spy">Starting Web Spy</h3>
+<pre><code class="language-bash">orbs spy --web --url=https://example.com
+</code></pre>
+<p><strong>With protocol auto-detection:</strong></p>
+<pre><code class="language-bash"># Automatically adds https://
+orbs spy --web --url=google.com
+</code></pre>
+<h3 id="how-it-works">How It Works</h3>
+<ol>
+<li><strong>Launches Chrome browser</strong> with spy listeners injected</li>
+<li><strong>Navigate and interact</strong> with the page normally</li>
+<li><strong>Press <code>Ctrl +</code> `</strong> (backtick) while hovering over any element</li>
+<li><strong>Element details are captured</strong> and saved automatically</li>
+<li><strong>Press <code>Ctrl + C</code></strong> in terminal to stop spy session</li>
+</ol>
+<h3 id="capturing-elements">Capturing Elements</h3>
+<h4 id="step-by-step">Step-by-Step</h4>
+<ol>
+<li>
+<p><strong>Start spy session:</strong>
+   <code>bash
+   orbs spy --web --url=https://google.com</code></p>
+</li>
+<li>
+<p><strong>Browser opens</strong> with the target URL</p>
+</li>
+<li>
+<p><strong>Hover over element</strong> you want to capture (e.g., search box)</p>
+</li>
+<li>
+<p><strong>Press <code>Ctrl +</code> `</strong> (backtick key, usually below ESC)</p>
+</li>
+<li>
+<p><strong>Console shows capture:</strong>
+   <code>[SPY] Element captured: input[name='q']
+   [SPY] Saved to: object_repository/SearchBox.xml</code></p>
+</li>
+<li>
+<p><strong>Repeat for more elements</strong></p>
+</li>
+<li>
+<p><strong>Stop when done:</strong>
+   Press <code>Ctrl + C</code> in the terminal</p>
+</li>
+</ol>
+<h3 id="captured-locator-strategies">Captured Locator Strategies</h3>
+<p>The spy automatically captures multiple locator strategies:</p>
+<ul>
+<li><strong>ID</strong> - Element's id attribute</li>
+<li><strong>Name</strong> - Element's name attribute</li>
+<li><strong>CSS Selector</strong> - Generated CSS selector</li>
+<li><strong>XPath</strong> - Generated XPath expression</li>
+<li><strong>Class Name</strong> - Element's class attribute</li>
+<li><strong>Tag Name</strong> - HTML tag</li>
+<li><strong>Link Text</strong> - For <code>&lt;a&gt;</code> elements</li>
+<li><strong>Attributes</strong> - All element attributes</li>
+</ul>
+<h3 id="example-captured-element">Example Captured Element</h3>
+<p>After capturing Google's search box, you get:</p>
+<pre><code class="language-xml">&lt;!-- object_repository/SearchBox.xml --&gt;
+&lt;WebElementEntity&gt;
+  &lt;name&gt;SearchBox&lt;/name&gt;
+  &lt;tag&gt;input&lt;/tag&gt;
+  &lt;selectorCollection&gt;
+    &lt;entry&gt;
+      &lt;key&gt;ID&lt;/key&gt;
+      &lt;value&gt;APjFqb&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;NAME&lt;/key&gt;
+      &lt;value&gt;q&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;CSS&lt;/key&gt;
+      &lt;value&gt;input[name='q']&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;XPATH&lt;/key&gt;
+      &lt;value&gt;//input[@name='q']&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;CLASS&lt;/key&gt;
+      &lt;value&gt;gLFyf&lt;/value&gt;
+    &lt;/entry&gt;
+  &lt;/selectorCollection&gt;
+  &lt;attributes&gt;
+    &lt;name&gt;q&lt;/name&gt;
+    &lt;type&gt;text&lt;/type&gt;
+    &lt;autocomplete&gt;off&lt;/autocomplete&gt;
+    &lt;title&gt;Search&lt;/title&gt;
+  &lt;/attributes&gt;
+&lt;/WebElementEntity&gt;
+</code></pre>
+<h3 id="dynamic-page-handling">Dynamic Page Handling</h3>
+<p>The spy <strong>automatically re-injects listeners</strong> when:</p>
+<ul>
+<li>You navigate to a new page</li>
+<li>Page content is dynamically updated</li>
+<li>Listeners are removed by JavaScript</li>
+</ul>
+<p>This ensures continuous capture across single-page apps (SPAs) and multi-page workflows.</p>
+<h3 id="configuration">Configuration</h3>
+<p>Default output directory: <code>object_repository/</code></p>
+<p>To change output location:</p>
+<pre><code class="language-python">from orbs.spy.web import WebSpyRunner
+
+spy = WebSpyRunner(
+    url=&quot;https://example.com&quot;,
+    output_dir=&quot;custom_elements&quot;
+)
+spy.start()
+</code></pre>
+<hr />
+<h2 id="mobile-spy">Mobile Spy</h2>
+<h3 id="starting-mobile-spy">Starting Mobile Spy</h3>
+<pre><code class="language-bash">orbs spy --mobile
+</code></pre>
+<h3 id="prerequisites">Prerequisites</h3>
+<ol>
+<li>
+<p><strong>Appium installed:</strong>
+   <code>bash
+   orbs setup android</code></p>
+</li>
+<li>
+<p><strong>Device connected:</strong>
+   <code>bash
+   adb devices</code></p>
+</li>
+<li>
+<p><strong>Device selected:</strong>
+   <code>bash
+   orbs select-device</code></p>
+</li>
+<li>
+<p><strong>App configured</strong> in <code>settings/appium.properties</code></p>
+</li>
+</ol>
+<h3 id="how-it-works_1">How It Works</h3>
+<ol>
+<li><strong>Launches Appium session</strong> with your app</li>
+<li><strong>Displays app on screen</strong> (or emulator)</li>
+<li><strong>Interactive element inspection</strong> (implementation-specific)</li>
+<li><strong>Captures locator strategies</strong> for Android elements</li>
+<li><strong>Saves to object repository</strong></li>
+</ol>
+<h3 id="captured-mobile-locators">Captured Mobile Locators</h3>
+<p>For Android elements:</p>
+<ul>
+<li><strong>Resource ID</strong> - <code>com.example.app:id/element_id</code></li>
+<li><strong>XPath</strong> - Generated XPath</li>
+<li><strong>Accessibility ID</strong> - Content description</li>
+<li><strong>Class Name</strong> - Android widget class</li>
+<li><strong>Text</strong> - Visible text</li>
+<li><strong>UIAutomator</strong> - UiSelector expression</li>
+</ul>
+<h3 id="example-mobile-element">Example Mobile Element</h3>
+<pre><code class="language-xml">&lt;!-- object_repository/LoginButton.xml --&gt;
+&lt;MobileElementEntity&gt;
+  &lt;name&gt;LoginButton&lt;/name&gt;
+  &lt;platform&gt;Android&lt;/platform&gt;
+  &lt;selectorCollection&gt;
+    &lt;entry&gt;
+      &lt;key&gt;RESOURCE_ID&lt;/key&gt;
+      &lt;value&gt;com.example.app:id/login_button&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;XPATH&lt;/key&gt;
+      &lt;value&gt;//android.widget.Button[@text='Login']&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;ACCESSIBILITY_ID&lt;/key&gt;
+      &lt;value&gt;Login Button&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;CLASS&lt;/key&gt;
+      &lt;value&gt;android.widget.Button&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;entry&gt;
+      &lt;key&gt;TEXT&lt;/key&gt;
+      &lt;value&gt;Login&lt;/value&gt;
+    &lt;/entry&gt;
+  &lt;/selectorCollection&gt;
+&lt;/MobileElementEntity&gt;
+</code></pre>
+<hr />
+<h2 id="captured-element-format">Captured Element Format</h2>
+<h3 id="xml-structure">XML Structure</h3>
+<pre><code class="language-xml">&lt;WebElementEntity&gt;
+  &lt;name&gt;ElementName&lt;/name&gt;
+  &lt;tag&gt;html_tag&lt;/tag&gt;
+  &lt;selectorCollection&gt;
+    &lt;entry&gt;
+      &lt;key&gt;STRATEGY_NAME&lt;/key&gt;
+      &lt;value&gt;locator_value&lt;/value&gt;
+    &lt;/entry&gt;
+    &lt;!-- More strategies... --&gt;
+  &lt;/selectorCollection&gt;
+  &lt;attributes&gt;
+    &lt;attribute_name&gt;attribute_value&lt;/attribute_name&gt;
+  &lt;/attributes&gt;
+&lt;/WebElementEntity&gt;
+</code></pre>
+<h3 id="loading-captured-elements">Loading Captured Elements</h3>
+<p>Create a helper to parse XML:</p>
+<pre><code class="language-python">import xml.etree.ElementTree as ET
+
+def load_element(name):
+    &quot;&quot;&quot;Load element from object repository&quot;&quot;&quot;
+    path = f&quot;object_repository/{name}.xml&quot;
+    tree = ET.parse(path)
+    root = tree.getroot()
+
+    selectors = {}
+    for entry in root.find(&quot;selectorCollection&quot;).findall(&quot;entry&quot;):
+        key = entry.find(&quot;key&quot;).text
+        value = entry.find(&quot;value&quot;).text
+        selectors[key] = value
+
+    return selectors
+
+# Usage
+login_btn = load_element(&quot;LoginButton&quot;)
+print(login_btn[&quot;CSS&quot;])  # Get CSS selector
+print(login_btn[&quot;XPATH&quot;])  # Get XPath
+</code></pre>
+<hr />
+<h2 id="using-captured-elements">Using Captured Elements</h2>
+<h3 id="direct-usage-in-tests">Direct Usage in Tests</h3>
+<p>After capturing elements, use them in your tests:</p>
+<pre><code class="language-python">from orbs.keyword.web import Web
+
+def test_google_search():
+    &quot;&quot;&quot;Test using spy-captured elements&quot;&quot;&quot;
+
+    Web.open(&quot;https://google.com&quot;)
+
+    # Use captured locators
+    Web.type_text(&quot;name=q&quot;, &quot;Orbs automation&quot;)
+    Web.press_enter(&quot;name=q&quot;)
+
+    # Verify results
+    Web.wait_for_element(&quot;id=search&quot;, timeout=10)
+</code></pre>
+<h3 id="object-repository-pattern">Object Repository Pattern</h3>
+<p>Create a page object using captured elements:</p>
+<pre><code class="language-python"># pages/google_page.py
+class GooglePage:
+    # Locators from spy capture
+    SEARCH_BOX = &quot;name=q&quot;
+    SEARCH_BUTTON = &quot;css=input[value='Google Search']&quot;
+    RESULTS_DIV = &quot;id=search&quot;
+
+    @staticmethod
+    def search(query):
+        from orbs.keyword.web import Web
+        Web.type_text(GooglePage.SEARCH_BOX, query)
+        Web.press_enter(GooglePage.SEARCH_BOX)
+
+    @staticmethod
+    def wait_for_results():
+        from orbs.keyword.web import Web
+        Web.wait_for_element(GooglePage.RESULTS_DIV, timeout=10)
+</code></pre>
+<p>Use in test:</p>
+<pre><code class="language-python">from pages.google_page import GooglePage
+
+def test_search():
+    GooglePage.search(&quot;automation framework&quot;)
+    GooglePage.wait_for_results()
+</code></pre>
+<h3 id="centralized-element-repository">Centralized Element Repository</h3>
+<pre><code class="language-python"># repositories/elements.py
+class Elements:
+    &quot;&quot;&quot;Central element repository&quot;&quot;&quot;
+
+    # Login page
+    LOGIN_EMAIL = &quot;id=email&quot;
+    LOGIN_PASSWORD = &quot;id=password&quot;
+    LOGIN_BUTTON = &quot;id=login-btn&quot;
+
+    # Dashboard
+    DASHBOARD_WELCOME = &quot;css=.welcome-message&quot;
+    DASHBOARD_MENU = &quot;id=main-menu&quot;
+
+    # Forms
+    FORM_NAME = &quot;name=fullname&quot;
+    FORM_SUBMIT = &quot;css=button[type='submit']&quot;
+</code></pre>
+<hr />
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="1-name-elements-descriptively">1. Name Elements Descriptively</h3>
+<p>✅ Good:</p>
+<pre><code>LoginButton.xml
+SearchInputField.xml
+UserProfileDropdown.xml
+</code></pre>
+<p>❌ Avoid:</p>
+<pre><code>Element1.xml
+Button.xml
+Input.xml
+</code></pre>
+<h3 id="2-prefer-stable-locators">2. Prefer Stable Locators</h3>
+<p>From spy results, choose in this order:</p>
+<ol>
+<li><strong>ID</strong> (most stable)</li>
+<li><strong>Name</strong> (good for forms)</li>
+<li><strong>CSS Selector</strong> (flexible, readable)</li>
+<li><strong>XPath</strong> (powerful but fragile)</li>
+<li><strong>Class</strong> (avoid if not unique)</li>
+</ol>
+<h3 id="3-organize-by-pagemodule">3. Organize by Page/Module</h3>
+<pre><code>object_repository/
+├── login/
+│   ├── EmailField.xml
+│   ├── PasswordField.xml
+│   └── LoginButton.xml
+├── dashboard/
+│   ├── WelcomeMessage.xml
+│   └── UserMenu.xml
+└── forms/
+    └── SubmitButton.xml
+</code></pre>
+<h3 id="4-verify-captured-locators">4. Verify Captured Locators</h3>
+<p>Always test captured locators in your automation:</p>
+<pre><code class="language-python">def verify_locator():
+    Web.open(&quot;https://example.com&quot;)
+
+    # Test each strategy
+    assert Web.is_visible(&quot;id=login-btn&quot;)
+    assert Web.is_visible(&quot;css=.login-button&quot;)
+
+    print(&quot;✅ Locators verified&quot;)
+</code></pre>
+<h3 id="5-update-when-ui-changes">5. Update When UI Changes</h3>
+<p>When UI updates:</p>
+<ol>
+<li>Re-capture affected elements</li>
+<li>Update your object repository</li>
+<li>Re-run tests to verify</li>
+</ol>
+<h3 id="6-document-custom-attributes">6. Document Custom Attributes</h3>
+<p>Add notes to captured XML:</p>
+<pre><code class="language-xml">&lt;WebElementEntity&gt;
+  &lt;name&gt;SubmitButton&lt;/name&gt;
+  &lt;!-- Note: This button is disabled until form is valid --&gt;
+  &lt;selectorCollection&gt;
+    ...
+  &lt;/selectorCollection&gt;
+&lt;/WebElementEntity&gt;
+</code></pre>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="web-spy-not-capturing">Web Spy Not Capturing</h3>
+<p><strong>Symptom:</strong> Pressing <code>Ctrl +</code> ` does nothing</p>
+<p><strong>Solutions:</strong>
+* Check browser console for JavaScript errors
+* Ensure page has fully loaded
+* Try refreshing the page
+* Check if browser blocked script injection
+* Verify Chrome version compatibility</p>
+<h3 id="listeners-not-working-after-navigation">Listeners Not Working After Navigation</h3>
+<p><strong>Symptom:</strong> Capture works on first page but not after clicking links</p>
+<p><strong>Solutions:</strong>
+* Spy should auto-reinject listeners (check console)
+* If not working, restart spy session
+* For SPAs, ensure listeners are re-injected after route changes</p>
+<h3 id="mobile-spy-not-starting">Mobile Spy Not Starting</h3>
+<p><strong>Symptom:</strong> <code>orbs spy --mobile</code> fails</p>
+<p><strong>Solutions:</strong>
+* Verify Appium installation: <code>appium --version</code>
+* Check device connection: <code>adb devices</code>
+* Verify <code>settings/appium.properties</code> configuration
+* Ensure app is installed on device
+* Check Appium logs for errors</p>
+<h3 id="element-not-found-in-xml">Element Not Found in XML</h3>
+<p><strong>Symptom:</strong> Captured XML missing expected attributes</p>
+<p><strong>Solutions:</strong>
+* Element may have been dynamically generated
+* Try re-capturing with element fully loaded
+* Check browser DevTools to verify attributes exist
+* Some attributes may be set by JavaScript after page load</p>
+<h3 id="output-directory-not-created">Output Directory Not Created</h3>
+<p><strong>Symptom:</strong> <code>object_repository/</code> folder missing</p>
+<p><strong>Solutions:</strong>
+* Ensure write permissions in current directory
+* Manually create directory: <code>mkdir object_repository</code>
+* Check disk space
+* Verify path in spy configuration</p>
+<hr />
+<h2 id="advanced-usage">Advanced Usage</h2>
+<h3 id="custom-element-naming">Custom Element Naming</h3>
+<p>Automatically rename captured elements:</p>
+<pre><code class="language-python">from orbs.spy.web import WebSpyRunner
+
+class CustomSpyRunner(WebSpyRunner):
+    def save_element(self, element_data):
+        # Custom naming logic
+        tag = element_data.get('tag')
+        name = element_data.get('name', 'Unknown')
+
+        filename = f&quot;{tag}_{name}.xml&quot;
+        # Save logic...
+</code></pre>
+<h3 id="batch-element-capture">Batch Element Capture</h3>
+<p>Capture multiple elements in sequence:</p>
+<pre><code class="language-python"># Create a list of elements to capture
+elements_to_capture = [
+    &quot;Login email field&quot;,
+    &quot;Login password field&quot;,
+    &quot;Login submit button&quot;,
+    &quot;Remember me checkbox&quot;
+]
+
+# Start spy and capture each one
+# (Manual process - hover and press Ctrl+` for each)
+</code></pre>
+<h3 id="integration-with-cicd">Integration with CI/CD</h3>
+<p>Spy is primarily for local development. For CI/CD:</p>
+<ol>
+<li><strong>Capture elements locally</strong> during test development</li>
+<li><strong>Commit object repository</strong> to version control</li>
+<li><strong>Use captured locators</strong> in automated tests</li>
+<li><strong>Re-capture when UI changes</strong></li>
+</ol>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><a href="../object-repository/">Object Repository</a> - Use captured element using object repository</li>
+<li><a href="../web-testing/">Web Testing Guide</a> - Use captured elements in web tests</li>
+<li><a href="../mobile-testing/">Mobile Testing Guide</a> - Use captured elements in mobile tests</li>
+<li><a href="../cli-reference/">CLI Reference</a> - All spy command options</li>
+<li><a href="../philosophy/">Best Practices</a> - Framework philosophy and patterns</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
