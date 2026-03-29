@@ -1,5 +1,5 @@
-site_name: Orbs CLI
-site_description: Official documentation for Orbs CLI
+site_name: Orbs
+site_description: Official documentation for Orbs
 site_author: Muhamad Badru Salam
 docs_dir: docs
 theme:
