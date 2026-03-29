@@ -8,3 +8,5 @@ flask
 requests
 apscheduler
 InquirerPy
+mkdocs 
+mkdocs-material

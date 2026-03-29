@@ -173,6 +173,21 @@ Detailed documentation is available under the `docs/` directory:
 
 **Start here:** [docs/philosophy.md](https://github.com/badrusalam11/orbs-cli/blob/main/docs/philosophy.md)
 
+### View docs locally
+
+Install the documentation dependencies and serve locally:
+
+```bash
+pip install -r requirements.txt
+mkdocs serve -a 0.0.0.0:8000
+```
+
+Build the static site:
+
+```bash
+mkdocs build -d site
+```
+
 ---
 
 ## Contributing

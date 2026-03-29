@@ -1,0 +1,39 @@
+site_name: Orbs CLI
+site_description: Official documentation for Orbs CLI
+site_author: Muhamad Badru Salam
+docs_dir: docs
+theme:
+  palette:
+      primary: indigo
+  name: material
+  logo: https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png
+  favicon: https://raw.githubusercontent.com/badrusalam11/orbs-cli/refs/heads/main/assets/orbs.png
+nav:
+  - Home: index.md
+
+  - Getting Started:
+      - Philosophy: philosophy.md
+      - Architecture: architecture.md
+      - Installation / Setup: cli-reference.md   # atau pecah nanti
+
+  - Core Usage:
+      - CLI Reference: cli-reference.md
+      - Web Testing: web-testing.md
+      - Mobile Testing: mobile-testing.md
+      - API Testing: api-testing.md
+
+  - Advanced:
+      - Data Driven Testing: data-driven-testing.md
+      - Environment Configuration: environments.md
+      - Failure Handling: failure-handling.md
+      - Object Repository: object-repository.md
+
+  - Tools:
+      - Spy Tool: spy.md
+      - Record & Play: record-and-play.md
+
+  - Reference:
+      - Console Summary: console-summary.md
+      - Data Loader: data.md
+plugins:
+  - search
