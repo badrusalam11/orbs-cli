@@ -1017,14 +1017,4 @@ class Mobile:
             return True
         except Exception:
             return False
-    
-    @classmethod
-    def get_driver_status(cls) -> dict:
-        """Get mobile driver status for debugging"""
-        driver = get_context('mobile_driver')
-        return {
-            "driver_exists": driver is not None,
-            "driver_alive": cls.is_driver_alive(),
-            "device_size": cls.get_device_size() if cls.is_driver_alive() else None,
-            "orientation": cls.get_orientation() if cls.is_driver_alive() else None
-        }
+

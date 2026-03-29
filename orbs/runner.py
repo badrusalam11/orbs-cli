@@ -13,7 +13,7 @@ from orbs.dependency import check_dependencies
 from orbs.listener_manager import enabled_listeners, load_suite_listeners
 from orbs.exception import FeatureException, RunnerException
 from orbs.config import setting
-from orbs.keyword.web import Web
+from orbs.keyword import Web, Mobile
 from orbs.utils import load_module_from_path
 from ._constant import PLATFORM_LIST
 import sys
@@ -186,13 +186,12 @@ class Runner:
                         # Reset drivers for clean state before retry
                         try:
                             Web.reset_driver()
-                        except ImportError:
+                        except Exception:
                             pass
                         
                         try:
-                            from orbs.keyword.mobile import Mobile
                             Mobile.reset_driver()
-                        except ImportError:
+                        except Exception:
                             pass
                     
                     self.run_case(case)
@@ -208,7 +207,7 @@ class Runner:
                     if attempt < max_attempts and screenshot_on_retry:
                         # Screenshot on retry - capture before reset driver
                         try:
-                            driver = Web._get_driver()
+                            driver = web._get_driver()
                             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                             screenshot_filename = f"retry_attempt_{attempt}_{os.path.basename(case)}_{timestamp}.png"
                             driver.save_screenshot(screenshot_filename)
@@ -218,10 +217,7 @@ class Runner:
                     elif attempt == max_attempts and screenshot_on_fail:
                         # Screenshot on final fail - capture before cleanup
                         try:
-                            driver = Web._get_driver()
-                            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                            screenshot_filename = f"fail_{os.path.basename(case)}_{timestamp}.png"
-                            driver.save_screenshot(screenshot_filename)
+                            driver = web._get_driver()
                             log.info(f"Screenshot taken on fail: {screenshot_filename}")
                         except Exception as screenshot_error:
                             log.warning(f"Failed to take screenshot on fail: {screenshot_error}")
@@ -247,13 +243,12 @@ class Runner:
             # Reset drivers for clean state between test cases
             try:
                 Web.reset_driver()
-            except ImportError:
+            except Exception:
                 pass
             
             try:
-                from orbs.keyword.mobile import Mobile
                 Mobile.reset_driver()
-            except ImportError:
+            except Exception:
                 pass
 
             # 🔹 Global AfterTestCase hooks

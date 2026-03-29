@@ -43,7 +43,7 @@ Object repository files follow the `WebElementEntity` XML format. Example:
 Recommended inline pattern (concise and readable):
 
 ```python
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 from orbs.keyword import find_test_obj
 
 Web.open("https://example.com")
@@ -107,7 +107,7 @@ This workflow produces maintainable element definitions and enables automatic fa
 ## Example
 
 ```python
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 from orbs.keyword import find_test_obj
 
 def test_login():

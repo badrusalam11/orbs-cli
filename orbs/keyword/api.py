@@ -983,3 +983,4 @@ class API:
         set_context("api_calls", None)
         set_context("api_last_response", None)
         log.info("API session closed")
+

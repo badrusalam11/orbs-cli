@@ -2,7 +2,7 @@
 
 # Application URLs
 url: "https://example.com"
-api_url: "https://api.example.com"
+api_url: "https://API.example.com"
 
 # Credentials (NEVER hardcode production credentials - use environment variables)
 username: "${PROD_USERNAME}"

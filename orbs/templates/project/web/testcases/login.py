@@ -1,6 +1,6 @@
 # Test case: login
 
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 from orbs.config import env
 
 

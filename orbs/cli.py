@@ -7,6 +7,8 @@ import requests
 import typer
 import shutil
 from pathlib import Path
+
+from orbs.thread_context import set_context
 from ._constant import PLATFORM_LIST, __version__
 from .utils import render_template
 import subprocess
@@ -361,13 +363,20 @@ def run_command(
     device_id: str = typer.Option(None, "--deviceId", help="Device ID for mobile testing")
 ):
     """Run a suite/case/feature with specified environment"""
-    
+    # Log Python version for debugging environment issues
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    typer.secho(f"Python version: {python_version}", fg=typer.colors.CYAN)
+    python_exec = sys.executable
+    typer.secho(f"Python executable: {python_exec}", fg=typer.colors.CYAN)
+    # Orbs version
+    typer.secho(f"Orbs CLI version: {__version__}", fg=typer.colors.CYAN)
+
     # Validate platform if provided
     if platform:
         # Remove any spaces around the platform value
         platform = platform.strip()
         valid_platforms = PLATFORM_LIST["mobile"] + PLATFORM_LIST["web"] + PLATFORM_LIST["api"]
-        
+        typer.secho(f"Using platform: {platform}", fg=typer.colors.CYAN)
         if platform not in valid_platforms:
             # Show examples in the correct format
             examples = [f"--platform={p}" for p in valid_platforms]
@@ -410,7 +419,7 @@ def run_command(
     
     # Set ORBS_ENV so config.py will load the correct environment
     os.environ["ORBS_ENV"] = selected_env
-    
+    set_context("environment", selected_env)  # also set in thread context for live logger 
     # Execute the run with platform and device_id parameters
     from orbs import run
     run(target, platform, device_id)

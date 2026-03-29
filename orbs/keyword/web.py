@@ -77,8 +77,13 @@ def track_keyword(func):
                     # set_text(locator, text, ...)
                     locator = args[1]
                     text = args[2] if len(args) > 2 else kwargs.get('text', '')
+                    secret = kwargs.get('secret', False)
                     locator_str = get_locator_str(locator)
                     text_str = str(text)[:50]
+
+                    from ..utils import mask_sensitive_value
+                    text_str = mask_sensitive_value(text_str, locator=locator_str, secret=secret)
+
                     object_parts = [locator_str, f'"{text_str}"']
                 
                 elif keyword_name == "click":
@@ -610,7 +615,7 @@ class Web:
         WebActionException,
         context_fn=lambda locator, text, **_: f"Set text '{text}' failed on element: {locator}"
     )
-    def set_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+    def set_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE, secret: bool = False):
         """Set text into an element with retry logic
         
         Args:
@@ -620,6 +625,7 @@ class Web:
             clear_first: Clear existing text before typing
             retry_count: Number of retry attempts for stale elements
             failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+            secret: Whether the text is sensitive and should be masked in logs and reports
         """
         wait_time = timeout or cls._wait_timeout
         
@@ -638,7 +644,10 @@ class Web:
                     element.clear()
                 
                 element.send_keys(text)
-                log.action(f"Set text '{text}' into element: {locator}")
+
+                from ..utils import mask_sensitive_value
+                logged_text = mask_sensitive_value(str(text), locator=locator, secret=secret)
+                log.action(f"Set text '{logged_text}' into element: {locator}")
                 return
                 
             except StaleElementReferenceException:
@@ -798,7 +807,8 @@ class Web:
         """Sleep for specified seconds"""
         time.sleep(seconds)
         log.action(f"Slept for {seconds} seconds")
-    
+
+
     # Verification methods
     @classmethod
     def element_exists(cls, locator: Union[str, WebElement], timeout: Optional[int] = None) -> bool:
@@ -1058,3 +1068,4 @@ class Web:
                     from ..thread_context import delete_context
                     delete_context('web_driver')
                     log.info("Driver reset for next test case")
+

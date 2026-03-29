@@ -1,6 +1,6 @@
 # Test case: login
 
-from orbs.keyword.mobile import Mobile
+from orbs.keyword import Mobile
 from orbs.config import env
 
 def run():

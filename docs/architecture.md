@@ -405,7 +405,7 @@ Create custom keyword libraries:
 
 ```python
 # keywords/custom_web.py
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 class CustomWeb(Web):
     @classmethod
@@ -513,13 +513,13 @@ orbs/
 ├── report_generator.py       # Report creation
 ├── utils.py                  # Utilities (templates, etc.)
 ├── keyword/
-│   ├── web.py                # Web keywords
-│   ├── mobile.py             # Mobile keywords
+│   ├── Web.py                # Web keywords
+│   ├── Mobile.py             # Mobile keywords
 │   └── locator.py            # Locator utilities
 ├── spy/
 │   ├── base.py               # Base spy class
-│   ├── web.py                # Web spy implementation
-│   ├── mobile.py             # Mobile spy implementation
+│   ├── Web.py                # Web spy implementation
+│   ├── Mobile.py             # Mobile spy implementation
 │   └── js/
 │       └── web_spy_listener.js  # Browser injection script
 └── templates/
@@ -547,7 +547,7 @@ myproject/
 ├── pytest.ini                # Pytest configuration
 ├── settings/                 # Configuration files
 │   ├── browser.properties
-│   ├── mobile.properties
+│   ├── Mobile.properties
 │   ├── appium.properties
 │   ├── platform.properties
 │   └── server.properties
@@ -757,10 +757,10 @@ API client verifies SSL by default:
 
 ```python
 # Default: verify=True
-response = api.get("/endpoint")
+response = API.get("/endpoint")
 
 # Only disable for local development
-api.session.verify = False  # Not recommended
+API.session.verify = False  # Not recommended
 ```
 
 ### 3. Input Validation

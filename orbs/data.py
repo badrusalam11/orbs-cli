@@ -244,9 +244,9 @@ def ddt(path: str, scenario: str = None, where: dict = None):
 
                 log.info(f"DDT: Running {func_name}[{scenario_name}]")
 
-                # Reset web driver for fresh browser per scenario
+                # Reset Web driver for fresh browser per scenario
                 try:
-                    from orbs.keyword.web import Web
+                    from orbs.keyword import Web
                     Web.reset_driver()
                 except Exception:
                     pass

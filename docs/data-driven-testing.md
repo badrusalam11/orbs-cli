@@ -54,7 +54,7 @@ Save as `data/cred/login.csv`.
 
 ```python
 from orbs.data import ddt
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 @ddt("cred/login.csv", scenario="scenario")
 def run(data):
@@ -381,7 +381,7 @@ sql_injection,admin' OR '1'='1,pass,error
 
 ```python
 from orbs.data import ddt
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 @ddt("cred/login.csv", scenario="scenario")
 def run(data):
@@ -408,7 +408,7 @@ valid_name,John Doe,
 
 ```python
 from orbs.data import ddt
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 @ddt("validation/name_field.csv", scenario="scenario")
 def run(data):
@@ -435,7 +435,7 @@ unauthorized,/api/admin,GET,401,
 
 ```python
 from orbs.data import ddt
-from orbs.keyword.api import API
+from orbs.keyword import API
 
 @ddt("api/endpoints.csv", scenario="scenario")
 def run(data):
@@ -454,7 +454,7 @@ You can use `@ddt` for iteration and `load_data` for supplementary data:
 
 ```python
 from orbs.data import ddt, load_data
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 @ddt("test-cases/checkout.csv", scenario="scenario")
 def run(data):
@@ -493,7 +493,7 @@ For BDD feature files, Gherkin already provides a native data-driven mechanism: 
 
 ```python
 from orbs.data import ddt
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 @ddt("cred/login.csv", scenario="scenario")
 def run(data):
@@ -525,7 +525,7 @@ Step definition (`include/steps/login_steps.py`):
 
 ```python
 from behave import given, when, then
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 @given('the user opens the login page')
 def step_impl(context):

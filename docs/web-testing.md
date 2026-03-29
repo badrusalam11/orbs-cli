@@ -58,7 +58,7 @@ orbs create-testcase google_search
 Edit `testcases/google_search.py`:
 
 ```python
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 def test_google_search():
     """Test Google search functionality"""

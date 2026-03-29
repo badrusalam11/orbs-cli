@@ -87,7 +87,7 @@ Generated test case: login_test
 Created by Orbs Recorder on 2026-02-22 12:34:56
 """
 
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 
 
 def run():

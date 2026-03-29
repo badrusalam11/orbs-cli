@@ -1,6 +1,6 @@
 from behave import given, when, then
 
-from orbs.keyword.web import Web
+from orbs.keyword import Web
 from orbs.config import env
 
 

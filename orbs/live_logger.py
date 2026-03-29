@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from orbs.thread_context import get_context
+
 
 class LiveLogger:
     """
@@ -30,13 +32,48 @@ class LiveLogger:
         
         self.log_file = self.log_dir / "live.ndjson"
         self.step_counter = {}  # Track step numbers per test case
+        self.selected_env = "default"  # Track selected environment for context in events   
         
         # Create/truncate the file
         with open(self.log_file, 'w', encoding='utf-8') as f:
             pass
     
+    def _sanitize_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize event payload to mask sensitive values before writing."""
+        def mask_string(value):
+            if not isinstance(value, str):
+                return value
+            lower = value.lower()
+            if 'password' in lower or 'pwd' in lower:
+                import re
+                def _mask_match(m):
+                    quote = m.group(1)
+                    return f'{quote}***PASSWORD***{quote}'
+                masked = re.sub(r'(["\'])(.*?)(["\'])', _mask_match, value)
+                return masked if masked != value else value
+            return value
+
+        event_copy = dict(event)
+
+        if event_copy.get('type') == 'step_started':
+            object_name = event_copy.get('object')
+            if object_name:
+                event_copy['object'] = mask_string(object_name)
+
+            args = event_copy.get('args')
+            if isinstance(args, list):
+                event_copy['args'] = [mask_string(a) if isinstance(a, str) else a for a in args]
+
+        elif event_copy.get('type') in ['step_failed', 'step_skipped']:
+            error = event_copy.get('error')
+            if error:
+                event_copy['error'] = mask_string(error)
+
+        return event_copy
+
     def _write_event(self, event: Dict[str, Any]) -> None:
         """Write a single event to the NDJSON file and print to stdout for Studio."""
+        event = self._sanitize_event(event)
         line = json.dumps(event, ensure_ascii=False)
         
         # Write to file (for persistence/reports)
@@ -58,8 +95,10 @@ class LiveLogger:
     def execution_started(self, environment: Optional[str] = None, 
                          platform: Optional[str] = None) -> None:
         """Log execution start."""
+        self.selected_env = environment
         event = {
             "type": "execution_started",
+            "environment": self.selected_env,
             "execution_id": self.execution_id,
             "timestamp": self._get_timestamp()
         }
@@ -75,6 +114,7 @@ class LiveLogger:
         self._write_event({
             "type": "execution_finished",
             "execution_id": self.execution_id,
+            "environment": self.selected_env,
             "status": status,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()
@@ -88,6 +128,7 @@ class LiveLogger:
             "type": "testcase_started",
             "testcase_id": testcase_id,
             "name": name,
+            "environment": self.selected_env,
             "timestamp": self._get_timestamp()
         }
         if file_path:
@@ -101,6 +142,7 @@ class LiveLogger:
         self._write_event({
             "type": "testcase_finished",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "status": status,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()
@@ -121,6 +163,7 @@ class LiveLogger:
         event = {
             "type": "step_started",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "step_id": step_id,
             "keyword": keyword,
             "timestamp": self._get_timestamp()
@@ -138,6 +181,7 @@ class LiveLogger:
         self._write_event({
             "type": "step_passed",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "step_id": step_id,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()
@@ -150,6 +194,7 @@ class LiveLogger:
         event = {
             "type": "step_failed",
             "testcase_id": testcase_id,
+            "environment": self.selected_env,
             "step_id": step_id,
             "error": error,
             "duration": round(duration, 2),
@@ -166,6 +211,7 @@ class LiveLogger:
             "type": "step_skipped",
             "testcase_id": testcase_id,
             "step_id": step_id,
+            "environment": self.selected_env,
             "reason": reason,
             "timestamp": self._get_timestamp()
         })
@@ -176,6 +222,7 @@ class LiveLogger:
             "type": "testsuite_started",
             "testsuite_id": testsuite_id,
             "name": name,
+            "environment": self.selected_env,
             "timestamp": self._get_timestamp()
         })
     
@@ -185,6 +232,7 @@ class LiveLogger:
         self._write_event({
             "type": "testsuite_finished",
             "testsuite_id": testsuite_id,
+            "environment": self.selected_env,
             "status": status,
             "duration": round(duration, 2),
             "timestamp": self._get_timestamp()

@@ -20,7 +20,7 @@ Complete guide to REST API testing using the `API` keyword class.
 ## Quick Start
 
 ```python
-from orbs.keyword.api import API
+from orbs.keyword import API
 
 def run():
     API.set_base_url("https://jsonplaceholder.typicode.com")
@@ -58,11 +58,11 @@ def run():
 All request paths are appended to the base URL. You can also pass full URLs directly.
 
 ```python
-API.set_base_url("https://api.example.com")
+API.set_base_url("https://API.example.com")
 
 # These are equivalent:
 API.get("/users/1")                          # uses base URL
-API.get("https://api.example.com/users/1")   # full URL
+API.get("https://API.example.com/users/1")   # full URL
 ```
 
 ### Set Default Headers
@@ -302,7 +302,7 @@ API.set_default_headers({"X-API-Key": "your-api-key"})
 
 ```python
 def run():
-    API.set_base_url("https://api.example.com")
+    API.set_base_url("https://API.example.com")
 
     # Get token
     token_response = API.post("/auth/token", data={
@@ -343,10 +343,10 @@ API.verify_status_code(response, 200, failure_handling=FailureHandling.OPTIONAL)
 ### CRUD Flow Example
 
 ```python
-from orbs.keyword.api import API
+from orbs.keyword import API
 
 def run():
-    API.set_base_url("https://api.example.com")
+    API.set_base_url("https://API.example.com")
     API.set_bearer_token("your-token")
 
     # CREATE
@@ -382,10 +382,10 @@ def run():
 ### Environment-based Configuration
 
 ```python
-from orbs.keyword.api import API
+from orbs.keyword import API
 from orbs.config import config
 def run():
-    API.set_base_url(config.target("API_URL", "https://api.staging.example.com"))
+    API.set_base_url(config.target("API_URL", "https://API.staging.example.com"))
     API.set_bearer_token(config.target("API_TOKEN"))
 
     response = API.get("/health")
@@ -395,12 +395,12 @@ def run():
 ### Combining with Web Keywords
 
 ```python
-from orbs.keyword.web import Web
-from orbs.keyword.api import API
+from orbs.keyword import Web
+from orbs.keyword import API
 
 def run():
     # API: Create test data
-    API.set_base_url("https://api.example.com")
+    API.set_base_url("https://API.example.com")
     response = API.post("/users", json={"name": "Test User", "email": "test@example.com"})
     user = API.get_json(response)
 

@@ -85,7 +85,7 @@ Web.click("id=search_button")
 ## Supported Keywords
 
 ### Web Keywords
-All major Web keywords support failure handling:
+All major web keywords support failure handling:
 
 - `Web.open()`
 - `Web.click()`

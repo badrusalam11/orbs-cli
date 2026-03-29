@@ -1,6 +1,6 @@
 # Test case: get_users
 
-from orbs.keyword.api import API
+from orbs.keyword import API
 from orbs.config import env
 
 
