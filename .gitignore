@@ -5,3 +5,4 @@ dist
 token.txt
 .venv
 .python-version
+site
