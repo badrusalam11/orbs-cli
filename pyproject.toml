@@ -14,17 +14,19 @@ authors = [
 ]
 dependencies = [
   "typer[all]",
-  "flask",
-  "pyyaml",
-  "apscheduler",
-  "jinja2",
-  "requests",
-  "python-dotenv",
-  "Appium-Python-Client",
-  "selenium",
-  "behave",
-  "reportlab",
-  "InquirerPy"
+  "flask==2.2.5",
+  "pyyaml==6.0",
+  "apscheduler==3.10.1",
+  "jinja2"==3.1.3,
+  "requests==2.31.0",
+  "python-dotenv==0.21.0",
+  "Appium-Python-Client==2.8.1",
+  "selenium==4.10.0",
+  "behave==1.2.6",
+  "reportlab==3.6.13",
+  "InquirerPy==0.3.4",
+  "mkdocs==1.5.0",
+  "mkdocs-material==9.1.11"
 ]
 
 [project.scripts]
