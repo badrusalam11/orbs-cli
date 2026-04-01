@@ -257,6 +257,14 @@ class WebElementEntity:
         # Normalize the path (but keep forward slashes on Windows for cross-platform)
         normalized_path = sanitized_path.replace('\\', '/').replace('//', '/')
         
+        # If the path doesn't start with "object_repository/", prepend it
+        # This allows both:
+        #   - "input.xml" -> "object_repository/input.xml"
+        #   - "subfolder/input.xml" -> "object_repository/subfolder/input.xml"
+        #   - "object_repository/input.xml" -> unchanged
+        if not normalized_path.startswith('object_repository/'):
+            normalized_path = f"object_repository/{normalized_path}"
+        
         # Handle relative paths from project root
         if not os.path.isabs(normalized_path):
             # Try to find project root by looking for common markers

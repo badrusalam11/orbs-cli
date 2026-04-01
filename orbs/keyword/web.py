@@ -205,7 +205,7 @@ def find_test_obj(xml_path: str, timeout: Optional[int] = None):
     
     Args:
         xml_path: Path to the XML file in object repository 
-                 (e.g., "object_repository\\input_login-button.xml")
+                 (e.g., "input_login-button.xml" or "subfolder/input_login-button.xml")
         timeout: Maximum time to wait for the element (default: 10s)
         
     Returns:
@@ -216,20 +216,18 @@ def find_test_obj(xml_path: str, timeout: Optional[int] = None):
         NoSuchElementException: If element not found with any locator
         
     Example:
-        # Direct usage
-        find_test_obj("object_repository\\input_username.xml").send_keys("admin")
+        # Direct usage with filename
+        find_test_obj("input_username.xml").send_keys("admin")
+        
+        # With subfolder
+        find_test_obj("sauce_demo/input_username.xml").send_keys("admin")
         
         # With Web keywords
-        Web.set_text(find_test_obj("object_repository\\input_username.xml"), "admin")
-        Web.click(find_test_obj("object_repository\\button_login.xml"))
+        Web.set_text(find_test_obj("input_username.xml"), "admin")
+        Web.click(find_test_obj("button_login.xml"))
     """
-    # Accept either full relative path (e.g. "object_repository/input.xml")
-    # or just a filename (e.g. "input.xml"). If a bare filename is provided,
-    # resolve it inside the project's `object_repository/` folder for convenience.
-    adj = xml_path
-    if '/' not in xml_path and '\\' not in xml_path:
-        adj = f"object_repository/{xml_path}"
-    return Web.find_test_obj(adj, timeout)
+    # Pass through to Web.find_test_obj - path resolution is handled by WebElementEntity
+    return Web.find_test_obj(xml_path, timeout)
 
 
 class Web:
