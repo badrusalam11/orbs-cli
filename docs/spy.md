@@ -68,7 +68,7 @@ orbs spy --web --url=google.com
 5. **Console shows capture:**
    ```
    [SPY] Element captured: input[name='q']
-   [SPY] Saved to: object_repository/SearchBox.xml
+   [SPY] Saved to: object_repository/SearchBox.json
    ```
 
 6. **Repeat for more elements**
@@ -93,31 +93,17 @@ The spy automatically captures multiple locator strategies:
 
 After capturing Google's search box, you get:
 
-```xml
-<!-- object_repository/SearchBox.xml -->
-<WebElementEntity>
-  <name>SearchBox</name>
-  <tag>input</tag>
-  <selectorCollection>
-    <entry>
-      <key>ID</key>
-      <value>APjFqb</value>
-    </entry>
-    <entry>
-      <key>NAME</key>
-      <value>q</value>
-    </entry>
-    <entry>
-      <key>CSS</key>
-      <value>input[name='q']</value>
-    </entry>
-    <entry>
-      <key>XPATH</key>
-      <value>//input[@name='q']</value>
-    </entry>
-    <entry>
-      <key>CLASS</key>
-      <value>gLFyf</value>
+```json
+// object_repository/SearchBox.json
+{
+  "name": "SearchBox",
+  "tag": "input",
+  "selectorCollection": {
+    "ID": "APjFqb",
+    "NAME": "q",
+    "CSS": "input[name='q']",
+    "XPATH": "//input[@name='q']",
+    "CLASS": "gLFyf"
     </entry>
   </selectorCollection>
   <attributes>
@@ -206,7 +192,7 @@ For Android elements:
 ### Example Mobile Element
 
 ```xml
-<!-- object_repository/LoginButton.xml -->
+// object_repository/LoginButton.json
 <MobileElementEntity>
   <name>LoginButton</name>
   <platform>Android</platform>
@@ -267,7 +253,7 @@ import xml.etree.ElementTree as ET
 
 def load_element(name):
     """Load element from object repository"""
-    path = f"object_repository/{name}.xml"
+    path = f"object_repository/{name}.json"
     tree = ET.parse(path)
     root = tree.getroot()
     
@@ -372,16 +358,16 @@ class Elements:
 
 ✅ Good:
 ```
-LoginButton.xml
-SearchInputField.xml
-UserProfileDropdown.xml
+LoginButton.json
+SearchInputField.json
+UserProfileDropdown.json
 ```
 
 ❌ Avoid:
 ```
-Element1.xml
-Button.xml
-Input.xml
+Element1.json
+Button.json
+Input.json
 ```
 
 ### 2. Prefer Stable Locators
@@ -399,14 +385,14 @@ From spy results, choose in this order:
 ```
 object_repository/
 ├── login/
-│   ├── EmailField.xml
-│   ├── PasswordField.xml
-│   └── LoginButton.xml
+│   ├── EmailField.json
+│   ├── PasswordField.json
+│   └── LoginButton.json
 ├── dashboard/
-│   ├── WelcomeMessage.xml
-│   └── UserMenu.xml
+│   ├── WelcomeMessage.json
+│   └── UserMenu.json
 └── forms/
-    └── SubmitButton.xml
+    └── SubmitButton.json
 ```
 
 ### 4. Verify Captured Locators
@@ -518,7 +504,7 @@ class CustomSpyRunner(WebSpyRunner):
         tag = element_data.get('tag')
         name = element_data.get('name', 'Unknown')
         
-        filename = f"{tag}_{name}.xml"
+        filename = f"{tag}_{name}.json"
         # Save logic...
 ```
 

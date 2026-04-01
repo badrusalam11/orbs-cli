@@ -196,38 +196,38 @@ def track_keyword(func):
 
 
 # Standalone function for easier syntax
-def find_test_obj(xml_path: str, timeout: Optional[int] = None):
+def find_test_obj(json_path: str, timeout: Optional[int] = None):
     """
-    Find element from object repository XML with self-healing (standalone function)
+    Find element from object repository JSON with self-healing (standalone function)
     
     This is a convenience function that can be used directly without the Web class prefix.
     Perfect for inline usage with other Web keywords.
     
     Args:
-        xml_path: Path to the XML file in object repository 
-                 (e.g., "input_login-button.xml" or "subfolder/input_login-button.xml")
+        json_path: Path to the JSON file in object repository 
+                 (e.g., "input_login-button.json" or "subfolder/input_login-button.json")
         timeout: Maximum time to wait for the element (default: 10s)
         
     Returns:
         WebElement: The found element
         
     Raises:
-        FileNotFoundError: If XML file not found
+        FileNotFoundError: If JSON file not found
         NoSuchElementException: If element not found with any locator
         
     Example:
         # Direct usage with filename
-        find_test_obj("input_username.xml").send_keys("admin")
+        find_test_obj("input_username.json").send_keys("admin")
         
         # With subfolder
-        find_test_obj("sauce_demo/input_username.xml").send_keys("admin")
+        find_test_obj("sauce_demo/input_username.json").send_keys("admin")
         
         # With Web keywords
-        Web.set_text(find_test_obj("input_username.xml"), "admin")
-        Web.click(find_test_obj("button_login.xml"))
+        Web.set_text(find_test_obj("input_username.json"), "admin")
+        Web.click(find_test_obj("button_login.json"))
     """
     # Pass through to Web.find_test_obj - path resolution is handled by WebElementEntity
-    return Web.find_test_obj(xml_path, timeout)
+    return Web.find_test_obj(json_path, timeout)
 
 
 class Web:
@@ -416,46 +416,46 @@ class Web:
         raise NoSuchElementException(error_msg) from last_exception
     
     @classmethod
-    def find_test_obj(cls, xml_path: str, timeout: Optional[int] = None) -> WebElement:
+    def find_test_obj(cls, json_path: str, timeout: Optional[int] = None) -> WebElement:
         """
-        Find element from object repository XML with self-healing
+        Find element from object repository JSON with self-healing
         
-        This keyword loads element locators from a WebElementEntity XML file
+        This keyword loads element locators from a WebElementEntity JSON file
         and attempts to find the element using the primary locator first,
         then falls back to alternative locators if needed (self-healing).
         
         Args:
-            xml_path: Path to the XML file in object repository 
-                     (e.g., "object_repository/input_login-button.xml")
+            json_path: Path to the JSON file in object repository 
+                     (e.g., "object_repository/input_login-button.json")
             timeout: Maximum time to wait for the element (default: _wait_timeout)
             
         Returns:
             WebElement: The found element
             
         Raises:
-            FileNotFoundError: If XML file not found
+            FileNotFoundError: If JSON file not found
             NoSuchElementException: If element not found with any locator
             
         Example:
-            element = Web.find_test_obj("object_repository/input_login-button.xml")
+            element = Web.find_test_obj("object_repository/input_login-button.json")
             element.click()
         """
-        # Allow shorthand filenames like "input_username.xml" by resolving
+        # Allow shorthand filenames like "input_username.json" by resolving
         # them under the project's `object_repository/` directory.
-        adj_path = xml_path
-        if '/' not in xml_path and '\\' not in xml_path:
-            adj_path = f"object_repository/{xml_path}"
+        adj_path = json_path
+        if '/' not in json_path and '\\' not in json_path:
+            adj_path = f"object_repository/{json_path}"
 
-        # Parse the XML file
+        # Parse the JSON file
         web_element = WebElementEntity(adj_path)
         
         # Get all locators (primary + alternatives)
         locators = web_element.get_all_locators()
         
         if not locators:
-            raise ValueError(f"No valid locators found in {xml_path}")
+            raise ValueError(f"No valid locators found in {json_path}")
         
-        log.info(f"Finding element '{web_element.name}' from {xml_path} "
+        log.info(f"Finding element '{web_element.name}' from {json_path} "
                 f"(primary: {locators[0][0]}={locators[0][1]}, {len(locators) - 1} alternatives)")
         
         # Try to find element with self-healing

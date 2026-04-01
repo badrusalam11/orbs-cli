@@ -569,8 +569,8 @@ myproject/
 │   └── steps/
 │       └── login_steps.py
 ├── object_repository/        # Spy-captured elements
-│   ├── LoginButton.xml
-│   └── SearchBox.xml
+│   ├── LoginButton.json
+│   └── SearchBox.json
 └── reports/                  # Generated reports (gitignored)
     └── test_report.html
 ```

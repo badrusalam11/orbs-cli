@@ -27,7 +27,7 @@ class WebSpyRunner(SpyRunner):
         # Template setup
         tpl_dir = os.path.join(os.path.dirname(__file__), "..", "templates", "jinja", "object_repository")
         self.env = Environment(loader=FileSystemLoader(tpl_dir), trim_blocks=True, lstrip_blocks=True)
-        self.template = self.env.get_template("WebElementEntity.xml.j2")
+        self.template = self.env.get_template("WebElementEntity.json.j2")
 
     def start(self):
         options = Options()
@@ -176,7 +176,7 @@ class WebSpyRunner(SpyRunner):
         else:
             text = base_name
         name = f"{tag.lower()}_{text.lower().replace(' ', '_')}"
-        xml = self.template.render(
+        json_content = self.template.render(
             name=name,
             guid=uuid4(),
             xpath=data.get("xpath", ""),
@@ -187,9 +187,9 @@ class WebSpyRunner(SpyRunner):
             attributes=data.get("attributes", {})
         )
         os.makedirs(self.output_dir, exist_ok=True)
-        path = os.path.join(self.output_dir, f"{name}.xml")
+        path = os.path.join(self.output_dir, f"{name}.json")
         with open(path, 'w', encoding='utf-8') as f:
-            f.write(xml)
+            f.write(json_content)
         print(f"[SPY] Saved: {path}")
 
     def manual_reinject(self):
