@@ -16,10 +16,11 @@ import typer
 
 
 class WebRecordRunner(RecordRunner):
-    def __init__(self, url, testcase_name=None, output_dir="testcases"):
+    def __init__(self, url, testcase_name=None, output_dir="testcases", no_write=False):
         self.url = url
         self.testcase_name = testcase_name
         self.output_dir = output_dir
+        self.no_write = no_write
         self.driver = None
         self.poll_thread = None
         self._poll_logs = False
@@ -28,13 +29,16 @@ class WebRecordRunner(RecordRunner):
         self.recorded_actions = []
         self.recording_active = False
         self._seen_action_keys = set()  # for deduping actions across page navigations
+        self._spy_saved_elements = {}   # xpath -> object_name mapping for find_test_obj
         
-        # Template setup
-        tpl_dir = os.path.join(os.path.dirname(__file__), "..", "templates", "jinja")
+        # Template setup for object repository
+        tpl_dir = os.path.join(os.path.dirname(__file__), "..", "templates", "jinja", "object_repository")
         self.env = Environment(loader=FileSystemLoader(tpl_dir), trim_blocks=True, lstrip_blocks=True)
+        self.spy_template = self.env.get_template("WebElementEntity.json.j2")
         
-        # Ensure output directory exists
+        # Ensure output directories exist
         Path(output_dir).mkdir(exist_ok=True)
+        Path("object_repository").mkdir(exist_ok=True)
 
     def start(self):
         """Start the recording session"""
@@ -110,7 +114,11 @@ class WebRecordRunner(RecordRunner):
         
         # Generate test case
         if self.recorded_actions:
-            self._generate_testcase()
+            if self.no_write:
+                print(f"[RECORD] 📊 Actions recorded: {len(self.recorded_actions)}")
+                print("[RECORD] ℹ️ --no-write mode: skipping test case file generation (Studio will handle it)")
+            else:
+                self._generate_testcase()
         else:
             print("[RECORD] ⚠️ No actions recorded.")
         
@@ -250,25 +258,34 @@ class WebRecordRunner(RecordRunner):
                 time.sleep(0.5)
 
     def _print_action_summary(self, action):
-        """Print a summary of the recorded action"""
+        """Print a summary of the recorded action and spy element to object repository"""
         action_type = action.get('type', 'unknown')
         element = action.get('element', {})
         value = action.get('value')
         
+        # Spy the element to object repository (for click, input, change actions)
+        obj_name = None
+        if action_type in ('click', 'input', 'change') and element:
+            obj_name = self._spy_element(element)
+        
         if action_type == 'click':
-            target = element.get('text', '') or element.get('id', '') or element.get('tagName', '')
+            target = obj_name or element.get('text', '') or element.get('id', '') or element.get('tagName', '')
             print(f"  🖱️  Click: {target[:30]}")
             
         elif action_type == 'input' or action_type == 'change':
-            target = element.get('id', '') or element.get('tagName', '')
+            target = obj_name or element.get('id', '') or element.get('tagName', '')
             if element.get('type') == 'password':
-                print(f"  ⌨️  Type: {target} = '***PASSWORD***'")
+                if not self.no_write:   
+                    print(f"  ⌨️  Type: {target} = '***PASSWORD***'")
+                else: 
+                    display_value = str(value)[:20] + "..." if len(str(value)) > 20 else str(value)
+                    print(f"  ⌨️  Type: {target} = '{display_value}'")
             else:
                 display_value = str(value)[:20] + "..." if len(str(value)) > 20 else str(value)
                 print(f"  ⌨️  Type: {target} = '{display_value}'")
                 
         elif action_type == 'change':
-            target = element.get('id', '') or element.get('tagName', '')
+            target = obj_name or element.get('id', '') or element.get('tagName', '')
             print(f"  🔄 Change: {target} = {value}")
             
         elif action_type == 'navigation':
@@ -276,6 +293,68 @@ class WebRecordRunner(RecordRunner):
             
         elif action_type == 'page_load':
             print(f"  📄 Page Load: {action.get('url', '')}")
+
+    def _spy_element(self, element):
+        """Save element to object repository and return its object name for find_test_obj"""
+        xpath = element.get('xpath', '')
+        if not xpath:
+            return None
+        
+        # If already spied, return cached name
+        if xpath in self._spy_saved_elements:
+            return self._spy_saved_elements[xpath]
+        
+        tag = element.get('tagName', 'element')
+        text = (element.get('text', '') or '').strip()
+        element_id = element.get('id', '')
+        
+        # Build a descriptive name: tag_text or tag_id
+        if element_id:
+            name = f"{tag}_{element_id}"
+        elif text:
+            words = text.split()
+            if len(words) > 3:
+                text = ' '.join(words[:3])
+            name = f"{tag}_{text.lower().replace(' ', '_')}"
+        else:
+            name = f"{tag}_{len(self._spy_saved_elements) + 1}"
+        
+        # Clean name for filename safety
+        name = name.replace(':', '_').replace('#', '').replace('/', '_').replace('\\', '_')
+        name = name.replace('"', '').replace("'", '').replace(' ', '_')
+        
+        # Collect attributes for the template
+        attributes = {}
+        if element_id:
+            attributes['id'] = element_id
+        if element.get('className'):
+            attributes['class'] = element['className']
+        if element.get('type'):
+            attributes['type'] = element['type']
+        
+        guid = uuid4()
+        
+        # Render and save object repository JSON
+        # Replace double quotes in xpath with single quotes for valid JSON
+        safe_xpath = xpath.replace('"', "'")
+        try:
+            json_content = self.spy_template.render(
+                name=name,
+                guid=guid,
+                xpath=safe_xpath,
+                tag=tag,
+                text=text,
+                attributes=attributes
+            )
+            obj_path = os.path.join("object_repository", f"{name}.json")
+            with open(obj_path, 'w', encoding='utf-8') as f:
+                f.write(json_content)
+            print(f"  🔍 Spy: saved {obj_path}")
+        except Exception as e:
+            print(f"  ⚠️ Spy save failed: {e}")
+        
+        self._spy_saved_elements[xpath] = name
+        return name
 
     def _generate_testcase(self):
         """Generate test case from recorded actions"""
@@ -311,6 +390,7 @@ class WebRecordRunner(RecordRunner):
         lines.append('"""')
         lines.append("")
         lines.append("from orbs.keyword.web import Web")
+        lines.append("from orbs.keyword import find_test_obj")
         lines.append("")
         lines.append("")
         lines.append("def run():")
@@ -372,40 +452,46 @@ class WebRecordRunner(RecordRunner):
         return optimized
 
     def _action_to_python(self, action):
-        """Convert a recorded action to Python code"""
+        """Convert a recorded action to Python code using find_test_obj for locators"""
         action_type = action.get('type')
         element = action.get('element', {})
         value = action.get('value')
         
-        # Build locator
-        locator = self._build_locator(element)
-        if not locator:
-            return f"# Could not generate locator for {action_type}"
+        # Try to use find_test_obj if element was spied to object repository
+        xpath = element.get('xpath', '')
+        obj_name = self._spy_saved_elements.get(xpath) if xpath else None
+        
+        if obj_name:
+            locator_expr = f'find_test_obj("{obj_name}.json")'
+        else:
+            # Fallback to direct locator
+            raw_locator = self._build_locator(element)
+            if not raw_locator:
+                return f"# Could not generate locator for {action_type}"
+            locator_expr = f'"{raw_locator}"'
         
         if action_type == 'click':
-            return f'Web.click("{locator}")'
+            return f'Web.click({locator_expr})'
             
         elif action_type == 'input':
             if element.get('type') == 'password':
-                return f'Web.set_text("{locator}", "your_password_here")  # TODO: Replace with actual password'
+                return f'Web.set_text({locator_expr}, "your_password_here", secret=True)  # TODO: Replace with actual password'
             else:
                 escaped_value = str(value).replace('"', '\\"')
-                return f'Web.set_text("{locator}", "{escaped_value}")'
+                return f'Web.set_text({locator_expr}, "{escaped_value}")'
                 
         elif action_type == 'change':
             if isinstance(value, dict) and 'text' in value:
-                # Select dropdown
                 escaped_text = str(value['text']).replace('"', '\\"')
-                return f'Web.select_by_text("{locator}", "{escaped_text}")'
+                return f'Web.select_by_text({locator_expr}, "{escaped_text}")'
             elif isinstance(value, bool):
-                # Checkbox/radio
                 if value:
-                    return f'Web.click("{locator}")  # Check'
+                    return f'Web.click({locator_expr})  # Check'
                 else:
-                    return f'# Uncheck: Web.click("{locator}") if needed'
+                    return f'# Uncheck: Web.click({locator_expr}) if needed'
             else:
                 escaped_value = str(value).replace('"', '\\"')
-                return f'Web.set_text("{locator}", "{escaped_value}")'
+                return f'Web.set_text({locator_expr}, "{escaped_value}")'
                 
         elif action_type == 'keypress':
             if value == 'Enter':
