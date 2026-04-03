@@ -106,6 +106,21 @@ function recordAction(type, element, value = null, additionalData = {}) {
     const xpath = getXPath(element);
     const timestamp = Date.now() - recordingStartTime;
     
+    // Enhanced attributes collection (same as spy listener)
+    const attributes = {
+        id: element.id || '',
+        class: element.className || '',
+        href: element.getAttribute('href') || '',
+        text: (element.innerText || '').trim(),
+        type: element.getAttribute('type') || '',
+        placeholder: element.getAttribute('placeholder') || '',
+        ariaLabel: element.getAttribute('aria-label') || '',
+        name: element.getAttribute('name') || '',
+        value: element.value || '',
+        title: element.getAttribute('title') || '',
+        role: element.getAttribute('role') || ''
+    };
+    
     const action = {
         id: actionCounter,
         type: type,
@@ -117,7 +132,8 @@ function recordAction(type, element, value = null, additionalData = {}) {
             type: element.type || '',
             text: (element.innerText || '').trim().substring(0, 50), // Limit text length
             selector: selector,
-            xpath: xpath
+            xpath: xpath,
+            attributes: attributes
         },
         value: value,
         url: window.location.href,

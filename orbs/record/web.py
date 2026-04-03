@@ -351,14 +351,18 @@ class WebRecordRunner(RecordRunner):
         name = name.replace(':', '_').replace('#', '').replace('/', '_').replace('\\', '_')
         name = name.replace('"', '').replace("'", '').replace(' ', '_')
         
-        # Collect attributes for the template
-        attributes = {}
-        if element_id:
-            attributes['id'] = element_id
-        if element.get('className'):
-            attributes['class'] = element['className']
-        if element.get('type'):
-            attributes['type'] = element['type']
+        # Get attributes from element (use enhanced attributes if available)
+        attributes = element.get('attributes', {})
+        
+        # Fallback: build attributes from element dict if 'attributes' not present
+        if not attributes:
+            attributes = {}
+            if element_id:
+                attributes['id'] = element_id
+            if element.get('className'):
+                attributes['class'] = element['className']
+            if element.get('type'):
+                attributes['type'] = element['type']
         
         guid = uuid4()
         
