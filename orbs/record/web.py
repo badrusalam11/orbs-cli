@@ -268,6 +268,11 @@ class WebRecordRunner(RecordRunner):
         if action_type in ('click', 'input', 'change') and element:
             obj_name = self._spy_element(element)
         
+        # In no_write mode, emit structured JSON events for Studio
+        if self.no_write:
+            self._emit_json_event(action_type, element, value, obj_name, action)
+            return
+
         if action_type == 'click':
             target = obj_name or element.get('text', '') or element.get('id', '') or element.get('tagName', '')
             print(f"  🖱️  Click: {target[:30]}")
@@ -275,11 +280,7 @@ class WebRecordRunner(RecordRunner):
         elif action_type == 'input' or action_type == 'change':
             target = obj_name or element.get('id', '') or element.get('tagName', '')
             if element.get('type') == 'password':
-                if not self.no_write:   
-                    print(f"  ⌨️  Type: {target} = '***PASSWORD***'")
-                else: 
-                    display_value = str(value)[:20] + "..." if len(str(value)) > 20 else str(value)
-                    print(f"  ⌨️  Type: {target} = '{display_value}'")
+                print(f"  ⌨️  Type: {target} = '***PASSWORD***'")
             else:
                 display_value = str(value)[:20] + "..." if len(str(value)) > 20 else str(value)
                 print(f"  ⌨️  Type: {target} = '{display_value}'")
@@ -293,6 +294,33 @@ class WebRecordRunner(RecordRunner):
             
         elif action_type == 'page_load':
             print(f"  📄 Page Load: {action.get('url', '')}")
+
+    def _emit_json_event(self, action_type, element, value, obj_name, action):
+        """Emit a structured JSON event line for Studio consumption."""
+        obj_file = f"{obj_name}.json" if obj_name else None
+
+        if action_type == 'click':
+            event = {"event": "record_action", "action": "click", "object": obj_file}
+            print(json.dumps(event), flush=True)
+
+        elif action_type in ('input', 'change'):
+            is_password = element.get('type') == 'password'
+            if element.get('tagName', '').lower() == 'select' or (isinstance(value, dict) and 'text' in value):
+                sel_value = value.get('text', '') if isinstance(value, dict) else str(value)
+                event = {"event": "record_action", "action": "select_by_text", "object": obj_file, "value": sel_value}
+            elif is_password:
+                event = {"event": "record_action", "action": "set_text", "object": obj_file, "value": str(value) if value else "", "isPassword": True}
+            else:
+                event = {"event": "record_action", "action": "set_text", "object": obj_file, "value": str(value) if value else ""}
+            print(json.dumps(event), flush=True)
+
+        elif action_type == 'navigation':
+            event = {"event": "record_action", "action": "navigate", "value": str(value) if value else ""}
+            print(json.dumps(event), flush=True)
+
+        elif action_type == 'page_load':
+            event = {"event": "record_action", "action": "page_load", "value": action.get('url', '')}
+            print(json.dumps(event), flush=True)
 
     def _spy_element(self, element):
         """Save element to object repository and return its object name for find_test_obj"""
@@ -337,21 +365,47 @@ class WebRecordRunner(RecordRunner):
         # Render and save object repository JSON
         # Replace double quotes in xpath with single quotes for valid JSON
         safe_xpath = xpath.replace('"', "'")
-        try:
-            json_content = self.spy_template.render(
-                name=name,
-                guid=guid,
-                xpath=safe_xpath,
-                tag=tag,
-                text=text,
-                attributes=attributes
-            )
-            obj_path = os.path.join("object_repository", f"{name}.json")
-            with open(obj_path, 'w', encoding='utf-8') as f:
-                f.write(json_content)
-            print(f"  🔍 Spy: saved {obj_path}")
-        except Exception as e:
-            print(f"  ⚠️ Spy save failed: {e}")
+
+        if self.no_write:
+            # Build test object and emit as single-line JSONL event
+            props = [
+                {"name": "tag", "value": tag, "isSelected": True, "matchCondition": "equals", "type": "Main"}
+            ]
+            for attr_name, attr_value in attributes.items():
+                props.append({
+                    "name": attr_name,
+                    "value": attr_value,
+                    "isSelected": False,
+                    "matchCondition": "equals",
+                    "type": "Main"
+                })
+            test_obj = {
+                "name": name,
+                "description": "",
+                "tag": tag,
+                "elementGuidId": str(guid),
+                "selectorCollection": {"XPATH": safe_xpath},
+                "selectorMethod": "XPATH",
+                "webElementProperties": props
+            }
+            event_line = json.dumps({"event": "spy_result", "data": test_obj})
+            print(event_line, flush=True)
+        else:
+            try:
+                json_content = self.spy_template.render(
+                    name=name,
+                    guid=guid,
+                    xpath=safe_xpath,
+                    tag=tag,
+                    text=text,
+                    attributes=attributes
+                )
+                obj_path = os.path.join("object_repository", f"{name}.json")
+                with open(obj_path, 'w', encoding='utf-8') as f:
+                    f.write(json_content)
+                print(f"  🔍 Spy: saved {obj_path}")
+            except Exception as e:
+                print(f"  ⚠️ Spy save failed: {e}")
         
         self._spy_saved_elements[xpath] = name
         return name
