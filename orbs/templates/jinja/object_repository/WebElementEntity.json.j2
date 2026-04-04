@@ -1,0 +1,26 @@
+{
+  "name": "{{ name }}",
+  "description": "{{ description or '' }}",
+  "tag": "{{ tag }}",
+  "elementGuidId": "{{ guid }}",
+  "selectorCollection": {
+    "XPATH": "{{ xpath }}"
+  },
+  "selectorMethod": "XPATH",
+  "webElementProperties": [
+    {
+      "name": "tag",
+      "value": "{{ tag }}",
+      "isSelected": true,
+      "matchCondition": "equals",
+      "type": "Main"
+    }{% if attributes %}{% for attr_name, attr_value in attributes.items() %},
+    {
+      "name": "{{ attr_name }}",
+      "value": "{{ attr_value }}",
+      "isSelected": false,
+      "matchCondition": "equals",
+      "type": "Main"
+    }{% endfor %}{% endif %}
+  ]
+}

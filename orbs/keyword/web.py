@@ -13,7 +13,11 @@ import time
 import threading
 import functools
 import re
-from typing import Union, List, Optional
+import json
+import os
+from pathlib import Path
+from datetime import datetime
+from typing import Union, List, Optional, Dict
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait, Select
@@ -196,40 +200,38 @@ def track_keyword(func):
 
 
 # Standalone function for easier syntax
-def find_test_obj(xml_path: str, timeout: Optional[int] = None):
+def find_test_obj(json_path: str, timeout: Optional[int] = None):
     """
-    Find element from object repository XML with self-healing (standalone function)
+    Find element from object repository JSON with self-healing (standalone function)
     
     This is a convenience function that can be used directly without the Web class prefix.
     Perfect for inline usage with other Web keywords.
     
     Args:
-        xml_path: Path to the XML file in object repository 
-                 (e.g., "object_repository\\input_login-button.xml")
+        json_path: Path to the JSON file in object repository 
+                 (e.g., "input_login-button.json" or "subfolder/input_login-button.json")
         timeout: Maximum time to wait for the element (default: 10s)
         
     Returns:
         WebElement: The found element
         
     Raises:
-        FileNotFoundError: If XML file not found
+        FileNotFoundError: If JSON file not found
         NoSuchElementException: If element not found with any locator
         
     Example:
-        # Direct usage
-        find_test_obj("object_repository\\input_username.xml").send_keys("admin")
+        # Direct usage with filename
+        find_test_obj("input_username.json").send_keys("admin")
+        
+        # With subfolder
+        find_test_obj("sauce_demo/input_username.json").send_keys("admin")
         
         # With Web keywords
-        Web.set_text(find_test_obj("object_repository\\input_username.xml"), "admin")
-        Web.click(find_test_obj("object_repository\\button_login.xml"))
+        Web.set_text(find_test_obj("input_username.json"), "admin")
+        Web.click(find_test_obj("button_login.json"))
     """
-    # Accept either full relative path (e.g. "object_repository/input.xml")
-    # or just a filename (e.g. "input.xml"). If a bare filename is provided,
-    # resolve it inside the project's `object_repository/` folder for convenience.
-    adj = xml_path
-    if '/' not in xml_path and '\\' not in xml_path:
-        adj = f"object_repository/{xml_path}"
-    return Web.find_test_obj(adj, timeout)
+    # Pass through to Web.find_test_obj - path resolution is handled by WebElementEntity
+    return Web.find_test_obj(json_path, timeout)
 
 
 class Web:
@@ -357,14 +359,229 @@ class Web:
         except TimeoutException:
             return []
     
+    # Class variable to store project root for caching
+    _cache_project_root: Optional[Path] = None
+    
     @classmethod
-    def _find_element_with_healing(cls, locators: List[tuple], timeout: Optional[int] = None) -> tuple:
+    def _set_cache_project_root(cls, json_path: str):
         """
-        Try multiple locators with self-healing
+        Set project root path from object repository JSON path.
+        e.g., if json_path resolves to /project/object_repository/subfolder/file.json
+        then project root is /project/
+        """
+        if cls._cache_project_root is not None:
+            return  # Already set
+        
+        try:
+            # Find the actual path of the JSON file
+            normalized = json_path.replace('\\', '/')
+            if not normalized.startswith('object_repository/'):
+                normalized = f"object_repository/{normalized}"
+            
+            log.info(f"🔍 Setting cache project root, looking for: {normalized}")
+            
+            # Search for the file
+            current = Path.cwd()
+            log.info(f"🔍 Current working directory: {current}")
+            
+            for parent in [current] + list(current.parents):
+                potential = parent / normalized
+                if potential.exists():
+                    log.info(f"🔍 Found JSON at: {potential}")
+                    # Found! Project root is the parent of object_repository
+                    # e.g., /project/object_repository/file.json -> /project/
+                    obj_repo_path = potential.parent
+                    while obj_repo_path.name != 'object_repository' and obj_repo_path != obj_repo_path.parent:
+                        obj_repo_path = obj_repo_path.parent
+                    
+                    if obj_repo_path.name == 'object_repository':
+                        cls._cache_project_root = obj_repo_path.parent
+                        log.info(f"✅ Cache project root set to: {cls._cache_project_root}")
+                    break
+            
+            # Fallback to cwd if not found
+            if cls._cache_project_root is None:
+                cls._cache_project_root = current
+                log.info(f"⚠️ Cache project root fallback to cwd: {cls._cache_project_root}")
+        except Exception as e:
+            import traceback
+            log.warning(f"❌ Failed to set cache project root: {e}")
+            log.warning(f"Traceback: {traceback.format_exc()}")
+            cls._cache_project_root = Path.cwd()
+    
+    @classmethod
+    def _get_cache_file_path(cls) -> Path:
+        """Get path to resolved locator cache file"""
+        project_root = cls._cache_project_root or Path.cwd()
+        cache_dir = project_root / ".cache"
+        return cache_dir / "resolved_locator.json"
+    
+    @classmethod
+    def _load_locator_cache(cls) -> Dict:
+        """Load resolved locator cache from .cache/resolved_locator.json"""
+        try:
+            cache_file = cls._get_cache_file_path()
+            if cache_file.exists():
+                with open(cache_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception as e:
+            log.debug(f"Failed to load locator cache: {e}")
+        return {}
+    
+    @classmethod
+    def _save_locator_cache(cls, cache_data: Dict):
+        """Save resolved locator cache to .cache/resolved_locator.json"""
+        try:
+            cache_file = cls._get_cache_file_path()
+            log.debug(f"Saving cache to: {cache_file}")
+            cache_file.parent.mkdir(parents=True, exist_ok=True)  # Ensure .cache dir exists
+            with open(cache_file, 'w', encoding='utf-8') as f:
+                json.dump(cache_data, f, indent=4, ensure_ascii=False)
+            log.info(f"✅ Cache saved to: {cache_file}")
+        except Exception as e:
+            import traceback
+            log.warning(f"❌ Failed to save locator cache: {e}")
+            log.warning(f"Traceback: {traceback.format_exc()}")
+    
+    @classmethod
+    def _get_cached_locator(cls, json_filename: str) -> Optional[tuple]:
+        """
+        Get cached locator for a test object
+        
+        Args:
+            json_filename: Just the filename (e.g., "input_username.json")
+            
+        Returns:
+            Tuple of (strategy, value) if cached, None otherwise
+        """
+        try:
+            environment = get_context("environment") or "dev"
+            cache = cls._load_locator_cache()
+            
+            if environment in cache and json_filename in cache[environment]:
+                cached = cache[environment][json_filename]
+                # Cache format: {"xpath": "//input[@id='username']", "last_update": "..."}
+                # Return first strategy/value pair (excluding last_update)
+                for key, value in cached.items():
+                    if key != "last_update":
+                        log.debug(f"Cache hit for '{json_filename}' in env '{environment}': {key}={value}")
+                        return (key, value)
+        except Exception as e:
+            log.debug(f"Failed to get cached locator: {e}")
+        return None
+    
+    @classmethod
+    def _save_cached_locator(cls, json_filename: str, strategy: str, value: str):
+        """
+        Save successful locator to cache
+        
+        Args:
+            json_filename: Just the filename (e.g., "input_username.json")
+            strategy: Locator strategy (e.g., "xpath", "id")
+            value: Locator value
+        """
+        try:
+            environment = get_context("environment") or "dev"
+            log.info(f"💾 Caching locator for '{json_filename}' in env '{environment}'...")
+            
+            cache = cls._load_locator_cache()
+            
+            if environment not in cache:
+                cache[environment] = {}
+            
+            cache[environment][json_filename] = {
+                strategy: value,
+                "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            cls._save_locator_cache(cache)
+        except Exception as e:
+            import traceback
+            log.warning(f"❌ Failed to save cached locator: {e}")
+            log.warning(f"Traceback: {traceback.format_exc()}")
+    
+    @classmethod
+    def _check_locators_via_js(cls, locators: List[tuple]) -> Dict[int, int]:
+        """
+        Fast check of multiple locators via JavaScript injection.
+        
+        Returns a dict mapping locator index -> element count found.
+        This is MUCH faster than looping through Selenium calls.
+        
+        Args:
+            locators: List of (strategy, value) tuples to check
+            
+        Returns:
+            Dict[int, int]: {locator_index: element_count}
+        """
+        driver = cls._get_driver()
+        
+        # Build JavaScript to check all locators at once
+        js_code = """
+        function countElements(locators) {
+            var results = {};
+            for (var i = 0; i < locators.length; i++) {
+                var loc = locators[i];
+                var strategy = loc[0];
+                var value = loc[1];
+                var count = 0;
+                
+                try {
+                    if (strategy === 'xpath') {
+                        var xpathResult = document.evaluate(value, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                        count = xpathResult.snapshotLength;
+                    } else if (strategy === 'css') {
+                        count = document.querySelectorAll(value).length;
+                    } else if (strategy === 'id') {
+                        var el = document.getElementById(value);
+                        count = el ? 1 : 0;
+                    } else if (strategy === 'name') {
+                        count = document.getElementsByName(value).length;
+                    } else if (strategy === 'class') {
+                        count = document.getElementsByClassName(value).length;
+                    } else if (strategy === 'tag') {
+                        count = document.getElementsByTagName(value).length;
+                    } else if (strategy === 'link') {
+                        var links = document.querySelectorAll('a');
+                        for (var j = 0; j < links.length; j++) {
+                            if (links[j].textContent.trim() === value) count++;
+                        }
+                    } else if (strategy === 'partial_link') {
+                        var plinks = document.querySelectorAll('a');
+                        for (var k = 0; k < plinks.length; k++) {
+                            if (plinks[k].textContent.includes(value)) count++;
+                        }
+                    }
+                } catch (e) {
+                    count = 0;
+                }
+                
+                results[i] = count;
+            }
+            return results;
+        }
+        return countElements(arguments[0]);
+        """
+        
+        try:
+            # Convert locators to JS-compatible format
+            locator_list = [[strategy, value] for strategy, value in locators]
+            result = driver.execute_script(js_code, locator_list)
+            # Convert string keys to int (JS object keys become strings)
+            return {int(k): v for k, v in result.items()} if result else {}
+        except Exception as e:
+            log.debug(f"JS locator check failed: {e}, falling back to sequential")
+            return {}
+    
+    @classmethod
+    def _find_element_with_healing(cls, locators: List[tuple], timeout: Optional[int] = None, json_filename: Optional[str] = None) -> tuple:
+        """
+        Try multiple locators with self-healing (optimized with JS pre-check and caching)
         
         Args:
             locators: List of (strategy, value) tuples to try
             timeout: Timeout in seconds
+            json_filename: Filename for caching (e.g., "input_username.json")
             
         Returns:
             Tuple of (WebElement, locator_string, locator_index)
@@ -379,38 +596,135 @@ class Web:
         self_healing_enabled = config.get_bool("self_healing_enabled", True)
         max_attempts = config.get_int("self_healing_max_attempts", 5) if self_healing_enabled else 1
         
-        # Limit locators to try based on self-healing config
-        locators_to_try = locators[:max_attempts] if self_healing_enabled else locators[:1]
-        
         if not self_healing_enabled and len(locators) > 1:
             log.debug(f"Self-healing disabled, using primary locator only (not trying {len(locators) - 1} alternatives)")
         
         last_exception = None
         
-        for idx, (strategy, value) in enumerate(locators_to_try):
+        # === STEP 0: Try cached locator first (fastest path) ===
+        if json_filename and self_healing_enabled:
+            cached_locator = cls._get_cached_locator(json_filename)
+            if cached_locator:
+                cached_strategy, cached_value = cached_locator
+                try:
+                    locator_str = f"{cached_strategy}={cached_value}"
+                    by, val = cls._parse_locator(locator_str)
+                    
+                    # Use short timeout for cached locator (it should be fast if still valid)
+                    wait = WebDriverWait(driver, min(wait_time, 2))
+                    element = wait.until(EC.presence_of_element_located((by, val)))
+                    
+                    log.info(f"Found element using cached locator: {locator_str}")
+                    # Return with special index -1 to indicate cache hit
+                    return element, locator_str, -1
+                    
+                except (TimeoutException, NoSuchElementException) as e:
+                    log.debug(f"Cached locator failed, falling back to normal resolution")
+                    last_exception = e
+                    # Continue to normal locator resolution
+        
+        # === STEP 1: Try primary locator first ===
+        if locators:
+            primary_strategy, primary_value = locators[0]
             try:
-                # Convert strategy to locator string
-                locator_str = f"{strategy}={value}"
+                locator_str = f"{primary_strategy}={primary_value}"
                 by, val = cls._parse_locator(locator_str)
                 
-                wait = WebDriverWait(driver, min(wait_time, 3))  # Use shorter timeout for alternatives
+                wait = WebDriverWait(driver, wait_time)
                 element = wait.until(EC.presence_of_element_located((by, val)))
                 
-                # Log if we used a fallback locator
-                if idx > 0:
-                    log.info(f"Self-healing: Element found using alternative locator #{idx + 1}: {strategy}={value}")
-                
-                return element, locator_str, idx
+                return element, locator_str, 0
                 
             except (TimeoutException, NoSuchElementException) as e:
                 last_exception = e
-                continue
+                # Primary failed, continue to fallback
+        
+        # If self-healing disabled or only 1 locator, stop here
+        if not self_healing_enabled or len(locators) <= 1:
+            raise NoSuchElementException(f"Element not found with primary locator (timeout: {wait_time}s)") from last_exception
+        
+        # === STEP 2: Fast JS check for all alternative locators ===
+        alternative_locators = locators[1:max_attempts] if len(locators) > 1 else []
+        
+        if not alternative_locators:
+            raise NoSuchElementException(f"Element not found, no alternative locators available") from last_exception
+        
+        log.debug(f"Primary locator failed, checking {len(alternative_locators)} alternatives via JS...")
+        
+        # Get element counts for all alternatives in ONE JS call
+        js_counts = cls._check_locators_via_js(alternative_locators)
+        
+        if js_counts:
+            # Log the JS check results
+            count_summary = {f"{alternative_locators[i][0]}": js_counts.get(i, 0) for i in range(len(alternative_locators))}
+            log.debug(f"JS locator check results: {count_summary}")
+            
+            # Prioritize locators: first those with count=1, then count>1, ignore count=0
+            prioritized = []
+            
+            # First: exact matches (count = 1) - most reliable
+            for idx, count in js_counts.items():
+                if count == 1:
+                    prioritized.append((idx, count))
+            
+            # Second: multiple matches (count > 1) - less reliable but might work
+            for idx, count in js_counts.items():
+                if count > 1:
+                    prioritized.append((idx, count))
+            
+            # === STEP 3: Try prioritized locators via Selenium ===
+            for alt_idx, count in prioritized:
+                strategy, value = alternative_locators[alt_idx]
+                original_idx = alt_idx + 1  # +1 because primary is at index 0
+                
+                try:
+                    locator_str = f"{strategy}={value}"
+                    by, val = cls._parse_locator(locator_str)
+                    
+                    # Use shorter timeout since JS already confirmed element exists
+                    wait = WebDriverWait(driver, min(wait_time, 2))
+                    element = wait.until(EC.presence_of_element_located((by, val)))
+                    
+                    log.info(f"Self-healing: Element found using alternative locator #{original_idx + 1} "
+                            f"(JS found {count}): {strategy}={value}")
+                    
+                    return element, locator_str, original_idx
+                    
+                except (TimeoutException, NoSuchElementException) as e:
+                    last_exception = e
+                    continue
+            
+            # If JS check found elements but Selenium couldn't get them, log it
+            found_any = any(c > 0 for c in js_counts.values())
+            if found_any:
+                log.debug(f"JS found elements but Selenium couldn't retrieve them")
+        
+        # === FALLBACK: Sequential check (if JS failed or found nothing) ===
+        if not js_counts:
+            log.debug(f"JS check unavailable, falling back to sequential locator check")
+            
+            for alt_idx, (strategy, value) in enumerate(alternative_locators):
+                original_idx = alt_idx + 1
+                try:
+                    locator_str = f"{strategy}={value}"
+                    by, val = cls._parse_locator(locator_str)
+                    
+                    wait = WebDriverWait(driver, min(wait_time, 3))
+                    element = wait.until(EC.presence_of_element_located((by, val)))
+                    
+                    log.info(f"Self-healing: Element found using alternative locator #{original_idx + 1}: {strategy}={value}")
+                    
+                    return element, locator_str, original_idx
+                    
+                except (TimeoutException, NoSuchElementException) as e:
+                    last_exception = e
+                    continue
         
         # If we get here, none of the locators worked
-        tried_count = len(locators_to_try)
+        tried_count = 1 + len(alternative_locators)  # primary + alternatives tried
         total_count = len(locators)
         
-        if self_healing_enabled and tried_count < total_count:
+        if tried_count < total_count:
             error_msg = f"Element not found with {tried_count} locators (tried {tried_count}/{total_count}, timeout: {wait_time}s)"
         else:
             error_msg = f"Element not found with any of the {tried_count} locators (timeout: {wait_time}s)"
@@ -418,53 +732,75 @@ class Web:
         raise NoSuchElementException(error_msg) from last_exception
     
     @classmethod
-    def find_test_obj(cls, xml_path: str, timeout: Optional[int] = None) -> WebElement:
+    def find_test_obj(cls, json_path: str, timeout: Optional[int] = None) -> WebElement:
         """
-        Find element from object repository XML with self-healing
+        Find element from object repository JSON with self-healing
         
-        This keyword loads element locators from a WebElementEntity XML file
+        This keyword loads element locators from a WebElementEntity JSON file
         and attempts to find the element using the primary locator first,
         then falls back to alternative locators if needed (self-healing).
         
         Args:
-            xml_path: Path to the XML file in object repository 
-                     (e.g., "object_repository/input_login-button.xml")
+            json_path: Path to the JSON file in object repository 
+                     (e.g., "object_repository/input_login-button.json")
             timeout: Maximum time to wait for the element (default: _wait_timeout)
             
         Returns:
             WebElement: The found element
             
         Raises:
-            FileNotFoundError: If XML file not found
+            FileNotFoundError: If JSON file not found
             NoSuchElementException: If element not found with any locator
             
         Example:
-            element = Web.find_test_obj("object_repository/input_login-button.xml")
+            element = Web.find_test_obj("object_repository/input_login-button.json")
             element.click()
         """
-        # Allow shorthand filenames like "input_username.xml" by resolving
+        # Allow shorthand filenames like "input_username.json" by resolving
         # them under the project's `object_repository/` directory.
-        adj_path = xml_path
-        if '/' not in xml_path and '\\' not in xml_path:
-            adj_path = f"object_repository/{xml_path}"
+        adj_path = json_path
+        if '/' not in json_path and '\\' not in json_path:
+            adj_path = f"object_repository/{json_path}"
 
-        # Parse the XML file
+        # Set project root for caching (derives from object_repository path)
+        cls._set_cache_project_root(adj_path)
+        
+        # Extract cache key - include subfolder for uniqueness
+        # e.g., "instagram/input_r_4.json" or just "input_r_4.json"
+        json_filename = json_path.replace('\\', '/')
+        
+        # Parse the JSON file
         web_element = WebElementEntity(adj_path)
         
         # Get all locators (primary + alternatives)
         locators = web_element.get_all_locators()
         
         if not locators:
-            raise ValueError(f"No valid locators found in {xml_path}")
+            raise ValueError(f"No valid locators found in {json_path}")
         
-        log.info(f"Finding element '{web_element.name}' from {xml_path} "
+        log.info(f"Finding element '{web_element.name}' from {json_path} "
                 f"(primary: {locators[0][0]}={locators[0][1]}, {len(locators) - 1} alternatives)")
         
-        # Try to find element with self-healing
+        # Try to find element with self-healing and caching
         try:
-            element, used_locator, locator_idx = cls._find_element_with_healing(locators, timeout)
+            element, used_locator, locator_idx = cls._find_element_with_healing(locators, timeout, json_filename)
             
-            if locator_idx == 0:
+            log.debug(f"🔍 find_element_with_healing returned: locator_idx={locator_idx}, used_locator={used_locator}")
+            
+            # Parse the used locator to save to cache
+            if '=' in used_locator:
+                strategy, value = used_locator.split('=', 1)
+                
+                log.debug(f"🔍 Checking if should cache: locator_idx={locator_idx}, condition (locator_idx != -1) = {locator_idx != -1}")
+                
+                # Save to cache if found via any locator (primary or alternative)
+                # Don't save if it's already from cache (locator_idx == -1) and it worked
+                if locator_idx != -1:
+                    cls._save_cached_locator(json_filename, strategy, value)
+            
+            if locator_idx == -1:
+                log.action(f"Found '{web_element.name}' using cached locator: {used_locator}")
+            elif locator_idx == 0:
                 log.action(f"Found '{web_element.name}' using primary locator: {used_locator}")
             else:
                 log.action(f"Found '{web_element.name}' using alternative locator ({locator_idx + 1}/{len(locators)}): {used_locator}")

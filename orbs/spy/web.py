@@ -16,9 +16,10 @@ import ast
 
 
 class WebSpyRunner(SpyRunner):
-    def __init__(self, url, output_dir="object_repository"):
+    def __init__(self, url, output_dir="object_repository", no_write=False):
         self.url = url
         self.output_dir = output_dir
+        self.no_write = no_write
         self.driver = None
         self.poll_thread = None
         self._poll_logs = False
@@ -27,7 +28,7 @@ class WebSpyRunner(SpyRunner):
         # Template setup
         tpl_dir = os.path.join(os.path.dirname(__file__), "..", "templates", "jinja", "object_repository")
         self.env = Environment(loader=FileSystemLoader(tpl_dir), trim_blocks=True, lstrip_blocks=True)
-        self.template = self.env.get_template("WebElementEntity.xml.j2")
+        self.template = self.env.get_template("WebElementEntity.json.j2")
 
     def start(self):
         options = Options()
@@ -163,10 +164,11 @@ class WebSpyRunner(SpyRunner):
             time.sleep(0.5)
 
     def _save_element(self, data):
-        print(f"[SPY] Found element: {data.get('selector', '')}")
+        print(f"[SPY] Found element: {data.get('selector', '')}", flush=True)
         selector = data.get("selector", "")
         tag = data.get("tag", "")
         text = data.get("text", "")
+        attributes = data.get("attributes", {})
         base_name = selector.split('>').pop().replace(':','_').replace('#','').replace(' ', '_')
         # only take first 3 words for name
         if text:
@@ -176,21 +178,46 @@ class WebSpyRunner(SpyRunner):
         else:
             text = base_name
         name = f"{tag.lower()}_{text.lower().replace(' ', '_')}"
-        xml = self.template.render(
-            name=name,
-            guid=uuid4(),
-            xpath=data.get("xpath", ""),
-            # selector_type='CSS',
-            # selector_value=selector,
-            tag=tag,
-            text=text,
-            attributes=data.get("attributes", {})
-        )
-        os.makedirs(self.output_dir, exist_ok=True)
-        path = os.path.join(self.output_dir, f"{name}.xml")
-        with open(path, 'w', encoding='utf-8') as f:
-            f.write(xml)
-        print(f"[SPY] Saved: {path}")
+        guid = uuid4()
+
+        if self.no_write:
+            # Build test object and emit as single-line JSONL event
+            props = [
+                {"name": "tag", "value": tag, "isSelected": True, "matchCondition": "equals", "type": "Main"}
+            ]
+            for attr_name, attr_value in attributes.items():
+                props.append({
+                    "name": attr_name,
+                    "value": attr_value,
+                    "isSelected": False,
+                    "matchCondition": "equals",
+                    "type": "Main"
+                })
+            test_obj = {
+                "name": name,
+                "description": "",
+                "tag": tag,
+                "elementGuidId": str(guid),
+                "selectorCollection": {"XPATH": data.get("xpath", "")},
+                "selectorMethod": "XPATH",
+                "webElementProperties": props
+            }
+            event_line = json.dumps({"event": "spy_result", "data": test_obj})
+            print(event_line, flush=True)
+        else:
+            json_content = self.template.render(
+                name=name,
+                guid=guid,
+                xpath=data.get("xpath", ""),
+                tag=tag,
+                text=text,
+                attributes=attributes
+            )
+            os.makedirs(self.output_dir, exist_ok=True)
+            path = os.path.join(self.output_dir, f"{name}.json")
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(json_content)
+            print(f"[SPY] Saved: {path}", flush=True)
 
     def manual_reinject(self):
         """Manual method to re-inject listeners if needed"""

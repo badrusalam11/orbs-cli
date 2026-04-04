@@ -5,7 +5,7 @@ Provides consistent locator handling across different automation types
 """
 
 import os
-import xml.etree.ElementTree as ET
+import json
 from typing import Union, Dict, Any, List, Tuple
 from selenium.webdriver.common.by import By
 from pathlib import Path
@@ -191,29 +191,29 @@ class LoginPage:
 
 
 class WebElementEntity:
-    """Represents a web element from the object repository XML"""
+    """Represents a web element from the object repository JSON"""
     
-    def __init__(self, xml_path: str):
+    def __init__(self, json_path: str):
         """
-        Parse WebElementEntity XML file from object repository
+        Parse WebElementEntity JSON file from object repository
         
         Args:
-            xml_path: Path to the XML file (relative to project root or absolute)
+            json_path: Path to the JSON file (relative to project root or absolute)
         """
-        self.xml_path = xml_path
+        self.json_path = json_path
         self.name = ""
         self.tag = ""
         self.selector_collection: Dict[str, str] = {}
         self.selector_method = "XPATH"
         self.properties: Dict[str, str] = {}
-        self._parse_xml()
+        self._parse_json()
     
-    def _parse_xml(self):
-        """Parse the XML file and extract locators"""
+    def _parse_json(self):
+        """Parse the JSON file and extract locators"""
         # Normalize path to handle both forward slash and backslash
         # SMART FALLBACK: Automatically fix paths corrupted by escape sequences!
         
-        sanitized_path = self.xml_path
+        sanitized_path = self.json_path
         
         # Detect if path has been corrupted by escape sequences
         has_control_chars = any(ord(c) < 32 for c in sanitized_path if c not in '\n\r\t')
@@ -257,78 +257,64 @@ class WebElementEntity:
         # Normalize the path (but keep forward slashes on Windows for cross-platform)
         normalized_path = sanitized_path.replace('\\', '/').replace('//', '/')
         
+        # If the path doesn't start with "object_repository/", prepend it
+        # This allows both:
+        #   - "input.json" -> "object_repository/input.json"
+        #   - "subfolder/input.json" -> "object_repository/subfolder/input.json"
+        #   - "object_repository/input.json" -> unchanged
+        if not normalized_path.startswith('object_repository/'):
+            normalized_path = f"object_repository/{normalized_path}"
+        
         # Handle relative paths from project root
         if not os.path.isabs(normalized_path):
             # Try to find project root by looking for common markers
             current = Path.cwd()
             # Look for object_repository folder or project markers
-            xml_file = None
+            json_file = None
             for parent in [current] + list(current.parents):
                 potential_path = parent / normalized_path
                 if potential_path.exists():
-                    xml_file = potential_path
+                    json_file = potential_path
                     break
             
-            if xml_file is None:
+            if json_file is None:
                 # Try direct path from cwd
-                xml_file = Path(normalized_path)
+                json_file = Path(normalized_path)
         else:
-            xml_file = Path(normalized_path)
+            json_file = Path(normalized_path)
         
-        if not xml_file.exists():
+        if not json_file.exists():
             # Provide helpful error message
             hint = (
                 f"\n\n💡 Tip: Make sure the file exists and the path is correct.\n"
-                f"   Looking for: {xml_file.absolute()}\n"
+                f"   Looking for: {json_file.absolute()}\n"
                 f"   Working directory: {Path.cwd()}\n"
                 f"\n"
                 f"   Use forward slashes for cross-platform compatibility:\n"
-                f"   find_test_obj(\"your_file.xml\")"
+                f"   find_test_obj(\"your_file.json\")"
             )
             raise FileNotFoundError(f"Object repository file not found: {normalized_path}{hint}")
         
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
+        with open(json_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
         
         # Extract basic info
-        name_elem = root.find('name')
-        if name_elem is not None:
-            self.name = name_elem.text or ""
-        
-        tag_elem = root.find('tag')
-        if tag_elem is not None:
-            self.tag = tag_elem.text or ""
+        self.name = data.get('name', '')
+        self.tag = data.get('tag', '')
         
         # Extract selector collection
-        selector_collection = root.find('selectorCollection')
-        if selector_collection is not None:
-            for entry in selector_collection.findall('entry'):
-                key_elem = entry.find('key')
-                value_elem = entry.find('value')
-                if key_elem is not None and value_elem is not None:
-                    key = key_elem.text
-                    value = value_elem.text
-                    if key and value:
-                        self.selector_collection[key] = value
+        self.selector_collection = data.get('selectorCollection', {})
         
         # Extract selector method
-        method_elem = root.find('selectorMethod')
-        if method_elem is not None:
-            self.selector_method = method_elem.text or "XPATH"
+        self.selector_method = data.get('selectorMethod', 'XPATH')
         
         # Extract web element properties
-        for prop in root.findall('webElementProperties'):
-            is_selected_elem = prop.find('isSelected')
-            name_elem = prop.find('name')
-            value_elem = prop.find('value')
+        for prop in data.get('webElementProperties', []):
+            name = prop.get('name')
+            value = prop.get('value')
             
-            # Store properties that have values
-            if name_elem is not None and value_elem is not None:
-                name = name_elem.text
-                value = value_elem.text
-                
-                if name and value and value.strip():
-                    self.properties[name] = value
+            if name and value and str(value).strip():
+                self.properties[name] = value
     
     def get_primary_locator(self) -> Tuple[str, str]:
         """

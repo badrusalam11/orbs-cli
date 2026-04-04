@@ -258,7 +258,7 @@ function handleKeyDown(e) {
             
             // For elements with unique ID
             if (el.id && el.id.trim() !== '') {
-                return `//*[@id="${el.id}"]`;
+                return `//*[@id='${el.id}']`;
             }
             
             // Build path from root

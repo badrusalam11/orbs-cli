@@ -552,7 +552,8 @@ def spy(
     web: bool = typer.Option(False, "--web", help="Spy on web elements"),
     mobile: bool = typer.Option(False, "--mobile", help="Spy on mobile elements (coming soon)"),
     url: str = typer.Option(None, "--url", help="URL to open for spying (e.g. https://example.com)"),
-    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)")
+    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)"),
+    no_write: bool = typer.Option(False, "--no-write", help="Stream spy results to stdout as JSONL without writing files to disk")
 ):
     """
     Launch Spy Mode to inspect and capture UI elements for the Object Repository.
@@ -565,7 +566,7 @@ def spy(
             typer.secho(f"Info: Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
         
         from orbs.spy.web import WebSpyRunner
-        runner = WebSpyRunner(url=url)
+        runner = WebSpyRunner(url=url, no_write=no_write)
     elif mobile:
         from orbs.spy.mobile import MobileSpyRunner
         runner = MobileSpyRunner()  # not yet implemented
@@ -603,7 +604,8 @@ def record(
     mobile: bool = typer.Option(False, "--mobile", help="Record mobile interactions (coming soon)"),
     url: str = typer.Option(None, "--url", help="URL to open for recording (e.g. https://example.com)"),
     testcase: str = typer.Option(None, "--testcase", help="Name for the generated test case"),
-    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)")
+    daemon: bool = typer.Option(False, "--daemon", help="Run in daemon mode (for programmatic control via stdin)"),
+    no_write: bool = typer.Option(False, "--no-write", help="Do not write test case file to disk (Studio handles file creation)")
 ):
     """
     Record user interactions and generate test cases automatically.
@@ -634,7 +636,7 @@ def record(
             typer.secho(f"Info: Added https:// protocol to URL: {url}", fg=typer.colors.BLUE)
         
         from orbs.record.web import WebRecordRunner
-        runner = WebRecordRunner(url=url, testcase_name=testcase)
+        runner = WebRecordRunner(url=url, testcase_name=testcase, no_write=no_write)
     
     try:
         runner.start()
