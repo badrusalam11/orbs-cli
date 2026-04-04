@@ -97,7 +97,7 @@ def choose_environment() -> str:
 
 
 def ensure_appium_server():
-    """Ensure an Appium server is running, otherwise start one"""
+    """Ensure an Appium server is running, otherwise start one (auto-install if needed)"""
     from orbs.config import setting
     url = setting.get("appium_url", "http://localhost:4723/wd/hub")
     status_url = url.rstrip('/') + '/status'
@@ -107,26 +107,50 @@ def ensure_appium_server():
     except Exception:
         pass
 
+    # Check prerequisites - auto install if missing
+    has_appium = shutil.which("appium") is not None
+    has_npx = shutil.which("npx") is not None
+
+    if not has_appium and not has_npx:
+        typer.secho("⚠️  Appium not found. Auto-installing mobile testing dependencies...", fg=typer.colors.YELLOW)
+        _install_mobile_dependencies()
+        # Re-check after installation
+        has_appium = shutil.which("appium") is not None
+        has_npx = shutil.which("npx") is not None
+        if not has_appium and not has_npx:
+            typer.secho("❌ Installation failed. Please run 'orbs setup android' manually.", fg=typer.colors.RED)
+            raise typer.Exit(1)
+
     # Parse host and port
     parsed = urlparse(url)
     host = parsed.hostname or '0.0.0.0'
     port = parsed.port or 4723
     typer.secho(f"⚙️  Starting Appium server at {host}:{port}", fg=typer.colors.YELLOW)
-    cmd = f"appium --address {host} --port {port}"
-    try:
-        # Use shell=True for Windows to pick up appium.cmd
-        subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        # fallback to npx if installed
+
+    started = False
+    if has_appium:
+        cmd = f"appium --address {host} --port {port}"
+        try:
+            subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            started = True
+        except Exception:
+            pass
+
+    if not started and has_npx:
         try:
             subprocess.Popen(f"npx appium --address {host} --port {port}", shell=True,
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            started = True
         except Exception:
-            typer.secho(
-                "❌ Could not start Appium. Ensure 'appium' or 'npx appium' is in your PATH.",
-                fg=typer.colors.RED
-            )
-            raise typer.Exit(1)
+            pass
+
+    if not started:
+        typer.secho(
+            "❌ Could not start Appium. Ensure 'appium' or 'npx appium' is in your PATH.",
+            fg=typer.colors.RED
+        )
+        raise typer.Exit(1)
+
     # Wait for server to be ready
     for _ in range(10):
         try:
@@ -429,76 +453,131 @@ def select_device():
     devices = get_connected_devices()
     device_name = choose_device(devices)
 
-@setup_app.command("android")
-def setup_android():
-    """Install required dependencies for Android mobile testing"""
-    def install_nodejs_on_windows():
-        import tempfile
-        import urllib.request
 
-        NODE_URL = "https://nodejs.org/dist/v20.11.1/node-v20.11.1-x64.msi"  # LTS version
-        temp_dir = tempfile.gettempdir()
-        installer_path = os.path.join(temp_dir, "nodejs_installer.msi")
+def _install_nodejs_on_windows():
+    """Install Node.js on Windows via MSI installer"""
+    import tempfile
+    import urllib.request
 
-        typer.secho("⬇️ Downloading Node.js installer...", fg=typer.colors.YELLOW)
-        urllib.request.urlretrieve(NODE_URL, installer_path)
+    NODE_URL = "https://nodejs.org/dist/v20.11.1/node-v20.11.1-x64.msi"  # LTS version
+    temp_dir = tempfile.gettempdir()
+    installer_path = os.path.join(temp_dir, "nodejs_installer.msi")
 
-        typer.secho("⚙️ Running Node.js installer (silent)...", fg=typer.colors.YELLOW)
-        try:
-            subprocess.run(
-                ["msiexec", "/i", installer_path, "/qn", "/norestart"],
-                check=True,
-            )
-        except subprocess.CalledProcessError:
-            typer.secho("❌ Failed to install Node.js. Please install manually.", fg=typer.colors.RED)
-            raise typer.Exit(1)
-
-        # Confirm npm is available
-        try:
-            subprocess.run("npm --version", shell=True, check=True, stdout=subprocess.DEVNULL)
-            typer.secho("✅ Node.js installed successfully", fg=typer.colors.GREEN)
-        except subprocess.CalledProcessError:
-            typer.secho("❌ Node.js installed but not in PATH. Restart terminal or set PATH manually.", fg=typer.colors.RED)
-            raise typer.Exit(1)
-
-    def install_nodejs_on_posix():
-        # macOS/Linux fallback
-        if shutil.which('brew'):
-            subprocess.run("brew install node", shell=True, check=True)
-        elif shutil.which('apt'):
-            subprocess.run("sudo apt update && sudo apt install -y nodejs npm", shell=True, check=True)
-        else:
-            typer.secho("❌ Could not install Node.js automatically. Install it manually from https://nodejs.org/", fg=typer.colors.RED)
-            raise typer.Exit(1)
-            
-    # Ensure Node.js & npm
+    typer.secho("⬇️ Downloading Node.js installer...", fg=typer.colors.YELLOW)
     try:
-        subprocess.run("npm --version", shell=True, check=True, stdout=subprocess.DEVNULL)
-        typer.secho("✅ npm detected", fg=typer.colors.GREEN)
+        urllib.request.urlretrieve(NODE_URL, installer_path)
+    except Exception as e:
+        typer.secho(f"❌ Failed to download Node.js: {e}", fg=typer.colors.RED)
+        typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
+
+    typer.secho("⚙️ Running Node.js installer (may require admin privileges)...", fg=typer.colors.YELLOW)
+    try:
+        # Use /passive for UI with no user interaction (shows progress, no admin prompt issue)
+        subprocess.run(
+            ["msiexec", "/i", installer_path, "/passive", "/norestart"],
+            check=True,
+        )
     except subprocess.CalledProcessError:
+        typer.secho("❌ Failed to install Node.js. Please install manually from https://nodejs.org/", fg=typer.colors.RED)
+        raise typer.Exit(1)
+
+    typer.secho("✅ Node.js installed. Please restart your terminal and run the command again.", fg=typer.colors.GREEN)
+    typer.secho("💡 This is required for PATH to be updated.", fg=typer.colors.YELLOW)
+    raise typer.Exit(0)
+
+
+def _install_nodejs_on_posix():
+    """Install Node.js on macOS/Linux"""
+    try:
+        if shutil.which('brew'):
+            typer.secho("⚙️ Installing Node.js via Homebrew...", fg=typer.colors.YELLOW)
+            subprocess.run(["brew", "install", "node"], check=True)
+        elif shutil.which('apt'):
+            typer.secho("⚙️ Installing Node.js via apt (may require sudo password)...", fg=typer.colors.YELLOW)
+            subprocess.run(["sudo", "apt", "update"], check=True)
+            subprocess.run(["sudo", "apt", "install", "-y", "nodejs", "npm"], check=True)
+        else:
+            typer.secho("❌ No supported package manager found (brew/apt).", fg=typer.colors.RED)
+            typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
+            raise typer.Exit(1)
+        
+        typer.secho("✅ Node.js installed successfully", fg=typer.colors.GREEN)
+    except subprocess.CalledProcessError as e:
+        typer.secho(f"❌ Failed to install Node.js: {e}", fg=typer.colors.RED)
+        typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
+
+
+def _is_npm_package_installed(package: str) -> bool:
+    """Check if an npm package is globally installed"""
+    try:
+        result = subprocess.run(
+            f"npm list -g {package}",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return package in result.stdout
+    except Exception:
+        return False
+
+
+def _refresh_path_and_check_npm() -> bool:
+    """Try to find npm after installation by checking common paths"""
+    # Common npm paths after installation
+    common_npm_paths = []
+    
+    if os.name == 'nt':  # Windows
+        common_npm_paths = [
+            os.path.expandvars(r"%ProgramFiles%\nodejs"),
+            os.path.expandvars(r"%APPDATA%\npm"),
+            os.path.expandvars(r"%LOCALAPPDATA%\Programs\nodejs"),
+        ]
+    else:  # macOS/Linux
+        common_npm_paths = [
+            "/usr/local/bin",
+            "/opt/homebrew/bin",  # Apple Silicon Homebrew
+            os.path.expanduser("~/.nvm/versions/node/*/bin"),
+            "/usr/bin",
+        ]
+    
+    # Add common paths to PATH temporarily
+    for path in common_npm_paths:
+        if os.path.exists(path) and path not in os.environ.get("PATH", ""):
+            os.environ["PATH"] = path + os.pathsep + os.environ.get("PATH", "")
+    
+    # Check if npm is now available
+    return shutil.which("npm") is not None
+
+
+def _install_mobile_dependencies():
+    """Install required dependencies for Android mobile testing (Node.js, Appium)"""
+    # Ensure Node.js & npm
+    npm_available = shutil.which("npm") is not None
+    
+    if not npm_available:
         typer.secho("⚙️ npm not found. Installing Node.js...", fg=typer.colors.YELLOW)
         if os.name == 'nt':
-            install_nodejs_on_windows()
+            _install_nodejs_on_windows()
+            # Windows installer exits and requires terminal restart
+            return
         else:
-            install_nodejs_on_posix()
+            _install_nodejs_on_posix()
+            # Try to refresh PATH and find npm
+            npm_available = _refresh_path_and_check_npm()
+            if not npm_available:
+                typer.secho("⚠️ Node.js installed but npm not found in PATH.", fg=typer.colors.YELLOW)
+                typer.secho("💡 Please restart your terminal and run the command again.", fg=typer.colors.YELLOW)
+                raise typer.Exit(0)
+    
+    typer.secho("✅ npm detected", fg=typer.colors.GREEN)
     
     # Check & install Appium dependencies only if not installed
-    def is_npm_package_installed(package: str) -> bool:
-        try:
-            result = subprocess.run(
-                f"npm list -g {package}",
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True
-            )
-            return package in result.stdout
-        except Exception:
-            return False
-
     deps = ["appium", "appium-uiautomator2-driver"]
     for pkg in deps:
-        if is_npm_package_installed(pkg):
+        if _is_npm_package_installed(pkg):
             typer.secho(f"✅ {pkg} already installed", fg=typer.colors.GREEN)
         else:
             typer.secho(f"⬇️ Installing {pkg}...", fg=typer.colors.YELLOW)
@@ -506,10 +585,17 @@ def setup_android():
                 subprocess.run(f"npm install -g {pkg}", shell=True, check=True)
                 typer.secho(f"✅ {pkg} installed", fg=typer.colors.GREEN)
             except subprocess.CalledProcessError:
-                typer.secho(f"❌ Failed to install {pkg}. Make sure npm works.", fg=typer.colors.RED)
+                typer.secho(f"❌ Failed to install {pkg}.", fg=typer.colors.RED)
+                typer.secho("💡 Try running: npm install -g " + pkg, fg=typer.colors.YELLOW)
                 raise typer.Exit(1)
 
     typer.secho("✅ All mobile dependencies are ready", fg=typer.colors.GREEN)
+
+
+@setup_app.command("android")
+def setup_android():
+    """Install required dependencies for Android mobile testing"""
+    _install_mobile_dependencies()
 
 @app.command()
 def select_platform():
