@@ -8,3 +8,4 @@ user.properties
 actmo.properties
 logs/*
 data.local/*
+.cache/
