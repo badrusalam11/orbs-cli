@@ -498,19 +498,16 @@ def _install_nodejs_on_posix():
     import platform
     
     try:
-        if shutil.which('brew'):
-            typer.secho("⚙️ Installing Node.js via Homebrew...", fg=typer.colors.YELLOW)
-            subprocess.run(["brew", "install", "node"], check=True)
+        if platform.system() == "Darwin":
+            # macOS - always use PKG installer (more reliable, no brew dependency)
+            _install_nodejs_on_macos_pkg()
+            return
         elif shutil.which('apt'):
             typer.secho("⚙️ Installing Node.js via apt (may require sudo password)...", fg=typer.colors.YELLOW)
             subprocess.run(["sudo", "apt", "update"], check=True)
             subprocess.run(["sudo", "apt", "install", "-y", "nodejs", "npm"], check=True)
-        elif platform.system() == "Darwin":
-            # macOS without Homebrew - download and install PKG
-            _install_nodejs_on_macos_pkg()
-            return
         else:
-            typer.secho("❌ No supported package manager found (brew/apt).", fg=typer.colors.RED)
+            typer.secho("❌ No supported package manager found (apt).", fg=typer.colors.RED)
             typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
             raise typer.Exit(1)
         
