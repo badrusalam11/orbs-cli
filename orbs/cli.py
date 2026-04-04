@@ -129,17 +129,23 @@ def ensure_appium_server():
 
     started = False
     if has_appium:
-        cmd = f"appium --address {host} --port {port}"
         try:
-            subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen(
+                ["appium", "--address", host, "--port", str(port)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
             started = True
         except Exception:
             pass
 
     if not started and has_npx:
         try:
-            subprocess.Popen(f"npx appium --address {host} --port {port}", shell=True,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen(
+                ["npx", "appium", "--address", host, "--port", str(port)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
             started = True
         except Exception:
             pass
@@ -511,10 +517,13 @@ def _install_nodejs_on_posix():
 
 def _is_npm_package_installed(package: str) -> bool:
     """Check if an npm package is globally installed"""
+    # First check if npm exists to avoid shell error leaking to stderr
+    if shutil.which("npm") is None:
+        return False
+    
     try:
         result = subprocess.run(
-            f"npm list -g {package}",
-            shell=True,
+            ["npm", "list", "-g", package],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True
@@ -582,7 +591,7 @@ def _install_mobile_dependencies():
         else:
             typer.secho(f"⬇️ Installing {pkg}...", fg=typer.colors.YELLOW)
             try:
-                subprocess.run(f"npm install -g {pkg}", shell=True, check=True)
+                subprocess.run(["npm", "install", "-g", pkg], check=True)
                 typer.secho(f"✅ {pkg} installed", fg=typer.colors.GREEN)
             except subprocess.CalledProcessError:
                 typer.secho(f"❌ Failed to install {pkg}.", fg=typer.colors.RED)
