@@ -542,46 +542,56 @@ def _install_nodejs_on_macos():
             typer.secho("⚠️ Homebrew install failed, trying PKG installer...", fg=typer.colors.YELLOW)
     
     # Strategy 2: Official PKG installer (universal fallback)
-    _install_nodejs_macos_pkg()
+    _install_nodejs_macos_binary()
 
 
-def _install_nodejs_macos_pkg():
-    """Install Node.js on macOS via official PKG installer"""
+def _install_nodejs_macos_binary():
+    """
+    Install Node.js on macOS via binary tarball (NO SUDO REQUIRED).
+    Installs to ~/.orbs/node/ which is user-writable.
+    Perfect for Electron apps and non-interactive environments.
+    """
     import platform
     import tempfile
     import urllib.request
-    import hashlib
+    import tarfile
     
-    # Node.js LTS version and checksums
+    # Node.js LTS version
     NODE_VERSION = "20.11.1"
     arch = platform.machine()
     
-    # Use appropriate installer based on architecture
+    # Determine correct binary for architecture
     if arch == "arm64":
-        pkg_filename = f"node-v{NODE_VERSION}-darwin-arm64.pkg"
-        # Note: Using universal .pkg which works on both architectures
-        pkg_url = f"https://nodejs.org/dist/v{NODE_VERSION}/node-v{NODE_VERSION}.pkg"
+        tar_filename = f"node-v{NODE_VERSION}-darwin-arm64.tar.gz"
     else:
-        pkg_filename = f"node-v{NODE_VERSION}-darwin-x64.pkg"
-        pkg_url = f"https://nodejs.org/dist/v{NODE_VERSION}/node-v{NODE_VERSION}.pkg"
+        tar_filename = f"node-v{NODE_VERSION}-darwin-x64.tar.gz"
+    
+    tar_url = f"https://nodejs.org/dist/v{NODE_VERSION}/{tar_filename}"
+    
+    # Install location (user directory - no sudo needed!)
+    orbs_home = Path.home() / ".orbs"
+    node_install_dir = orbs_home / "node"
+    node_bin_dir = node_install_dir / "bin"
+    
+    # Create directories
+    orbs_home.mkdir(parents=True, exist_ok=True)
     
     temp_dir = tempfile.gettempdir()
-    installer_path = os.path.join(temp_dir, "nodejs_installer.pkg")
+    tar_path = os.path.join(temp_dir, tar_filename)
     
     # Download with progress indication
-    typer.secho(f"⬇️ Downloading Node.js v{NODE_VERSION} for macOS...", fg=typer.colors.YELLOW)
-    typer.secho(f"   URL: {pkg_url}", fg=typer.colors.CYAN)
+    typer.secho(f"⬇️ Downloading Node.js v{NODE_VERSION} for macOS ({arch})...", fg=typer.colors.YELLOW)
+    typer.secho(f"   URL: {tar_url}", fg=typer.colors.CYAN)
     
     try:
-        # Download with timeout and better error handling
         import urllib.error
-        req = urllib.request.Request(pkg_url, headers={'User-Agent': 'orbs-cli'})
-        with urllib.request.urlopen(req, timeout=60) as response:
+        req = urllib.request.Request(tar_url, headers={'User-Agent': 'orbs-cli'})
+        with urllib.request.urlopen(req, timeout=120) as response:
             total_size = int(response.headers.get('content-length', 0))
             downloaded = 0
             block_size = 8192
             
-            with open(installer_path, 'wb') as f:
+            with open(tar_path, 'wb') as f:
                 while True:
                     chunk = response.read(block_size)
                     if not chunk:
@@ -590,7 +600,9 @@ def _install_nodejs_macos_pkg():
                     downloaded += len(chunk)
                     if total_size > 0:
                         percent = (downloaded / total_size) * 100
-                        typer.echo(f"\r   Downloaded: {downloaded // (1024*1024)}MB / {total_size // (1024*1024)}MB ({percent:.1f}%)", nl=False)
+                        mb_downloaded = downloaded / (1024 * 1024)
+                        mb_total = total_size / (1024 * 1024)
+                        typer.echo(f"\r   Downloaded: {mb_downloaded:.1f}MB / {mb_total:.1f}MB ({percent:.1f}%)", nl=False)
             typer.echo()  # New line after progress
             
     except urllib.error.URLError as e:
@@ -602,62 +614,109 @@ def _install_nodejs_macos_pkg():
         typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
     
-    # Verify file was downloaded
-    if not os.path.exists(installer_path) or os.path.getsize(installer_path) < 1000000:
+    # Verify download
+    if not os.path.exists(tar_path) or os.path.getsize(tar_path) < 1000000:
         typer.secho("❌ Downloaded file appears corrupted", fg=typer.colors.RED)
         typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
     
     typer.secho("✅ Download complete", fg=typer.colors.GREEN)
     
-    # Install PKG
-    typer.secho("⚙️ Installing Node.js (may require admin password)...", fg=typer.colors.YELLOW)
+    # Extract tarball
+    typer.secho("📦 Extracting Node.js...", fg=typer.colors.YELLOW)
     try:
-        result = subprocess.run(
-            ["sudo", "installer", "-pkg", installer_path, "-target", "/"],
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        typer.secho("✅ Node.js installed successfully", fg=typer.colors.GREEN)
-    except subprocess.CalledProcessError as e:
-        typer.secho(f"❌ Failed to install Node.js: {e.stderr if e.stderr else 'Unknown error'}", fg=typer.colors.RED)
+        # Remove existing installation if present
+        if node_install_dir.exists():
+            shutil.rmtree(node_install_dir)
+        
+        with tarfile.open(tar_path, 'r:gz') as tar:
+            # Extract to temp location first
+            extract_dir = orbs_home / "node_temp"
+            if extract_dir.exists():
+                shutil.rmtree(extract_dir)
+            tar.extractall(path=orbs_home)
+            
+            # Rename extracted folder to 'node'
+            extracted_folder = orbs_home / f"node-v{NODE_VERSION}-darwin-{arch}"
+            if extracted_folder.exists():
+                extracted_folder.rename(node_install_dir)
+            else:
+                # Try alternative name pattern
+                for item in orbs_home.iterdir():
+                    if item.is_dir() and item.name.startswith(f"node-v{NODE_VERSION}"):
+                        item.rename(node_install_dir)
+                        break
+        
+        typer.secho("✅ Extraction complete", fg=typer.colors.GREEN)
+        
+    except Exception as e:
+        typer.secho(f"❌ Failed to extract Node.js: {e}", fg=typer.colors.RED)
         typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
     
-    # Clean up installer
+    # Clean up tarball
     try:
-        os.remove(installer_path)
+        os.remove(tar_path)
     except:
         pass
     
-    # Verify installation and update PATH
-    node_paths = ["/usr/local/bin", "/opt/homebrew/bin"]
-    node_found = False
+    # Verify installation
+    node_binary = node_bin_dir / "node"
+    npm_binary = node_bin_dir / "npm"
     
-    for path in node_paths:
-        node_binary = os.path.join(path, "node")
-        if os.path.exists(node_binary):
-            # Add to current session PATH
-            if path not in os.environ.get("PATH", ""):
-                os.environ["PATH"] = path + os.pathsep + os.environ.get("PATH", "")
-            node_found = True
-            typer.secho(f"✅ Node.js found at: {node_binary}", fg=typer.colors.GREEN)
-            break
+    if not node_binary.exists():
+        typer.secho("❌ Node.js binary not found after extraction", fg=typer.colors.RED)
+        typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
     
-    if node_found:
-        # Verify npm is also available
-        npm_path = shutil.which("npm")
-        if npm_path:
-            typer.secho(f"✅ npm found at: {npm_path}", fg=typer.colors.GREEN)
-        else:
-            typer.secho("⚠️ npm not found in PATH yet", fg=typer.colors.YELLOW)
-            typer.secho("💡 Please restart your terminal and run the command again.", fg=typer.colors.YELLOW)
-            raise typer.Exit(0)
-    else:
-        typer.secho("⚠️ Node.js installed but not found in expected paths", fg=typer.colors.YELLOW)
-        typer.secho("💡 Please restart your terminal and run the command again.", fg=typer.colors.YELLOW)
-        raise typer.Exit(0)
+    # Add to PATH for current session
+    node_bin_str = str(node_bin_dir)
+    if node_bin_str not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = node_bin_str + os.pathsep + os.environ.get("PATH", "")
+    
+    typer.secho(f"✅ Node.js installed at: {node_install_dir}", fg=typer.colors.GREEN)
+    typer.secho(f"✅ node: {node_binary}", fg=typer.colors.GREEN)
+    typer.secho(f"✅ npm: {npm_binary}", fg=typer.colors.GREEN)
+    
+    # Verify it works
+    try:
+        result = subprocess.run(
+            [str(node_binary), "--version"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        typer.secho(f"✅ Node.js version: {result.stdout.strip()}", fg=typer.colors.GREEN)
+    except Exception as e:
+        typer.secho(f"⚠️ Could not verify Node.js: {e}", fg=typer.colors.YELLOW)
+    
+    # Update shell profile for persistence
+    _update_shell_profile_for_node(node_bin_str)
+    
+    typer.secho("✅ Node.js installed successfully (no sudo required!)", fg=typer.colors.GREEN)
+
+
+def _update_shell_profile_for_node(node_bin_path: str):
+    """Add Node.js to shell profile for future sessions"""
+    shell_profiles = [
+        Path.home() / ".zshrc",      # zsh (default on modern macOS)
+        Path.home() / ".bashrc",      # bash
+        Path.home() / ".bash_profile", # bash login shell
+    ]
+    
+    export_line = f'export PATH="{node_bin_path}:$PATH"  # Added by orbs-cli'
+    
+    for profile in shell_profiles:
+        if profile.exists():
+            content = profile.read_text()
+            if node_bin_path not in content:
+                try:
+                    with open(profile, 'a') as f:
+                        f.write(f"\n# Node.js installed by orbs-cli\n{export_line}\n")
+                    typer.secho(f"✅ Updated {profile.name} with Node.js PATH", fg=typer.colors.GREEN)
+                except Exception:
+                    pass
+            break  # Only update the first existing profile
 
 
 def _is_npm_package_installed(package: str) -> bool:
@@ -691,6 +750,7 @@ def _refresh_path_and_check_npm() -> bool:
         ]
     else:  # macOS/Linux
         common_npm_paths = [
+            str(Path.home() / ".orbs" / "node" / "bin"),  # orbs-cli installed Node.js
             "/usr/local/bin",
             "/opt/homebrew/bin",  # Apple Silicon Homebrew
             os.path.expanduser("~/.nvm/versions/node/*/bin"),
