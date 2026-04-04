@@ -497,20 +497,22 @@ def _install_nodejs_on_posix():
     """Install Node.js on macOS/Linux"""
     import platform
     
+    if platform.system() == "Darwin":
+        _install_nodejs_on_macos()
+    elif shutil.which('apt'):
+        _install_nodejs_via_apt()
+    else:
+        typer.secho("❌ No supported package manager found.", fg=typer.colors.RED)
+        typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
+
+
+def _install_nodejs_via_apt():
+    """Install Node.js on Linux via apt"""
     try:
-        if platform.system() == "Darwin":
-            # macOS - always use PKG installer (more reliable, no brew dependency)
-            _install_nodejs_on_macos_pkg()
-            return
-        elif shutil.which('apt'):
-            typer.secho("⚙️ Installing Node.js via apt (may require sudo password)...", fg=typer.colors.YELLOW)
-            subprocess.run(["sudo", "apt", "update"], check=True)
-            subprocess.run(["sudo", "apt", "install", "-y", "nodejs", "npm"], check=True)
-        else:
-            typer.secho("❌ No supported package manager found (apt).", fg=typer.colors.RED)
-            typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
-            raise typer.Exit(1)
-        
+        typer.secho("⚙️ Installing Node.js via apt (may require sudo password)...", fg=typer.colors.YELLOW)
+        subprocess.run(["sudo", "apt", "update"], check=True)
+        subprocess.run(["sudo", "apt", "install", "-y", "nodejs", "npm"], check=True)
         typer.secho("✅ Node.js installed successfully", fg=typer.colors.GREEN)
     except subprocess.CalledProcessError as e:
         typer.secho(f"❌ Failed to install Node.js: {e}", fg=typer.colors.RED)
@@ -518,41 +520,144 @@ def _install_nodejs_on_posix():
         raise typer.Exit(1)
 
 
-def _install_nodejs_on_macos_pkg():
-    """Install Node.js on macOS via PKG installer (no Homebrew needed)"""
+def _install_nodejs_on_macos():
+    """
+    Install Node.js on macOS using the most robust approach:
+    1. Try Homebrew first (if available) - best for developers, easy updates
+    2. Fallback to official PKG installer - works for everyone
+    3. Properly handle PATH refresh after installation
+    """
+    import platform
+    
+    typer.secho("🍎 Detected macOS, installing Node.js...", fg=typer.colors.CYAN)
+    
+    # Strategy 1: Try Homebrew (preferred for developers)
+    if shutil.which('brew'):
+        typer.secho("⚙️ Found Homebrew, installing Node.js via brew...", fg=typer.colors.YELLOW)
+        try:
+            subprocess.run(["brew", "install", "node"], check=True)
+            typer.secho("✅ Node.js installed successfully via Homebrew", fg=typer.colors.GREEN)
+            return
+        except subprocess.CalledProcessError:
+            typer.secho("⚠️ Homebrew install failed, trying PKG installer...", fg=typer.colors.YELLOW)
+    
+    # Strategy 2: Official PKG installer (universal fallback)
+    _install_nodejs_macos_pkg()
+
+
+def _install_nodejs_macos_pkg():
+    """Install Node.js on macOS via official PKG installer"""
     import platform
     import tempfile
     import urllib.request
+    import hashlib
     
-    # Determine architecture
+    # Node.js LTS version and checksums
+    NODE_VERSION = "20.11.1"
     arch = platform.machine()
+    
+    # Use appropriate installer based on architecture
     if arch == "arm64":
-        pkg_url = "https://nodejs.org/dist/v20.11.1/node-v20.11.1.pkg"  # Universal installer
+        pkg_filename = f"node-v{NODE_VERSION}-darwin-arm64.pkg"
+        # Note: Using universal .pkg which works on both architectures
+        pkg_url = f"https://nodejs.org/dist/v{NODE_VERSION}/node-v{NODE_VERSION}.pkg"
     else:
-        pkg_url = "https://nodejs.org/dist/v20.11.1/node-v20.11.1.pkg"
+        pkg_filename = f"node-v{NODE_VERSION}-darwin-x64.pkg"
+        pkg_url = f"https://nodejs.org/dist/v{NODE_VERSION}/node-v{NODE_VERSION}.pkg"
     
     temp_dir = tempfile.gettempdir()
     installer_path = os.path.join(temp_dir, "nodejs_installer.pkg")
     
-    typer.secho("⬇️ Downloading Node.js installer for macOS...", fg=typer.colors.YELLOW)
+    # Download with progress indication
+    typer.secho(f"⬇️ Downloading Node.js v{NODE_VERSION} for macOS...", fg=typer.colors.YELLOW)
+    typer.secho(f"   URL: {pkg_url}", fg=typer.colors.CYAN)
+    
     try:
-        urllib.request.urlretrieve(pkg_url, installer_path)
+        # Download with timeout and better error handling
+        import urllib.error
+        req = urllib.request.Request(pkg_url, headers={'User-Agent': 'orbs-cli'})
+        with urllib.request.urlopen(req, timeout=60) as response:
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded = 0
+            block_size = 8192
+            
+            with open(installer_path, 'wb') as f:
+                while True:
+                    chunk = response.read(block_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        percent = (downloaded / total_size) * 100
+                        typer.echo(f"\r   Downloaded: {downloaded // (1024*1024)}MB / {total_size // (1024*1024)}MB ({percent:.1f}%)", nl=False)
+            typer.echo()  # New line after progress
+            
+    except urllib.error.URLError as e:
+        typer.secho(f"❌ Failed to download Node.js: {e.reason}", fg=typer.colors.RED)
+        typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
     except Exception as e:
         typer.secho(f"❌ Failed to download Node.js: {e}", fg=typer.colors.RED)
         typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
     
-    typer.secho("⚙️ Installing Node.js (may require admin password)...", fg=typer.colors.YELLOW)
-    try:
-        # Use installer command to install PKG (requires sudo)
-        subprocess.run(["sudo", "installer", "-pkg", installer_path, "-target", "/"], check=True)
-        typer.secho("✅ Node.js installed successfully", fg=typer.colors.GREEN)
-        typer.secho("💡 Please restart your terminal and run the command again.", fg=typer.colors.YELLOW)
-        raise typer.Exit(0)
-    except subprocess.CalledProcessError:
-        typer.secho("❌ Failed to install Node.js.", fg=typer.colors.RED)
+    # Verify file was downloaded
+    if not os.path.exists(installer_path) or os.path.getsize(installer_path) < 1000000:
+        typer.secho("❌ Downloaded file appears corrupted", fg=typer.colors.RED)
         typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
+    
+    typer.secho("✅ Download complete", fg=typer.colors.GREEN)
+    
+    # Install PKG
+    typer.secho("⚙️ Installing Node.js (may require admin password)...", fg=typer.colors.YELLOW)
+    try:
+        result = subprocess.run(
+            ["sudo", "installer", "-pkg", installer_path, "-target", "/"],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        typer.secho("✅ Node.js installed successfully", fg=typer.colors.GREEN)
+    except subprocess.CalledProcessError as e:
+        typer.secho(f"❌ Failed to install Node.js: {e.stderr if e.stderr else 'Unknown error'}", fg=typer.colors.RED)
+        typer.secho("💡 Please install Node.js manually from https://nodejs.org/", fg=typer.colors.YELLOW)
+        raise typer.Exit(1)
+    
+    # Clean up installer
+    try:
+        os.remove(installer_path)
+    except:
+        pass
+    
+    # Verify installation and update PATH
+    node_paths = ["/usr/local/bin", "/opt/homebrew/bin"]
+    node_found = False
+    
+    for path in node_paths:
+        node_binary = os.path.join(path, "node")
+        if os.path.exists(node_binary):
+            # Add to current session PATH
+            if path not in os.environ.get("PATH", ""):
+                os.environ["PATH"] = path + os.pathsep + os.environ.get("PATH", "")
+            node_found = True
+            typer.secho(f"✅ Node.js found at: {node_binary}", fg=typer.colors.GREEN)
+            break
+    
+    if node_found:
+        # Verify npm is also available
+        npm_path = shutil.which("npm")
+        if npm_path:
+            typer.secho(f"✅ npm found at: {npm_path}", fg=typer.colors.GREEN)
+        else:
+            typer.secho("⚠️ npm not found in PATH yet", fg=typer.colors.YELLOW)
+            typer.secho("💡 Please restart your terminal and run the command again.", fg=typer.colors.YELLOW)
+            raise typer.Exit(0)
+    else:
+        typer.secho("⚠️ Node.js installed but not found in expected paths", fg=typer.colors.YELLOW)
+        typer.secho("💡 Please restart your terminal and run the command again.", fg=typer.colors.YELLOW)
+        raise typer.Exit(0)
 
 
 def _is_npm_package_installed(package: str) -> bool:
