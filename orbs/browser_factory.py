@@ -35,12 +35,11 @@ def _cleanup_all_drivers():
         except Exception:
             pass
     
-    # Also kill any orphan chromedriver processes on macOS
-    if sys.platform == "darwin":
-        try:
-            os.system("pkill -f chromedriver 2>/dev/null")
-        except Exception:
-            pass
+    # Note: We intentionally do NOT pkill chromedriver here because:
+    # 1. It would kill chromedriver processes from parallel tests
+    # 2. It would kill chromedriver from other projects/users
+    # 3. The WeakSet tracking + driver.quit() should handle cleanup properly
+    # If orphan processes remain, user can manually run: pkill -f chromedriver
 
 
 # Register cleanup on Python exit
