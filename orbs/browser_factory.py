@@ -1,6 +1,10 @@
 # File: orbs/browser_factory.py
 import os
+import sys
 import base64
+import logging
+import atexit
+import weakref
 from orbs.exception import BrowserDriverException
 from orbs.guard import orbs_guard
 from selenium import webdriver
@@ -14,6 +18,35 @@ from selenium.webdriver.edge.service import Service as EdgeService
 from orbs.config import setting, env
 from orbs.thread_context import get_context, set_context
 from orbs.log import log
+
+# Suppress verbose Selenium logging (significant speedup on macOS)
+logging.getLogger('selenium').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+
+# Track all created drivers for cleanup
+_active_drivers = weakref.WeakSet()
+
+
+def _cleanup_all_drivers():
+    """Cleanup all active drivers on exit"""
+    for driver in list(_active_drivers):
+        try:
+            driver.quit()
+        except Exception:
+            pass
+    
+    # Also kill any orphan chromedriver processes on macOS
+    if sys.platform == "darwin":
+        try:
+            os.system("pkill -f chromedriver 2>/dev/null")
+        except Exception:
+            pass
+
+
+# Register cleanup on Python exit
+atexit.register(_cleanup_all_drivers)
+
+
 class BrowserFactory:
     @staticmethod
     @orbs_guard(BrowserDriverException)
@@ -34,6 +67,10 @@ class BrowserFactory:
         window_size = setting.get("window_size", None)
         driver_path = setting.get("driver_path", None)
         
+        # Performance optimization toggle (default: enabled)
+        # Set performance_mode=false in browser.properties to disable
+        performance_mode = setting.get_bool("performance_mode", True)
+        
         # Get browser arguments from settings (semicolon-separated)
         # Framework handles browser-specific compatibility automatically
         args_list = setting.get_list("args", sep=";")
@@ -42,6 +79,68 @@ class BrowserFactory:
 
         if browser == "chrome":
             options = ChromeOptions()
+            
+            # === PERFORMANCE FLAGS FOR macOS ===
+            # macOS Chrome is significantly slower without these optimizations
+            # These flags reduce cold start time and make actions feel snappier
+            is_macos = sys.platform == "darwin"
+            
+            if is_macos and performance_mode:
+                # === CORE PERFORMANCE FLAGS (proven to work) ===
+                # Disable GPU-related overhead (major macOS slowdown)
+                options.add_argument("--disable-gpu")
+                options.add_argument("--disable-software-rasterizer")
+                
+                # Disable unnecessary Chrome features that slow down startup
+                options.add_argument("--disable-extensions")
+                options.add_argument("--disable-default-apps")
+                options.add_argument("--disable-sync")
+                options.add_argument("--disable-translate")
+                options.add_argument("--disable-background-networking")
+                options.add_argument("--disable-dev-shm-usage")
+                
+                # Skip first run and default browser check
+                options.add_argument("--no-first-run")
+                options.add_argument("--no-default-browser-check")
+                
+                # === ADDITIONAL macOS SPEEDUP FLAGS ===
+                # Disable sandbox (significant startup speedup on macOS)
+                options.add_argument("--no-sandbox")
+                
+                # Disable site isolation (faster process startup)
+                options.add_argument("--disable-site-isolation-trials")
+                
+                # Disable features that slow down Chrome startup
+                options.add_argument("--disable-features=VizDisplayCompositor")
+                options.add_argument("--disable-breakpad")  # Disable crash reporter
+                options.add_argument("--disable-component-update")  # Disable component updates
+                options.add_argument("--disable-domain-reliability")  # Disable domain reliability monitoring
+                
+                # Reduce IPC overhead
+                options.add_argument("--disable-ipc-flooding-protection")
+                
+                # Memory optimizations
+                options.add_argument("--memory-pressure-off")
+                options.add_argument("--disable-backing-store-limit")
+                
+                # Disable logging overhead
+                options.add_argument("--log-level=3")
+                options.add_argument("--silent")
+                options.add_experimental_option('excludeSwitches', ['enable-logging', 'enable-automation'])
+                options.add_experimental_option('useAutomationExtension', False)
+                
+                # Disable notifications and password manager
+                prefs = {
+                    "profile.default_content_setting_values.notifications": 2,
+                    "credentials_enable_service": False,
+                    "profile.password_manager_enabled": False,
+                }
+                options.add_experimental_option("prefs", prefs)
+                
+                # Use 'eager' page load strategy - don't wait for all resources
+                options.page_load_strategy = 'eager'
+                
+                log.debug("Applied macOS Chrome performance optimizations")
             
             # Add headless mode
             if headless:
@@ -140,9 +239,19 @@ class BrowserFactory:
         else:
             raise Exception(f"Unsupported browser: {browser}")
         
+        # Register driver for cleanup on exit
+        _active_drivers.add(driver)
+        
         # Apply timeout configurations from execution.properties
-        implicit_timeout = setting.get_int("implicit_timeout", 5)
-        page_load_timeout = setting.get_int("page_load_timeout", 30)
+        # On macOS with performance_mode, use lower implicit timeout for faster response
+        is_macos = sys.platform == "darwin"
+        if is_macos and performance_mode:
+            # Lower implicit timeout on macOS - explicit waits are more reliable
+            implicit_timeout = setting.get_int("implicit_timeout", 2)
+            page_load_timeout = setting.get_int("page_load_timeout", 20)
+        else:
+            implicit_timeout = setting.get_int("implicit_timeout", 5)
+            page_load_timeout = setting.get_int("page_load_timeout", 30)
         
         driver.implicitly_wait(implicit_timeout)
         driver.set_page_load_timeout(page_load_timeout)

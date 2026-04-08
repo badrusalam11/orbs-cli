@@ -2,6 +2,7 @@
 
 import json
 import os
+import sys
 import time
 import threading
 from uuid import uuid4
@@ -13,6 +14,36 @@ from selenium.webdriver.support import expected_conditions as EC
 from .base import SpyRunner
 from jinja2 import Environment, FileSystemLoader
 import ast
+
+
+def _apply_macos_performance_options(options: Options):
+    """Apply macOS-specific Chrome performance optimizations"""
+    if sys.platform != "darwin":
+        return
+    
+    # Disable GPU-related overhead
+    options.add_argument("--disable-gpu")
+    options.add_argument("--disable-software-rasterizer")
+    
+    # Disable unnecessary features for faster startup
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-default-apps")
+    options.add_argument("--disable-sync")
+    options.add_argument("--disable-translate")
+    options.add_argument("--disable-background-networking")
+    options.add_argument("--disable-background-timer-throttling")
+    options.add_argument("--disable-backgrounding-occluded-windows")
+    options.add_argument("--disable-renderer-backgrounding")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--no-first-run")
+    options.add_argument("--no-default-browser-check")
+    
+    # Disable logging overhead
+    options.add_argument("--log-level=3")
+    options.add_argument("--silent")
+    
+    # Use eager page load
+    options.page_load_strategy = 'eager'
 
 
 class WebSpyRunner(SpyRunner):
@@ -34,7 +65,11 @@ class WebSpyRunner(SpyRunner):
         options = Options()
         # ensure logs are captured
         options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
-        # Initialize driver with both options and capabilities
+        
+        # Apply macOS performance optimizations
+        _apply_macos_performance_options(options)
+        
+        # Initialize driver
         self.driver = webdriver.Chrome(options=options)
 
         self.driver.get(self.url)

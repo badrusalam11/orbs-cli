@@ -1612,7 +1612,16 @@ class Web:
     @classmethod
     @track_keyword
     def close(cls):
-        """Close current browser window"""
+        """Close browser and end session (alias for quit)
+        
+        Note: This calls quit() internally to properly cleanup chromedriver.
+        Use close_window() if you only want to close the current tab/window.
+        """
+        cls.quit()
+    
+    @classmethod
+    def close_window(cls):
+        """Close only the current browser window/tab (keeps driver alive)"""
         driver = get_context('web_driver')
         if driver:
             driver.close()

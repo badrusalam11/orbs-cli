@@ -77,16 +77,21 @@ class LiveLogger:
         line = json.dumps(event, ensure_ascii=False)
         
         # Write to file (for persistence/reports)
+        # Use 'a' mode without explicit flush - OS will buffer
         with open(self.log_file, 'a', encoding='utf-8') as f:
             f.write(line + '\n')
-            f.flush()
+            # Only flush for critical events, not every write
+            if event.get('type') in ('execution_finished', 'testcase_finished', 'step_failed'):
+                f.flush()
         
         # Write to REAL stdout with prefix for Studio to parse in real-time.
         # Use sys.__stdout__ to bypass any stdout capture (e.g., behave's --capture)
         # which replaces sys.stdout with StringIO during BDD step execution.
         out = sys.__stdout__ or sys.stdout
         out.write(f"@@LIVE@@{line}\n")
-        out.flush()
+        # Only flush stdout for important events
+        if event.get('type') in ('execution_started', 'execution_finished', 'testcase_started', 'testcase_finished', 'step_failed'):
+            out.flush()
     
     def _get_timestamp(self) -> str:
         """Get current timestamp in ISO format."""
