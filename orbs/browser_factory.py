@@ -167,6 +167,118 @@ class BrowserFactory:
         elif browser == "firefox":
             options = FirefoxOptions()
             
+            # === FIREFOX PERFORMANCE OPTIMIZATIONS ===
+            # Firefox cold start is significantly slower than Chrome (32s macOS, 6s Windows)
+            # These optimizations reduce startup time dramatically
+            is_macos = sys.platform == "darwin"
+            
+            # === ENVIRONMENT VARIABLES (applied before browser starts) ===
+            # These are critical for reducing cold start time
+            os.environ['MOZ_CRASHREPORTER_DISABLE'] = '1'  # Disable crash reporter
+            os.environ['MOZ_DISABLE_CONTENT_SANDBOX'] = '1'  # Faster content process startup
+            if is_macos:
+                # macOS-specific: Reduce Mach port overhead
+                os.environ['MOZ_DISABLE_NPAPI_SANDBOX'] = '1'
+            
+            if performance_mode:
+                # === DISABLE GECKO LOGGING (reduces disk I/O) ===
+                os.environ['MOZ_LOG'] = ''
+                os.environ['NSPR_LOG_MODULES'] = ''
+                
+                # === CORE STARTUP OPTIMIZATIONS ===
+                # Disable first-run checks and welcome pages
+                options.set_preference("browser.startup.homepage_override.mstone", "ignore")
+                options.set_preference("browser.startup.page", 0)  # Blank page
+                options.set_preference("browser.startup.couldRestoreSession.count", 0)
+                options.set_preference("browser.shell.checkDefaultBrowser", False)
+                options.set_preference("browser.shell.skipDefaultBrowserCheckOnFirstRun", True)
+                options.set_preference("toolkit.telemetry.reportingpolicy.firstRun", False)
+                options.set_preference("datareporting.policy.dataSubmissionEnabled", False)
+                
+                # === DISABLE NETWORK-HEAVY FEATURES ===
+                # These cause significant startup delays waiting for network
+                options.set_preference("network.prefetch-next", False)
+                options.set_preference("network.predictor.enabled", False)
+                options.set_preference("network.dns.disablePrefetch", True)
+                options.set_preference("network.http.speculative-parallel-limit", 0)
+                options.set_preference("browser.safebrowsing.enabled", False)
+                options.set_preference("browser.safebrowsing.downloads.enabled", False)
+                options.set_preference("browser.safebrowsing.malware.enabled", False)
+                options.set_preference("browser.safebrowsing.phishing.enabled", False)
+                options.set_preference("services.sync.enabled", False)
+                options.set_preference("browser.newtabpage.enabled", False)
+                options.set_preference("browser.newtabpage.activity-stream.feeds.section.topstories", False)
+                options.set_preference("browser.newtabpage.activity-stream.showSponsored", False)
+                options.set_preference("browser.newtabpage.activity-stream.enabled", False)
+                
+                # === DISABLE TELEMETRY & UPDATES ===
+                # Telemetry causes significant disk/network I/O during startup
+                options.set_preference("toolkit.telemetry.enabled", False)
+                options.set_preference("toolkit.telemetry.unified", False)
+                options.set_preference("toolkit.telemetry.server", "")
+                options.set_preference("toolkit.telemetry.archive.enabled", False)
+                options.set_preference("app.update.enabled", False)
+                options.set_preference("app.update.checkInstallTime", False)
+                options.set_preference("extensions.update.enabled", False)
+                options.set_preference("browser.search.update", False)
+                
+                # === DISABLE UI ANIMATIONS ===
+                # Animations slow down perceived startup
+                options.set_preference("ui.prefersReducedMotion", 1)
+                options.set_preference("toolkit.cosmeticAnimations.enabled", False)
+                
+                # === DISABLE EXTENSION/ADDON FEATURES ===
+                options.set_preference("extensions.getAddons.cache.enabled", False)
+                options.set_preference("extensions.blocklist.enabled", False)
+                options.set_preference("xpinstall.signatures.required", False)
+                options.set_preference("extensions.autoDisableScopes", 0)
+                
+                # === SESSION RESTORE OPTIMIZATION ===
+                options.set_preference("browser.sessionstore.resume_from_crash", False)
+                options.set_preference("browser.sessionstore.max_tabs_undo", 0)
+                options.set_preference("browser.sessionstore.max_windows_undo", 0)
+                
+                # === CACHE & MEMORY OPTIMIZATION ===
+                options.set_preference("browser.cache.disk.enable", False)  # Avoid disk writes
+                options.set_preference("browser.cache.memory.enable", True)
+                options.set_preference("browser.cache.memory.capacity", 65536)  # 64MB memory cache
+                
+                # === REDUCE DISK I/O ===
+                # Disk I/O is especially slow on macOS with APFS
+                options.set_preference("browser.places.database.growthIncrementKiB", 0)
+                options.set_preference("places.database.growthIncrementKiB", 0)
+                
+                # === CONTENT PROCESS OPTIMIZATION ===
+                # Fewer content processes = faster startup (default is 8)
+                options.set_preference("dom.ipc.processCount", 2)
+                options.set_preference("dom.ipc.processCount.webIsolated", 1)
+                
+                # === DISABLE POCKET & EXPERIMENTS ===
+                options.set_preference("extensions.pocket.enabled", False)
+                options.set_preference("browser.ping-centre.telemetry", False)
+                options.set_preference("experiments.enabled", False)
+                options.set_preference("experiments.activeExperiment", False)
+                
+                # === macOS SPECIFIC ===
+                if is_macos:
+                    # macOS-specific: Disable hardware acceleration (APFS + GPU = slow)
+                    options.set_preference("gfx.compositor.glcontext.opaque", True)
+                    options.set_preference("layers.acceleration.disabled", True) 
+                    options.set_preference("gfx.canvas.azure.accelerated", False)
+                    options.set_preference("gfx.webrender.all", False)
+                    # Disable Rosetta translation overhead on Apple Silicon
+                    options.set_preference("security.sandbox.content.mac.disconnect-windowserver", False)
+                    log.debug("Applied macOS Firefox performance optimizations")
+                
+                # === PAGE LOAD STRATEGY ===
+                # Don't wait for full page load
+                options.page_load_strategy = 'eager'
+                
+                # === COMMAND LINE ARGS ===
+                options.add_argument('-no-remote')  # Allow multiple instances
+                
+                log.debug("Applied Firefox performance optimizations")
+            
             # Add headless mode
             if headless:
                 options.add_argument("--headless")
@@ -190,11 +302,17 @@ class BrowserFactory:
                 options.set_preference("browser.privatebrowsing.autostart", True)
             
             # Create driver with optional custom driver path
+            # Use service_log_path to reduce geckodriver disk I/O
+            log_path = os.devnull if performance_mode else None
             if driver_path:
-                service = FirefoxService(executable_path=driver_path)
+                service = FirefoxService(
+                    executable_path=driver_path,
+                    log_output=log_path
+                )
                 driver = webdriver.Firefox(service=service, options=options)
             else:
-                driver = webdriver.Firefox(options=options)
+                service = FirefoxService(log_output=log_path) if performance_mode else None
+                driver = webdriver.Firefox(service=service, options=options) if service else webdriver.Firefox(options=options)
 
         elif browser == "edge":
             options = EdgeOptions()
