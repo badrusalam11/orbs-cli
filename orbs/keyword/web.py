@@ -52,8 +52,13 @@ def track_keyword(func):
                 """Extract human-readable string from locator"""
                 from .locator import WebElementEntity
                 
+                # Check if it's a ResolvableElement (from find_test_obj)
+                # Use hasattr to avoid circular import issues
+                if hasattr(locator, '_json_path') and hasattr(locator, '_name'):
+                    # It's a ResolvableElement - use __str__ which returns filename
+                    return str(locator)
                 # Check if it's our WebElementEntity first (from object repository)
-                if isinstance(locator, WebElementEntity):
+                elif isinstance(locator, WebElementEntity):
                     return locator.name if locator.name else "object_repository_element"
                 elif isinstance(locator, str):
                     # Plain string locator
@@ -199,8 +204,83 @@ def track_keyword(func):
     return wrapper
 
 
+class ResolvableElement:
+    """
+    A wrapper that holds both WebElement and its locator information.
+    This allows keywords to re-resolve the element when StaleElementReferenceException occurs.
+    
+    For React/dynamic apps, this class supports LAZY resolution - the element is only
+    resolved when actually needed, not when find_test_obj() is called.
+    """
+    
+    def __init__(self, element: WebElement = None, locators: List[tuple] = None, json_path: str = None, name: str = None, lazy: bool = False):
+        """
+        Args:
+            element: The resolved WebElement (can be None if lazy=True)
+            locators: List of (strategy, value) tuples for re-resolving
+            json_path: Original JSON path (for caching)
+            name: Element name (for logging)
+            lazy: If True, element will be resolved on first access
+        """
+        self._element = element
+        self._locators = locators or []
+        self._json_path = json_path
+        self._name = name or "element"
+        self._lazy = lazy
+        self._resolved = element is not None
+    
+    @property
+    def element(self) -> WebElement:
+        """Get the underlying WebElement, resolving lazily if needed"""
+        if not self._resolved or self._element is None:
+            self._resolve_now()
+        return self._element
+    
+    def _resolve_now(self):
+        """Resolve the element now"""
+        if not self._locators:
+            raise ValueError("Cannot resolve: no locators available")
+        
+        # Import here to avoid circular dependency
+        element, used_locator, _ = Web._find_element_with_healing(
+            self._locators, None, self._json_path
+        )
+        self._element = element
+        self._resolved = True
+        log.debug(f"Lazy-resolved element '{self._name}' using: {used_locator}")
+    
+    def re_resolve(self, web_cls, timeout: Optional[int] = None) -> WebElement:
+        """Re-resolve the element using stored locators"""
+        if not self._locators:
+            raise ValueError("Cannot re-resolve: no locators available")
+        
+        element, used_locator, _ = web_cls._find_element_with_healing(
+            self._locators, timeout, self._json_path
+        )
+        self._element = element
+        self._resolved = True
+        log.debug(f"Re-resolved element '{self._name}' using: {used_locator}")
+        return element
+    
+    def __str__(self) -> str:
+        """Return readable name for logging and reports"""
+        # Return the json_path as-is for clear tracing
+        if self._json_path:
+            return self._json_path
+        return self._name or "element"
+    
+    def __repr__(self) -> str:
+        """Return readable representation"""
+        return self.__str__()
+    
+    # Delegate common WebElement methods to make it work like a WebElement
+    def __getattr__(self, name):
+        """Delegate attribute access to the underlying WebElement"""
+        return getattr(self.element, name)
+
+
 # Standalone function for easier syntax
-def find_test_obj(json_path: str, timeout: Optional[int] = None):
+def find_test_obj(json_path: str, timeout: Optional[int] = None) -> ResolvableElement:
     """
     Find element from object repository JSON with self-healing (standalone function)
     
@@ -213,7 +293,7 @@ def find_test_obj(json_path: str, timeout: Optional[int] = None):
         timeout: Maximum time to wait for the element (default: 10s)
         
     Returns:
-        WebElement: The found element
+        ResolvableElement: A wrapper containing the WebElement that can be re-resolved on stale errors
         
     Raises:
         FileNotFoundError: If JSON file not found
@@ -226,7 +306,7 @@ def find_test_obj(json_path: str, timeout: Optional[int] = None):
         # With subfolder
         find_test_obj("sauce_demo/input_username.json").send_keys("admin")
         
-        # With Web keywords
+        # With Web keywords - auto handles stale element!
         Web.set_text(find_test_obj("input_username.json"), "admin")
         Web.click(find_test_obj("button_login.json"))
     """
@@ -312,12 +392,12 @@ class Web:
         return strategy_map[strategy], value
     
     @classmethod
-    def _resolve_element(cls, locator_or_element: Union[str, WebElement], timeout: Optional[int] = None) -> WebElement:
+    def _resolve_element(cls, locator_or_element: Union[str, WebElement, 'WebElementEntity'], timeout: Optional[int] = None) -> WebElement:
         """
-        Resolve element from locator string or WebElement
+        Resolve element from locator string, WebElement, or WebElementEntity
         
         Args:
-            locator_or_element: Either a locator string (e.g., "id=login") or a WebElement
+            locator_or_element: Either a locator string (e.g., "id=login"), WebElement, or WebElementEntity
             timeout: Timeout for finding element if locator string is provided
             
         Returns:
@@ -327,8 +407,18 @@ class Web:
             return locator_or_element
         elif isinstance(locator_or_element, str):
             return cls._find_element(locator_or_element, timeout)
+        elif isinstance(locator_or_element, WebElementEntity):
+            # Re-find element using WebElementEntity (supports self-healing)
+            locators = locator_or_element.get_all_locators()
+            if not locators:
+                raise ValueError(f"No valid locators found in WebElementEntity: {locator_or_element.name}")
+            
+            # Use json_path for caching
+            json_filename = locator_or_element.json_path.replace('\\', '/')
+            element, _, _ = cls._find_element_with_healing(locators, timeout, json_filename)
+            return element
         else:
-            raise TypeError(f"Expected str or WebElement, got {type(locator_or_element)}")
+            raise TypeError(f"Expected str, WebElement, or WebElementEntity, got {type(locator_or_element)}")
     
     @classmethod
     def _find_element(cls, locator: str, timeout: Optional[int] = None) -> WebElement:
@@ -623,9 +713,13 @@ class Web:
                     last_exception = e
                     # Continue to normal locator resolution
         
+        # Log total locators available for debugging
+        log.debug(f"Finding element with {len(locators)} locators available")
+        
         # === STEP 1: Try primary locator first ===
         if locators:
             primary_strategy, primary_value = locators[0]
+            log.debug(f"Trying primary locator: {primary_strategy}={primary_value[:50]}...")
             try:
                 locator_str = f"{primary_strategy}={primary_value}"
                 by, val = cls._parse_locator(locator_str)
@@ -636,6 +730,7 @@ class Web:
                 return element, locator_str, 0
                 
             except (TimeoutException, NoSuchElementException) as e:
+                log.debug(f"Primary locator failed: {type(e).__name__}")
                 last_exception = e
                 # Primary failed, continue to fallback
         
@@ -644,7 +739,8 @@ class Web:
             raise NoSuchElementException(f"Element not found with primary locator (timeout: {wait_time}s)") from last_exception
         
         # === STEP 2: Fast JS check for all alternative locators ===
-        alternative_locators = locators[1:max_attempts] if len(locators) > 1 else []
+        # Use ALL alternatives, not limited by max_attempts (that's for retry, not locator count)
+        alternative_locators = locators[1:]
         
         if not alternative_locators:
             raise NoSuchElementException(f"Element not found, no alternative locators available") from last_exception
@@ -655,9 +751,13 @@ class Web:
         js_counts = cls._check_locators_via_js(alternative_locators)
         
         if js_counts:
-            # Log the JS check results
+            # Log the JS check results with actual locator values
+            for i, count in js_counts.items():
+                if count > 0:
+                    strategy, value = alternative_locators[int(i)]
+                    log.debug(f"  JS found {count} element(s) with: {strategy}={value[:60]}...")
             count_summary = {f"{alternative_locators[i][0]}": js_counts.get(i, 0) for i in range(len(alternative_locators))}
-            log.debug(f"JS locator check results: {count_summary}")
+            log.debug(f"JS locator check summary: {count_summary}")
             
             # Prioritize locators: first those with count=1, then count>1, ignore count=0
             prioritized = []
@@ -732,7 +832,7 @@ class Web:
         raise NoSuchElementException(error_msg) from last_exception
     
     @classmethod
-    def find_test_obj(cls, json_path: str, timeout: Optional[int] = None) -> WebElement:
+    def find_test_obj(cls, json_path: str, timeout: Optional[int] = None) -> 'ResolvableElement':
         """
         Find element from object repository JSON with self-healing
         
@@ -740,13 +840,17 @@ class Web:
         and attempts to find the element using the primary locator first,
         then falls back to alternative locators if needed (self-healing).
         
+        For React/dynamic web apps, this method uses LAZY RESOLUTION - the element
+        is only resolved when actually needed (when keyword like click/set_text is called),
+        not when find_test_obj() is called. This prevents stale element issues.
+        
         Args:
             json_path: Path to the JSON file in object repository 
                      (e.g., "object_repository/input_login-button.json")
             timeout: Maximum time to wait for the element (default: _wait_timeout)
             
         Returns:
-            WebElement: The found element
+            ResolvableElement: A wrapper containing the WebElement that can be re-resolved on stale errors
             
         Raises:
             FileNotFoundError: If JSON file not found
@@ -778,38 +882,18 @@ class Web:
         if not locators:
             raise ValueError(f"No valid locators found in {json_path}")
         
-        log.info(f"Finding element '{web_element.name}' from {json_path} "
-                f"(primary: {locators[0][0]}={locators[0][1]}, {len(locators) - 1} alternatives)")
+        log.debug(f"Prepared element '{web_element.name}' from {json_path} "
+                f"(primary: {locators[0][0]}={locators[0][1]}, {len(locators) - 1} alternatives) - will resolve lazily")
         
-        # Try to find element with self-healing and caching
-        try:
-            element, used_locator, locator_idx = cls._find_element_with_healing(locators, timeout, json_filename)
-            
-            log.debug(f"🔍 find_element_with_healing returned: locator_idx={locator_idx}, used_locator={used_locator}")
-            
-            # Parse the used locator to save to cache
-            if '=' in used_locator:
-                strategy, value = used_locator.split('=', 1)
-                
-                log.debug(f"🔍 Checking if should cache: locator_idx={locator_idx}, condition (locator_idx != -1) = {locator_idx != -1}")
-                
-                # Save to cache if found via any locator (primary or alternative)
-                # Don't save if it's already from cache (locator_idx == -1) and it worked
-                if locator_idx != -1:
-                    cls._save_cached_locator(json_filename, strategy, value)
-            
-            if locator_idx == -1:
-                log.action(f"Found '{web_element.name}' using cached locator: {used_locator}")
-            elif locator_idx == 0:
-                log.action(f"Found '{web_element.name}' using primary locator: {used_locator}")
-            else:
-                log.action(f"Found '{web_element.name}' using alternative locator ({locator_idx + 1}/{len(locators)}): {used_locator}")
-            
-            return element
-            
-        except NoSuchElementException as e:
-            log.error(f"Failed to find '{web_element.name}' from {adj_path}")
-            raise
+        # Return LAZY ResolvableElement - element will be resolved when first accessed
+        # This is critical for React apps where DOM changes frequently
+        return ResolvableElement(
+            element=None,  # Don't resolve yet!
+            locators=locators,
+            json_path=json_filename,
+            name=web_element.name,
+            lazy=True
+        )
     
     # Navigation methods
     @classmethod
@@ -859,44 +943,110 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Click failed on element: {locator}"
     )
-    def click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+    def click(cls, locator: Union[str, WebElement, 'WebElementEntity', 'ResolvableElement'], timeout: Optional[int] = None, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Click on an element with retry logic for stale elements
         
         Args:
-            locator: Element locator string (e.g., 'id=login') or WebElement object
+            locator: Element locator string (e.g., 'id=login'), WebElement, WebElementEntity, or ResolvableElement
             timeout: Wait timeout in seconds
             retry_count: Number of retry attempts for stale elements
             failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
         """
+        from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException
+        
         wait_time = timeout or cls._wait_timeout
+        
+        # Check if locator is re-resolvable
+        can_re_resolve = isinstance(locator, (str, WebElementEntity, ResolvableElement))
         
         for attempt in range(retry_count):
             try:
-                # Support both string locator and WebElement
-                if isinstance(locator, WebElement):
+                # ALWAYS re-resolve element fresh on each attempt for React apps
+                # This is the key to handling dynamic DOM
+                if isinstance(locator, ResolvableElement):
+                    if attempt > 0:
+                        # Re-resolve on retry - wait a bit for DOM to stabilize
+                        time.sleep(0.3)
+                    locator.re_resolve(cls, wait_time)
+                    element = locator.element
+                elif isinstance(locator, WebElement):
                     element = locator
+                elif isinstance(locator, WebElementEntity):
+                    element = cls._resolve_element(locator, wait_time)
                 else:
+                    # String locator - always get fresh element
                     driver = cls._get_driver()
                     by, value = cls._parse_locator(locator)
                     wait = WebDriverWait(driver, wait_time)
                     element = wait.until(EC.element_to_be_clickable((by, value)))
                 
+                driver = cls._get_driver()
+                
+                # Scroll element into view for React apps (element might be off-screen)
+                try:
+                    driver.execute_script("arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});", element)
+                    time.sleep(0.1)  # Small wait for scroll to complete
+                except:
+                    pass  # Ignore scroll errors
+                
+                # Try to click directly - don't wait for clickable separately
+                # This is faster and more reliable for dynamic apps
                 element.click()
                 log.action(f"Clicked element: {locator}")
                 return
                 
             except StaleElementReferenceException:
-                if attempt < retry_count - 1:
-                    log.debug(f"Stale element detected, retrying click on {locator} (attempt {attempt + 1})")
-                    time.sleep(0.5)
+                if attempt < retry_count - 1 and can_re_resolve:
+                    log.debug(f"Stale element, re-resolving (attempt {attempt + 1}/{retry_count})")
                     continue
                 else:
                     raise
+            except ElementClickInterceptedException:
+                # Element is covered by another element (overlay, modal, etc.)
+                log.debug(f"Click intercepted, trying JS click (attempt {attempt + 1}/{retry_count})")
+                # Try JS click immediately as fallback
+                try:
+                    driver = cls._get_driver()
+                    if isinstance(locator, ResolvableElement):
+                        locator.re_resolve(cls, wait_time)
+                        element = locator.element
+                    driver.execute_script("arguments[0].click();", element)
+                    log.action(f"Clicked element (via JS): {locator}")
+                    return
+                except:
+                    if attempt < retry_count - 1:
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        raise
+            except ElementNotInteractableException:
+                # Element found but not interactable - try JS click
+                log.debug(f"Element not interactable, trying JS click (attempt {attempt + 1}/{retry_count})")
+                try:
+                    driver = cls._get_driver()
+                    if isinstance(locator, ResolvableElement):
+                        locator.re_resolve(cls, wait_time)
+                        element = locator.element
+                    driver.execute_script("arguments[0].click();", element)
+                    log.action(f"Clicked element (via JS): {locator}")
+                    return
+                except:
+                    if attempt < retry_count - 1:
+                        time.sleep(0.5)
+                        continue
+                    else:
+                        raise
             except TimeoutException:
-                raise TimeoutException(f"Element not clickable: {locator} (timeout: {wait_time}s)")
+                # Timeout from WebDriverWait - element not found/clickable
+                if attempt < retry_count - 1:
+                    log.debug(f"Timeout waiting for element, retrying (attempt {attempt + 1}/{retry_count})")
+                    time.sleep(0.5)
+                    continue
+                else:
+                    raise TimeoutException(f"Element not clickable: {locator} (timeout: {wait_time}s)")
             except Exception as e:
                 if attempt < retry_count - 1:
-                    log.debug(f"Click failed, retrying: {e}")
+                    log.debug(f"Click failed ({type(e).__name__}), retrying (attempt {attempt + 1}/{retry_count})")
                     time.sleep(0.5)
                     continue
                 else:
@@ -908,20 +1058,38 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Double click failed on element: {locator}"
     )
-    def double_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
-        """Double click on an element
+    def double_click(cls, locator: Union[str, WebElement, 'WebElementEntity', 'ResolvableElement'], timeout: Optional[int] = None, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Double click on an element with retry logic for stale elements
         
         Args:
-            locator: Element locator string or WebElement object
+            locator: Element locator string, WebElement, WebElementEntity, or ResolvableElement
             timeout: Wait timeout in seconds
+            retry_count: Number of retry attempts for stale elements
             failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
         """
-        element = cls._resolve_element(locator, timeout)
-        driver = cls._get_driver()
+        can_re_resolve = isinstance(locator, (str, WebElementEntity, ResolvableElement))
         
-        actions = ActionChains(driver)
-        actions.double_click(element).perform()
-        log.action(f"Double clicked element: {locator}")
+        for attempt in range(retry_count):
+            try:
+                if isinstance(locator, ResolvableElement):
+                    element = locator.element
+                else:
+                    element = cls._resolve_element(locator, timeout)
+                driver = cls._get_driver()
+                
+                actions = ActionChains(driver)
+                actions.double_click(element).perform()
+                log.action(f"Double clicked element: {locator}")
+                return
+            except StaleElementReferenceException:
+                if attempt < retry_count - 1 and can_re_resolve:
+                    log.debug(f"Stale element detected, re-resolving and retrying double_click (attempt {attempt + 1}/{retry_count})")
+                    if isinstance(locator, ResolvableElement):
+                        locator.re_resolve(cls, timeout)
+                    time.sleep(0.5)
+                    continue
+                else:
+                    raise
     
     @classmethod
     @handle_failure
@@ -929,20 +1097,38 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Right click failed on element: {locator}"
     )
-    def right_click(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
-        """Right click on an element
+    def right_click(cls, locator: Union[str, WebElement, 'WebElementEntity', 'ResolvableElement'], timeout: Optional[int] = None, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Right click on an element with retry logic for stale elements
         
         Args:
-            locator: Element locator string or WebElement object
+            locator: Element locator string, WebElement, WebElementEntity, or ResolvableElement
             timeout: Wait timeout in seconds
+            retry_count: Number of retry attempts for stale elements
             failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
         """
-        element = cls._resolve_element(locator, timeout)
-        driver = cls._get_driver()
+        can_re_resolve = isinstance(locator, (str, WebElementEntity, ResolvableElement))
         
-        actions = ActionChains(driver)
-        actions.context_click(element).perform()
-        log.action(f"Right clicked element: {locator}")
+        for attempt in range(retry_count):
+            try:
+                if isinstance(locator, ResolvableElement):
+                    element = locator.element
+                else:
+                    element = cls._resolve_element(locator, timeout)
+                driver = cls._get_driver()
+                
+                actions = ActionChains(driver)
+                actions.context_click(element).perform()
+                log.action(f"Right clicked element: {locator}")
+                return
+            except StaleElementReferenceException:
+                if attempt < retry_count - 1 and can_re_resolve:
+                    log.debug(f"Stale element detected, re-resolving and retrying right_click (attempt {attempt + 1}/{retry_count})")
+                    if isinstance(locator, ResolvableElement):
+                        locator.re_resolve(cls, timeout)
+                    time.sleep(0.5)
+                    continue
+                else:
+                    raise
     
     @classmethod
     @track_keyword
@@ -951,11 +1137,11 @@ class Web:
         WebActionException,
         context_fn=lambda locator, text, **_: f"Set text '{text}' failed on element: {locator}"
     )
-    def set_text(cls, locator: Union[str, WebElement], text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE, secret: bool = False):
+    def set_text(cls, locator: Union[str, WebElement, 'WebElementEntity', 'ResolvableElement'], text: str, timeout: Optional[int] = None, clear_first: bool = True, retry_count: int = 3, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE, secret: bool = False):
         """Set text into an element with retry logic
         
         Args:
-            locator: Element locator string (e.g., 'id=username') or WebElement object
+            locator: Element locator string (e.g., 'id=username'), WebElement, WebElementEntity, or ResolvableElement
             text: Text to input
             timeout: Wait timeout in seconds
             clear_first: Clear existing text before typing
@@ -963,39 +1149,139 @@ class Web:
             failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
             secret: Whether the text is sensitive and should be masked in logs and reports
         """
+        from selenium.common.exceptions import ElementNotInteractableException, InvalidElementStateException
+        from selenium.webdriver.common.keys import Keys
+        
         wait_time = timeout or cls._wait_timeout
+        driver = cls._get_driver()
+        
+        # Check if locator is re-resolvable
+        can_re_resolve = isinstance(locator, (str, WebElementEntity, ResolvableElement))
+        
+        def get_fresh_element():
+            """Helper to get fresh element reference"""
+            if isinstance(locator, ResolvableElement):
+                locator.re_resolve(cls, wait_time)
+                return locator.element
+            elif isinstance(locator, WebElement):
+                return locator
+            elif isinstance(locator, WebElementEntity):
+                return cls._resolve_element(locator, wait_time)
+            else:
+                by, value = cls._parse_locator(locator)
+                wait = WebDriverWait(driver, wait_time)
+                return wait.until(EC.element_to_be_clickable((by, value)))
         
         for attempt in range(retry_count):
             try:
-                # Support both string locator and WebElement
-                if isinstance(locator, WebElement):
-                    element = locator
-                else:
-                    driver = cls._get_driver()
-                    by, value = cls._parse_locator(locator)
-                    wait = WebDriverWait(driver, wait_time)
-                    element = wait.until(EC.element_to_be_clickable((by, value)))
+                # ALWAYS get fresh element on each attempt
+                element = get_fresh_element()
                 
+                # Scroll element into view
+                try:
+                    driver.execute_script("arguments[0].scrollIntoView({block: 'center', behavior: 'instant'});", element)
+                    time.sleep(0.1)
+                except:
+                    pass
+                
+                # Click element first to focus (important for React inputs)
+                try:
+                    element.click()
+                    time.sleep(0.2)  # Wait for React to re-render after click
+                    # Re-resolve element after click because React might re-render DOM
+                    if can_re_resolve:
+                        element = get_fresh_element()
+                except:
+                    pass  # Ignore click/resolve errors, just try to continue
+                
+                # Try to clear and type
+                text_set = False
+                
+                # Method 1: Standard clear + send_keys
                 if clear_first:
-                    element.clear()
+                    try:
+                        element.clear()
+                        element.send_keys(str(text))
+                        text_set = True
+                    except (InvalidElementStateException, ElementNotInteractableException):
+                        pass
                 
-                element.send_keys(text)
-
-                from ..utils import mask_sensitive_value
-                logged_text = mask_sensitive_value(str(text), locator=locator, secret=secret)
-                log.action(f"Set text '{logged_text}' into element: {locator}")
-                return
+                # Method 2: Select all + type (for React inputs)
+                if not text_set:
+                    try:
+                        # Re-resolve element
+                        if can_re_resolve:
+                            element = get_fresh_element()
+                        # Use Cmd+A on macOS, Ctrl+A on others
+                        import platform
+                        select_all_key = Keys.COMMAND if platform.system() == 'Darwin' else Keys.CONTROL
+                        element.send_keys(select_all_key + "a")
+                        element.send_keys(str(text))
+                        text_set = True
+                    except (InvalidElementStateException, ElementNotInteractableException):
+                        pass
+                
+                # Method 3: JS setValue for React inputs (last resort)
+                if not text_set:
+                    try:
+                        # Re-resolve element
+                        if can_re_resolve:
+                            element = get_fresh_element()
+                        # Use JS to set value and trigger React events
+                        driver.execute_script("""
+                            var element = arguments[0];
+                            var text = arguments[1];
+                            
+                            // Focus the element
+                            element.focus();
+                            
+                            // Clear and set value
+                            element.value = text;
+                            
+                            // Trigger input event for React
+                            var inputEvent = new Event('input', { bubbles: true });
+                            element.dispatchEvent(inputEvent);
+                            
+                            // Trigger change event
+                            var changeEvent = new Event('change', { bubbles: true });
+                            element.dispatchEvent(changeEvent);
+                        """, element, str(text))
+                        text_set = True
+                    except Exception as js_error:
+                        log.debug(f"JS setValue failed: {js_error}")
+                
+                if text_set:
+                    from ..utils import mask_sensitive_value
+                    logged_text = mask_sensitive_value(str(text), locator=locator, secret=secret)
+                    log.action(f"Set text '{logged_text}' into element: {locator}")
+                    return
+                else:
+                    raise ElementNotInteractableException(f"Could not set text on element: {locator}")
                 
             except StaleElementReferenceException:
+                if attempt < retry_count - 1 and can_re_resolve:
+                    log.debug(f"Stale element, re-resolving (attempt {attempt + 1}/{retry_count})")
+                    time.sleep(0.3)
+                    continue
+                else:
+                    raise
+            except ElementNotInteractableException:
                 if attempt < retry_count - 1:
-                    log.debug(f"Stale element detected, retrying set_text on {locator} (attempt {attempt + 1})")
+                    log.debug(f"Element not interactable, retrying (attempt {attempt + 1}/{retry_count})")
+                    time.sleep(0.5)
+                    continue
+                else:
+                    raise
+            except InvalidElementStateException:
+                if attempt < retry_count - 1:
+                    log.debug(f"Invalid element state, retrying (attempt {attempt + 1}/{retry_count})")
                     time.sleep(0.5)
                     continue
                 else:
                     raise
             except Exception as e:
                 if attempt < retry_count - 1:
-                    log.debug(f"Set text failed, retrying: {e}")
+                    log.debug(f"Set text failed ({type(e).__name__}), retrying (attempt {attempt + 1}/{retry_count})")
                     time.sleep(0.5)
                     continue
                 else:
