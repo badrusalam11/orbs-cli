@@ -1,12 +1,65 @@
 import os
 import subprocess
 import time
+from urllib.parse import urlparse
+
+import requests
 from appium import webdriver
 from appium.options.common.base import AppiumOptions
 from orbs.config import setting
 from orbs.exception import MobileDriverException
 from orbs.guard import orbs_guard
 from orbs.thread_context import get_context, set_context
+
+
+def _get_appium_server_url() -> str:
+    """
+    Get the correct Appium server URL based on Appium version.
+    Appium v3.x uses http://localhost:4723 (no /wd/hub)
+    Appium v1.x/v2.x uses http://localhost:4723/wd/hub
+    """
+    configured_url = setting.get("appium_url", "") or ""
+    configured_url = configured_url.strip()
+    
+    # Default values
+    default_host = "localhost"
+    default_port = 4723
+    
+    # Parse configured URL or use defaults
+    if configured_url:
+        parsed = urlparse(configured_url)
+        scheme = parsed.scheme or "http"
+        host = parsed.hostname or default_host
+        port = parsed.port or default_port
+    else:
+        scheme = "http"
+        host = default_host
+        port = default_port
+    
+    base_url = f"{scheme}://{host}:{port}"
+    
+    # Check if Appium v3.x (responds on /status without /wd/hub)
+    try:
+        resp = requests.get(f"{base_url}/status", timeout=2)
+        if resp.status_code == 200:
+            # Appium v3.x - use base URL without /wd/hub
+            return base_url
+    except Exception:
+        pass
+    
+    # Check if Appium v1.x/v2.x (responds on /wd/hub/status)
+    try:
+        resp = requests.get(f"{base_url}/wd/hub/status", timeout=2)
+        if resp.status_code == 200:
+            return f"{base_url}/wd/hub"
+    except Exception:
+        pass
+    
+    # Fallback: if configured URL has /wd/hub, use it; otherwise use base URL (assume v3.x)
+    if configured_url and "/wd/hub" in configured_url:
+        return configured_url
+    return base_url
+
 
 class MobileFactory:
     @staticmethod
@@ -31,7 +84,7 @@ class MobileFactory:
         retry_count: int = 2,
         skip_app_launch: bool = False
     ):
-        server_url = setting.get("appium_url", "http://localhost:4723/wd/hub")
+        server_url = _get_appium_server_url()
         platform = setting.get("platformName", "Android")
         
         # Use context to determine device name or fallback to config

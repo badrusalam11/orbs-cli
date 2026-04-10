@@ -37,7 +37,8 @@ class ReportGenerator:
         self.junit_path = os.path.join(self.run_dir, "junit.xml")
         self.html_path = os.path.join(self.run_dir, "report.html")
 
-        self.c = canvas.Canvas(self.pdf_path, pagesize=letter)
+        # Defer PDF canvas creation until actually needed (lazy init)
+        self._canvas = None
         self.width, self.height = letter
         self.y = self.height - 50
         self.results = []
@@ -47,12 +48,18 @@ class ReportGenerator:
         self.screenshot_captions = {}  # Track captions: {path: caption_string}
         self.current_page = 1  # Track current page number
         self.testcase_api_calls = {}
-        self.testcase_scenarios = {}  # Track scenarios per test case: {testcase_name: [scenarios]}  
+        self.testcase_scenarios = {}  # Track scenarios per test case: {testcase_name: [scenarios]}
+    
+    @property
+    def c(self):
+        """Lazy initialization of PDF canvas"""
+        if self._canvas is None:
+            self._canvas = canvas.Canvas(self.pdf_path, pagesize=letter)
+        return self._canvas
 
     def _mask_sensitive_string(self, text):
         if not isinstance(text, str) or not text:
             return text
-
         low = text.lower()
         # Only apply aggressive masking when password/pwd appears in text
         if 'password' not in low and 'pwd' not in low:

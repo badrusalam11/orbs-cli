@@ -401,7 +401,27 @@ class WebElementEntity:
                 xpath_parts.append(xpath)
             
             if 'text' in props and props['text']:
-                xpath = f"//{self.tag}[text()='{props['text']}']"
+                text_val = props['text']
+                # Exact text match
+                xpath = f"//{self.tag}[text()='{text_val}']"
+                xpath_parts.append(xpath)
+                # Normalized text match (handles whitespace)
+                xpath = f"//{self.tag}[normalize-space(text())='{text_val}']"
+                xpath_parts.append(xpath)
+                # Contains text (partial match)
+                xpath = f"//{self.tag}[contains(text(),'{text_val}')]"
+                xpath_parts.append(xpath)
+                # Normalize-space contains (handles extra whitespace)
+                xpath = f"//{self.tag}[contains(normalize-space(.),'{text_val}')]"
+                xpath_parts.append(xpath)
+                # If span inside button, also try finding the button
+                if self.tag == 'span':
+                    xpath = f"//button[.//span[contains(text(),'{text_val}')]]"
+                    xpath_parts.append(xpath)
+                    xpath = f"//button[contains(.,'{text_val}')]"
+                    xpath_parts.append(xpath)
+                # Any element with this text
+                xpath = f"//*[contains(text(),'{text_val}')]"
                 xpath_parts.append(xpath)
             
             # Combine multiple attributes for more specific matching

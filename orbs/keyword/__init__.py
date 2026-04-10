@@ -3,7 +3,7 @@
 Orbs keyword packages
 Contains high-level keyword libraries for different domains
 """
-from .web import find_test_obj, Web
+from .web import find_test_obj, Web, ResolvableElement
 from .api import API
 from .mobile import Mobile
 from .locator import WebElementEntity
@@ -17,4 +17,4 @@ from .failure_handling import FailureHandling
 # from . import api as api
 # from . import mobile as mobile
 
-__all__ = ['Web', 'API', 'Mobile', 'find_test_obj', 'WebElementEntity', 'FailureHandling']
+__all__ = ['Web', 'API', 'Mobile', 'find_test_obj', 'WebElementEntity', 'ResolvableElement', 'FailureHandling']
