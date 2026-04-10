@@ -68,6 +68,45 @@ def choose_device(devices: list[str]) -> str:
     return choice
 
 
+@app.command()
+def devices(raw: bool = typer.Option(False, "--raw", help="Show raw 'adb devices' output")):
+    """List connected Android devices (wrapper around 'adb devices')."""
+    try:
+        output = subprocess.check_output(["adb", "devices"], universal_newlines=True)
+    except Exception as e:
+        typer.secho(f"Error running adb: {e}", fg=typer.colors.RED)
+        raise typer.Exit(1)
+
+    if raw:
+        typer.echo(output)
+        return
+
+    lines = output.splitlines()
+    # first line is header from adb
+    device_lines = lines[1:]
+    devices_list = []
+    for line in device_lines:
+        if not line.strip():
+            continue
+        parts = line.split()
+        if len(parts) >= 2:
+            serial = parts[0]
+            status = parts[1]
+            extra = " ".join(parts[2:]) if len(parts) > 2 else ""
+            devices_list.append((serial, status, extra))
+
+    if not devices_list:
+        typer.secho("❌ No connected devices found", fg=typer.colors.YELLOW)
+        return
+
+    typer.secho("Connected devices:", fg=typer.colors.GREEN)
+    for i, (serial, status, extra) in enumerate(devices_list, start=1):
+        line = f"{i}. {serial}  [{status}]"
+        if extra:
+            line += f" {extra}"
+        typer.echo(line)
+
+
 def get_available_environments():
     """Get list of available environment files from environments directory"""
     env_dir = Path.cwd() / "environments"
