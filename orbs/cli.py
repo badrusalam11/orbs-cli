@@ -96,16 +96,48 @@ def choose_environment() -> str:
     return choice
 
 
+def _check_appium_status(base_url: str) -> bool:
+    """Check if Appium server is running. Supports both v1.x/v2.x and v3.x endpoints."""
+    # Try v3.x endpoint first (/status), then fallback to v1.x/v2.x (/wd/hub/status)
+    endpoints = [
+        f"{base_url}/status",           # Appium v3.x
+        f"{base_url}/wd/hub/status",    # Appium v1.x & v2.x
+    ]
+    for status_url in endpoints:
+        try:
+            if requests.get(status_url, timeout=2).status_code == 200:
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def ensure_appium_server():
     """Ensure an Appium server is running, otherwise start one (auto-install if needed)"""
     from orbs.config import setting
-    url = setting.get("appium_url", "http://localhost:4723/wd/hub")
-    status_url = url.rstrip('/') + '/status'
-    try:
-        if requests.get(status_url, timeout=2).status_code == 200:
-            return
-    except Exception:
-        pass
+    url = setting.get("appium_url", "") or ""
+    url = url.strip()
+    
+    # Default values
+    default_host = "localhost"
+    default_port = 4723
+    
+    # Parse URL or use defaults
+    if url:
+        parsed = urlparse(url)
+        scheme = parsed.scheme or "http"
+        host = parsed.hostname or default_host
+        port = parsed.port or default_port
+    else:
+        scheme = "http"
+        host = default_host
+        port = default_port
+    
+    base_url = f"{scheme}://{host}:{port}"
+    
+    # Check if Appium is already running
+    if _check_appium_status(base_url):
+        return
 
     # Check prerequisites - auto install if missing
     has_appium = shutil.which("appium") is not None
@@ -121,17 +153,15 @@ def ensure_appium_server():
             typer.secho("❌ Installation failed. Please run 'orbs setup android' manually.", fg=typer.colors.RED)
             raise typer.Exit(1)
 
-    # Parse host and port
-    parsed = urlparse(url)
-    host = parsed.hostname or '0.0.0.0'
-    port = parsed.port or 4723
-    typer.secho(f"⚙️  Starting Appium server at {host}:{port}", fg=typer.colors.YELLOW)
+    # Use 0.0.0.0 for binding when starting server (accepts all interfaces)
+    bind_host = '0.0.0.0'
+    typer.secho(f"⚙️  Starting Appium server at {bind_host}:{port}", fg=typer.colors.YELLOW)
 
     started = False
     if has_appium:
         try:
             subprocess.Popen(
-                ["appium", "--address", host, "--port", str(port)],
+                ["appium", "--address", bind_host, "--port", str(port)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
@@ -142,7 +172,7 @@ def ensure_appium_server():
     if not started and has_npx:
         try:
             subprocess.Popen(
-                ["npx", "appium", "--address", host, "--port", str(port)],
+                ["npx", "appium", "--address", bind_host, "--port", str(port)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
             )
@@ -157,14 +187,14 @@ def ensure_appium_server():
         )
         raise typer.Exit(1)
 
-    # Wait for server to be ready
-    for _ in range(10):
-        try:
-            if requests.get(status_url, timeout=2).status_code == 200:
-                typer.secho("✅ Appium server is up", fg=typer.colors.GREEN)
-                return
-        except Exception:
-            time.sleep(1)
+    # Wait for server to be ready (up to 30 seconds for cold start)
+    for i in range(30):
+        if _check_appium_status(base_url):
+            typer.secho("✅ Appium server is up", fg=typer.colors.GREEN)
+            return
+        if i % 5 == 0 and i > 0:
+            typer.secho(f"⏳ Still waiting for Appium server... ({i}s)", fg=typer.colors.YELLOW)
+        time.sleep(1)
     typer.secho("❌ Failed to start Appium server", fg=typer.colors.RED)
     raise typer.Exit(1)
 
