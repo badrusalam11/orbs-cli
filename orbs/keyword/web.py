@@ -1374,12 +1374,20 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Wait for visible failed: {locator}"
     )
-    def wait_for_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+    def wait_for_visible(cls, locator: Union[str, WebElement, 'ResolvableElement'], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Wait for element to be visible"""
         driver = cls._get_driver()
         wait_time = timeout or cls._wait_timeout
         
         try:
+            # If ResolvableElement, get the underlying element
+            if isinstance(locator, ResolvableElement):
+                element = locator.element
+                wait = WebDriverWait(driver, wait_time)
+                wait.until(lambda d: element.is_displayed())
+                log.action(f"Element is visible: {locator}")
+                return element
+            
             # If already a WebElement, check if displayed
             if isinstance(locator, WebElement):
                 wait = WebDriverWait(driver, wait_time)
@@ -1451,9 +1459,13 @@ class Web:
             return False
     
     @classmethod
-    def element_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None) -> bool:
+    def element_visible(cls, locator: Union[str, WebElement, 'ResolvableElement'], timeout: Optional[int] = None) -> bool:
         """Check if element is visible"""
         try:
+            # If ResolvableElement, get the underlying element
+            if isinstance(locator, ResolvableElement):
+                element = locator.element
+                return element.is_displayed()
             # If already WebElement, check if displayed
             if isinstance(locator, WebElement):
                 return locator.is_displayed()
@@ -1510,7 +1522,7 @@ class Web:
         WebActionException,
         context_fn=lambda locator, **_: f"Verify element visible failed: {locator}"
     )
-    def verify_element_visible(cls, locator: Union[str, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+    def verify_element_visible(cls, locator: Union[str, WebElement, 'ResolvableElement'], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
         """Verify element is visible"""
         if not cls.element_visible(locator, timeout):
             raise AssertionError(f"Element not visible: {locator}")
