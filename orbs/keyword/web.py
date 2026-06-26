@@ -1170,8 +1170,11 @@ class Web:
             else:
                 by, value = cls._parse_locator(locator)
                 wait = WebDriverWait(driver, wait_time)
-                return wait.until(EC.element_to_be_clickable((by, value)))
-        
+                # presence (not clickability) so fields that only reach their
+                # full size/visibility after focus (e.g. ExtJS trigger fields)
+                # can still be acquired and handled by the fallbacks below
+                return wait.until(EC.presence_of_element_located((by, value)))
+
         for attempt in range(retry_count):
             try:
                 # ALWAYS get fresh element on each attempt
@@ -1566,6 +1569,43 @@ class Web:
             raise AssertionError(f"Text '{expected_text}' not found in actual text: '{actual_text}'")
         log.action(f"Text contains verified: '{expected_text}' in element: {locator}")
     
+    # Frame management
+    @classmethod
+    @track_keyword
+    @handle_failure
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda locator, **_: f"Switch to frame failed: {locator}"
+    )
+    def switch_to_frame(cls, locator: Union[str, int, WebElement], timeout: Optional[int] = None, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Switch driver context into an iframe/frame so elements inside it become reachable
+
+        Args:
+            locator: Frame index (int), locator string (e.g. 'xpath=//iframe'), or WebElement
+            timeout: Wait timeout in seconds when locator is a string
+            failure_handling: How to handle failures (STOP_ON_FAILURE, CONTINUE_ON_FAILURE, OPTIONAL)
+        """
+        driver = cls._get_driver()
+        if isinstance(locator, int):
+            driver.switch_to.frame(locator)
+        else:
+            element = cls._resolve_element(locator, timeout)
+            driver.switch_to.frame(element)
+        log.action(f"Switched to frame: {locator}")
+
+    @classmethod
+    @track_keyword
+    @handle_failure
+    @orbs_guard(
+        WebActionException,
+        context_fn=lambda **_: "Switch to default content failed"
+    )
+    def switch_to_default_content(cls, failure_handling: FailureHandling = FailureHandling.STOP_ON_FAILURE):
+        """Switch driver context back to the main document, out of any frame"""
+        driver = cls._get_driver()
+        driver.switch_to.default_content()
+        log.action("Switched to default content")
+
     # Browser management
     @classmethod
     def set_timeout(cls, seconds: int):

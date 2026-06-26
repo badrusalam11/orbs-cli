@@ -17,6 +17,7 @@ Resolution priority:
 """
 
 from pathlib import Path
+from typing import Optional
 import csv
 import functools
 import random
@@ -86,7 +87,7 @@ class CSVData:
         """
         return self._rows
 
-    def first(self) -> dict | None:
+    def first(self) -> Optional[dict]:
         """Get the first row, regardless of how many rows exist.
         
         Returns:
@@ -154,7 +155,7 @@ class CSVData:
             if all(str(row.get(k)) == str(v) for k, v in conditions.items())
         ]
 
-    def random(self) -> dict | None:
+    def random(self) -> Optional[dict]:
         """Get a random row from the dataset.
         
         Returns:
